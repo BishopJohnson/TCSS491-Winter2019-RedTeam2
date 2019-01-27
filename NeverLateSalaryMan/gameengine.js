@@ -1,138 +1,28 @@
+// This game shell was happily copied from Googler Seth Ladd's "Bad Aliens" game and his Google IO talk in 2011
+
 window.requestAnimFrame = (function () {
     return window.requestAnimationFrame ||
-            window.webkitRequestAnimationFrame ||
-            window.mozRequestAnimationFrame ||
-            window.oRequestAnimationFrame ||
-            window.msRequestAnimationFrame ||
-            function (/* function */ callback, /* DOMElement */ element) {
-                window.setTimeout(callback, 1000 / 60);
-            };
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function (/* function */ callback, /* DOMElement */ element) {
+            window.setTimeout(callback, 1000 / 60);
+        };
 })();
 
-function GameEngine() {
-    this.entities = [];
-    this.ctx = null;
-    this.surfaceWidth = null;
-    this.surfaceHeight = null;
-}
-
-GameEngine.prototype.init = function (ctx) {
-    this.ctx = ctx;
-    this.surfaceWidth = this.ctx.canvas.width;
-    this.surfaceHeight = this.ctx.canvas.height;
-    this.timer = new Timer();
-    this.startInput();
-    console.log('game initialized');
-}
-
-GameEngine.prototype.start = function () {
-    console.log("starting game");
-    var that = this;
-    (function gameLoop() {
-        that.loop();
-        requestAnimFrame(gameLoop, that.ctx.canvas);
-    })();
-}
-
-GameEngine.prototype.startInput = function () {
-    console.log('Starting input');
-
-    var getXandY = function (e) {
-        var x = e.clientX - that.ctx.canvas.getBoundingClientRect().left;
-        var y = e.clientY - that.ctx.canvas.getBoundingClientRect().top;
-
-        if (x < 1024) {
-            x = Math.floor(x / 32);
-            y = Math.floor(y / 32);
-        }
-
-        return { x: x, y: y };
-    }
-
-    var that = this;
-
-    // event listeners are added here
-
-    this.ctx.canvas.addEventListener("click", function (e) {
-        that.click = getXandY(e);
-        console.log(e);
-        console.log("Left Click Event - X,Y " + e.clientX + ", " + e.clientY);
-    }, false);
-
-    this.ctx.canvas.addEventListener("contextmenu", function (e) {
-        that.click = getXandY(e);
-        console.log(e);
-        console.log("Right Click Event - X,Y " + e.clientX + ", " + e.clientY);
-        e.preventDefault();
-    }, false);
-
-    this.ctx.canvas.addEventListener("mousemove", function (e) {
-        //console.log(e);
-        that.mouse = getXandY(e);
-    }, false);
-
-    this.ctx.canvas.addEventListener("mousewheel", function (e) {
-        console.log(e);
-        that.wheel = e;
-        console.log("Click Event - X,Y " + e.clientX + ", " + e.clientY + " Delta " + e.deltaY);
-    }, false);
-
-    this.ctx.canvas.addEventListener("keydown", function (e) {
-        console.log(e);
-        console.log("Key Down Event - Char " + e.code + " Code " + e.keyCode);
-    }, false);
-
-    this.ctx.canvas.addEventListener("keypress", function (e) {
-        if (e.code === "KeyD") that.d = true;
-        //that.chars[e.code] = true;
-        console.log(e);
-        console.log("Key Pressed Event - Char " + e.charCode + " Code " + e.keyCode);
-    }, false);
-
-    this.ctx.canvas.addEventListener("keyup", function (e) {
-        console.log(e);
-        console.log("Key Up Event - Char " + e.code + " Code " + e.keyCode);
-    }, false);
-
-    console.log('Input started');
-}
-
-GameEngine.prototype.addEntity = function (entity) {
-    console.log('added entity');
-    this.entities.push(entity);
-}
-
-GameEngine.prototype.draw = function () {
-    this.ctx.clearRect(0, 0, this.surfaceWidth, this.surfaceHeight);
-    this.ctx.save();
-    for (var i = 0; i < this.entities.length; i++) {
-        this.entities[i].draw(this.ctx);
-    }
-    this.ctx.restore();
-}
-
-GameEngine.prototype.update = function () {
-    var entitiesCount = this.entities.length;
-
-    for (var i = 0; i < entitiesCount; i++) {
-        var entity = this.entities[i];
-
-        entity.update();
-    }
-}
-
-GameEngine.prototype.loop = function () {
-    this.clockTick = this.timer.tick();
-    this.update();
-    this.draw();
-}
-
+/**
+ * 
+ */
 function Timer() {
     this.gameTime = 0;
     this.maxStep = 0.05;
     this.wallLastTimestamp = 0;
 }
 
+/**
+ * 
+ */
 Timer.prototype.tick = function () {
     var wallCurrent = Date.now();
     var wallDelta = (wallCurrent - this.wallLastTimestamp) / 1000;
@@ -143,16 +33,204 @@ Timer.prototype.tick = function () {
     return gameDelta;
 }
 
+/**
+ * 
+ */
+function GameEngine() {
+    this.entities = [];
+    this.showOutlines = false;
+    this.ctx = null;
+    this.click = null;
+    this.mouse = null;
+    this.wheel = null;
+    this.keyA = false;
+    this.keyD = false;
+    this.keySpace = false;
+    this.surfaceWidth = null;
+    this.surfaceHeight = null;
+}
+
+/**
+ * 
+ * 
+ * @param {any} ctx
+ */
+GameEngine.prototype.init = function (ctx) {
+    this.ctx = ctx;
+    this.surfaceWidth = this.ctx.canvas.width;
+    this.surfaceHeight = this.ctx.canvas.height;
+    this.startInput();
+    this.timer = new Timer();
+    console.log('game initialized');
+}
+
+/**
+ * 
+ */
+GameEngine.prototype.start = function () {
+    console.log("starting game");
+    var that = this;
+    (function gameLoop() {
+        that.loop();
+        requestAnimFrame(gameLoop, that.ctx.canvas);
+    })();
+}
+
+/**
+ * 
+ */
+GameEngine.prototype.startInput = function () {
+    console.log('Starting input');
+    var that = this;
+
+    /**
+     * 
+     * 
+     * @param {any} e
+     */
+    var getXandY = function (e) {
+        var x = e.clientX - that.ctx.canvas.getBoundingClientRect().left;
+        var y = e.clientY - that.ctx.canvas.getBoundingClientRect().top;
+
+        return { x: x, y: y };
+    }
+
+    this.ctx.canvas.addEventListener("mousemove", function (e) {
+        that.mouse = getXandY(e);
+    }, false);
+
+    this.ctx.canvas.addEventListener("click", function (e) {
+        that.click = getXandY(e);
+    }, false);
+
+    this.ctx.canvas.addEventListener("wheel", function (e) {
+        that.wheel = e;
+        e.preventDefault();
+    }, false);
+
+    this.ctx.canvas.addEventListener("contextmenu", function (e) {
+        that.rightclick = getXandY(e);
+        e.preventDefault();
+    }, false);
+
+    this.ctx.canvas.addEventListener("keydown", function (e) {
+        switch (e.keyCode) {
+            case 65: //A key
+                that.keyA = true;
+                break;
+            case 68: //D key
+                that.keyD = true;
+                break;
+            case 32: //Space key
+                that.keySpace = true;
+				e.preventDefault();
+                break;
+            default:
+            //default action
+        }
+    }, false);
+
+    this.ctx.canvas.addEventListener("keyup", function (e) {
+        switch (e.keyCode) {
+            case 65: //A key
+                that.keyA = false;
+                break;
+            case 68: //D key
+                that.keyD = false;
+                break;
+            case 32: //Space key
+                that.keySpace = false;
+                break;
+            default:
+                //default action
+        }
+    }, false);
+
+    console.log('Input started');
+}
+
+/**
+ * 
+ * 
+ * @param {any} entity
+ */
+GameEngine.prototype.addEntity = function (entity) {
+    console.log('added entity');
+    this.entities.push(entity);
+}
+
+/**
+ * 
+ */
+GameEngine.prototype.draw = function () {
+    this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+    this.ctx.save();
+    for (var i = 0; i < this.entities.length; i++) {
+        this.entities[i].draw(this.ctx);
+    }
+    this.ctx.restore();
+}
+
+/**
+ * 
+ */
+GameEngine.prototype.update = function () {
+    var entitiesCount = this.entities.length;
+
+    for (var i = 0; i < entitiesCount; i++) {
+        var entity = this.entities[i];
+
+        if (!entity.removeFromWorld) {
+            entity.update();
+        }
+    }
+
+    for (var i = this.entities.length - 1; i >= 0; --i) {
+        if (this.entities[i].removeFromWorld) {
+            this.entities.splice(i, 1);
+        }
+    }
+}
+
+/**
+ * 
+ */
+GameEngine.prototype.loop = function () {
+    this.clockTick = this.timer.tick();
+    this.update();
+    this.draw();
+    this.click = null;
+    this.rightclick = null;
+    this.wheel = null;
+}
+
+/**
+ * 
+ * 
+ * @param {any} game
+ * @param {number} x
+ * @param {number} y
+ */
 function Entity(game, x, y) {
     this.game = game;
     this.x = x;
     this.y = y;
+    this.velocityX = 0;
+    this.velocityY = 0;
     this.removeFromWorld = false;
 }
 
+/**
+ * 
+ */
 Entity.prototype.update = function () {
 }
 
+/**
+ * 
+ * 
+ * @param {any} ctx
+ */
 Entity.prototype.draw = function (ctx) {
     if (this.game.showOutlines && this.radius) {
         this.game.ctx.beginPath();
@@ -163,6 +241,12 @@ Entity.prototype.draw = function (ctx) {
     }
 }
 
+/**
+ * 
+ * 
+ * @param {any} image
+ * @param {any} angle
+ */
 Entity.prototype.rotateAndCache = function (image, angle) {
     var offscreenCanvas = document.createElement('canvas');
     var size = Math.max(image.width, image.height);
@@ -178,4 +262,83 @@ Entity.prototype.rotateAndCache = function (image, angle) {
     //offscreenCtx.strokeStyle = "red";
     //offscreenCtx.strokeRect(0,0,size,size);
     return offscreenCanvas;
+}
+
+/**
+ * 
+ * 
+ * @param {number} x
+ * @param {number} y
+ * @param {number} width
+ * @param {number} height
+ * @param {string} tag
+ */
+function BoundingBox(x, y, width, height, tag) {
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+    this.tag = tag;
+
+    this.left = x;
+    this.top = y;
+    this.right = this.left + width;
+    this.bottom = this.top + height;
+}
+
+/**
+ * 
+ * 
+ * @param {BoundingBox} other
+ * @returns {object: string, collision: boolean}
+ */
+/*
+BoundingBox.prototype.collide = function (other) {
+    if (this.right > other.left && this.left < other.right && this.top < other.bottom && this.bottom > other.top) { //above
+        switch (other.tag) {
+            case "wall":
+                return { object: "wall", collision: true };
+                break;
+            case "enemy":
+                return { object: "enemy", collision: true };
+                break;
+            default:
+                //default action
+        }
+    } else if (this.right > other.left && this.left < other.right && this.top > other.bottom && this.bottom < other.top) { //below
+
+    } else if (this.right > other.left && this.left < other.right && this.top > other.bottom && this.bottom < other.top) {
+
+    }
+
+    return { object: "", collision: false };
+}
+*/
+
+/**
+ * 
+ * 
+ * @param {BoundingBox} other
+ * @returns { object: string, top: boolean, bottom: boolean, left: boolean, right: boolean }
+ */
+BoundingBox.prototype.collide = function (other) {
+    var collide = { object: "", top: false, bottom: false, left: false, right: false }; //collision data to return
+
+    /* TODO: Simplify logic if possible.
+     */
+    //checks for directional collision
+    if ((this.bottom > other.top && this.top < other.top) && !(this.left >= other.right) && !(this.right <= other.left)) //top
+        collide.top = true;
+    if (this.top < other.bottom && this.bottom > other.bottom && !(this.left >= other.right) && !(this.right <= other.left)) //bottom
+        collide.bottom = true;
+    if (this.right > other.left && this.left < other.left && !(this.top >= other.bottom) && !(this.bottom <= other.top)) //left
+        collide.left = true;
+    if (this.left < other.right && this.right > other.right && !(this.top >= other.bottom) && !(this.bottom <= other.top)) //right
+        collide.right = true;
+
+    //sets tag if collision occured
+    if (collide.top || collide.bottom || collide.left || collide.right)
+        collide.object = other.tag;
+
+    return collide;
 }
