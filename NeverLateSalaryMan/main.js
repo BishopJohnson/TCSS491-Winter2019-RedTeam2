@@ -63,6 +63,87 @@ Platform.prototype.draw = function () {
     Entity.prototype.draw.call(this);
 }
 
+function Hook(player) {
+	this.player = player;
+	this.game = player.game;
+	this.ctx = player.game.ctx;
+	this.x = player.x;
+	this.y = player.y
+	this.box = new BoundingBox(this.x, this.y, 0, 0);
+	this.attached = false;
+}
+
+Hook.prototype = new Entity();
+Hook.prototype.constructor = Hook;
+
+Hook.prototype.update = function() {
+	var minDist = 900;
+	var intPoint = null;
+	for (var i = 0; i < this.game.entities.length; i++) {
+        var entity = this.game.entities[i];
+		if (entity !== this.player) { // No interaction between player and hook
+			// Check collision with top of box
+			var collPoint = lineIntersect(this.player.x, this.x, this.player.y, this.y, entity.box.left, entity.box.right, entity.box.top, entity.box.top);			
+			if (collPoint) {
+				thisDist = dist(this.player.x, this.player.y, collPoint.x, collPoint.y);
+				if (thisDist <= minDist) {
+					intPoint = collPoint;
+					minDist = thisDist;
+				}
+			}
+			// Check collision with bottom of box
+			collPoint = lineIntersect(this.player.x, this.x, this.player.y, this.y, entity.box.left, entity.box.right, entity.box.bottom, entity.box.bottom);
+			if (collPoint) {
+				thisDist = dist(this.player.x, this.player.y, collPoint.x, collPoint.y);
+				if (thisDist <= minDist) {
+					intPoint = collPoint;
+					minDist = thisDist;
+				}
+			}
+			// Check collision with left of box
+			collPoint = lineIntersect(this.player.x, this.x, this.player.y, this.y, entity.box.left, entity.box.left, entity.box.bottom, entity.box.top);
+			if (collPoint) {
+				thisDist = dist(this.player.x, this.player.y, collPoint.x, collPoint.y);
+				if (thisDist <= minDist) {
+					intPoint = collPoint;
+					minDist = thisDist;
+				}
+			}
+			// Check collision with left of box
+			collPoint = lineIntersect(this.player.x, this.x, this.player.y, this.y, entity.box.right, entity.box.right, entity.box.bottom, entity.box.top);
+			if (collPoint) {
+				thisDist = dist(this.player.x, this.player.y, collPoint.x, collPoint.y);
+				if (thisDist <= minDist) {
+					intPoint = collPoint;
+					minDist = thisDist;
+				}
+			}
+		}
+	}
+	if (intPoint && !this.attached) { //Collided with something, move hook to that point
+		this.x = intPoint.x;
+		this.y = intPoint.y;
+		this.box = new BoundingBox(this.x, this.y, 0, 0);
+		this.attached = true;
+		this.player.aiming = false;
+		this.player.grappling = true;
+	}		
+	
+	Entity.prototype.update.call(this);
+}
+
+Hook.prototype.draw = function() {
+	this.ctx.beginPath();
+	this.ctx.lineWidth = 2;
+	this.ctx.strokeStyle = "brown";
+	this.ctx.moveTo(this.player.x, this.player.y);
+	this.ctx.lineTo(this.x, this.y);
+	this.ctx.stroke();
+	this.ctx.closePath();
+	
+	this.ctx.strokeStyle = "grey";
+	this.ctx.fillRect(this.x - 1, this.y - 1, 3, 3);
+}
 //inheritance
 /**
  * 
@@ -78,10 +159,17 @@ function Yamada(game, spritesheet) {
     this.animationWalkL = new Animation(spritesheet, "walk", 0, 96, 32, 32, 0, 0.10, 8, true, 2, "left");
     this.animation = this.animationIdleR; //initial animation
     this.ctx = game.ctx;
-    this.speed = 2; //0.05;
-    this.MAX_SPEED = 4;
-    this.friction = 1.0;
+    this.speed = .65;
+    this.MAX_SPEED = 2.5;
+    this.friction = .5;
     this.falling = false;
+	this.aiming = false;
+	this.grappling = false;
+	this.hook = null;
+	this.aimVector = new Vector(0, 0);
+	/* TODO: Define a "hotspot" on the aiming and grappling animations to define what point of the player that the grappling hook comes from.
+	*/
+	this.hookSpeed = .02;
     this.platform = null;
     this.box = new BoundingBox(this.x, this.y,
                                this.animation.frameWidth * this.animation.scale,   //width
@@ -104,72 +192,102 @@ Yamada.prototype.constructor = Yamada;
  * 
  */
 Yamada.prototype.update = function () {
-    //checks if still on platform
-    /*if (this.platform) {
-        var collide = this.box.collide(this.platform.box);
+	//checks if still on platform
+    if (this.platform) {
+		// Check with temporary hitbox, as shunted out after last collision
+		var tempBox = new BoundingBox(this.x, this.y + 1,
+                               this.animation.frameWidth * this.animation.scale,   //width
+                               this.animation.frameHeight * this.animation.scale,  //height
+                               "player");
+        var collide = tempBox.collide(this.platform.box);
 
         if (!collide.top) {
             this.falling = true;
-
-            if (this.animation.direction == "right")
-                this.animation = this.animationJumpR;
-            else
-                this.animation = this.animationJumpL;
+			this.platform = null;
         }
-    }*/
-
-    //checks if entity is falling
-    if (!this.falling) {
-        //checks for jump input
-        if (this.game.keySpace) {
-            this.velocityY = -2;
-            this.falling = true;
-
-            //checks the direction of the previous animation
-            /*if (this.animation.direction == "right")
-                this.animation = this.animationJumpR;
-            else
-                this.animation = this.animationJumpL;*/
-        }
-    } else {
+    } else this.falling = true; // No platform reference, must be falling
+	
+	if(!this.grappling) {	// Grapple overrides gravity
         this.velocityY += 9.8 * 0.005; //applies gravity if falling
     }
+	
+	if (this.game.keyShift) {	// Begin aiming, cut existing grapple if needed
+		this.aiming = true;
+		if(this.hook) this.hook.removeFromWorld = true;
+		this.hook = null;
+		this.grappling = false;
+		this.aimVector = new Vector(Math.sqrt(2)/2, -Math.sqrt(2)/2);
+    } else if (this.aiming && !this.game.keyShift) {// Fire in aiming direction
+		this.aiming = false; // If changing to travel time hook, remove this
+		this.hook = new Hook(this);
+		this.aimVector.multiply(800);
+		this.hook.x = this.x + Math.floor(this.aimVector.x);
+		this.hook.y = this.y + Math.floor(this.aimVector.y);
+		this.game.addEntity(this.hook);
+	}
+	
+	if (this.game.keyA) {   //checks for left-right input
+		if (this.aiming) {
+			this.aimVector = new Vector(-1,0);
+			//Set left aiming animation
+			// TEMPORARY ANIMATION
+			this.animation = this.animationIdleL;
+		} else if (!this.grappling){
+			this.velocityX = Math.max(-this.MAX_SPEED, this.velocityX - this.speed); //accelerates the player
 
-    //checks for left-right input
-    if (this.game.keyA) {
-        this.velocityX = -this.speed; //Math.max(-this.MAX_SPEED, this.velocityX - this.speed); //accelerates the player
-
-        //checks if player is not falling to switch to walk animation
-        if (!this.falling) {
-            //checks if player should be sliding
-            if (Math.sign(this.velocityX) <= 0)
-                this.animation = this.animationWalkL;
-            /*else
-                this.animation = this.animationReverseL;*/
-        }
+			//checks if player is not falling to switch to walk animation
+			if (!this.falling)
+				this.animation = this.animationWalkL;
+			else this.animation = this.animationIdleL;
+		}
     } else if (this.game.keyD) {
-        this.velocityX = this.speed; //Math.min(this.MAX_SPEED, this.velocityX + this.speed); //accelerates the player
+		if (this.aiming) {
+			this.aimVector = new Vector(1,0);
+			//Set right aiming animation
+			// TEMPORARY ANIMATION
+			this.animation = this.animationIdleR;
+		} else if (!this.grappling) {
+			this.velocityX = Math.min(this.MAX_SPEED, this.velocityX + this.speed); //accelerates the player
 
-        //checks if player is not falling to switch to walk animation
-        if (!this.falling) {
-            //checks if player should be sliding
-            if (Math.sign(this.velocityX) >= 0)
-                this.animation = this.animationWalkR;
-            /*else
-                this.animation = this.animationReverseR;*/
+			//checks if player is not falling to switch to walk animation
+			if (!this.falling)
+				this.animation = this.animationWalkR
+			else this.animation = this.animationIdleR;
         }
+	} else if (this.game.keyW) {
+		if (this.aiming) {
+			this.aimVector = new Vector(0,-1);
+			if(this.animation.direction == "right")
+				// Set up right aiming animation
+				// TEMPORARY ANIMATION
+				this.animation = this.animationIdleR;
+			else
+				// Set up left aiming animation
+				// TEMPORARY ANIMATION
+				this.animation = this.animationIdleR;
+		}
     } else {
-        this.velocityX = 0.0; //Math.sign(this.velocityX) * Math.max(0, Math.abs(this.velocityX) - this.friction); //implements friction to simulate deceleration
-
-        //checks if player is not moving to switch to idle animation
-        if (!this.falling && this.velocityX == 0) {
-            //checks the direction of the previous animation
-            if (this.animation.direction == "right")
-                this.animation = this.animationIdleR;
-            else
-                this.animation = this.animationIdleL;
-        }
-    }
+		if (this.aiming) { // No direction, default to 45 degrees
+			if (this.animation.direction == "right")
+				this.aimVector = new Vector(Math.sqrt(2)/2, -Math.sqrt(2)/2);
+			else this.aimVector = new Vector(-Math.sqrt(2)/2, -Math.sqrt(2)/2);
+		}
+	}
+	if (this.game.keyX && this.grappling) { // Sever grappling hook
+		if(this.hook) this.hook.removeFromWorld = true;
+		this.hook = null;
+		this.grappling = false;
+		this.aimVector = new Vector(Math.sqrt(2)/2, -Math.sqrt(2)/2);
+	}
+		
+	if (this.grappling) {
+		// Create direction vector to hook point
+		var dirVect = new Vector(this.hook.x - this.x, this.hook.y - this.y);
+		// Multiply by hook speed coefficient to get movement vector
+		dirVect.multiply(this.hookSpeed);
+		this.velocityX = dirVect.x;
+		this.velocityY = dirVect.y;
+	}
 
     //updates position
     this.x += this.velocityX;
@@ -192,7 +310,7 @@ Yamada.prototype.update = function () {
         //checks if entity collided with a wall
         if (entity !== this && collide.object == "platform") {
             //checks the collision direction
-            if (collide.top && lastBox.bottom <= entity.box.top /* TODO: Make sure not approaching from left/right */) { //landed on platform
+            if (collide.top && lastBox.bottom <= entity.box.top) { //landed on platform
                 this.y = entity.box.top - this.box.height;
                 this.velocityY = 0;
                 this.falling = false;
@@ -200,33 +318,37 @@ Yamada.prototype.update = function () {
 
                 /* TODO: account for walking after landing
                  */
-                //checks the direction of the previous animation
-                if (this.animation.direction == "right")
-                    this.animation = this.animationIdleR;
-                else
-                    this.animation = this.animationIdleL;
-            } if (collide.left && lastBox.right <= entity.box.left /* TODO: Make sure not approaching from bottom */) { //ran into left side of platform
+            } if (collide.left && lastBox.right <= entity.box.left) { //ran into left side of platform
                 this.x = entity.box.left - this.box.width;
                 this.velocityX = 0;
-            } if (collide.right && lastBox.left >= entity.box.right /* TODO: Make sure not approaching from bottom */) { //ran into right side of platform
+            } if (collide.right && lastBox.left >= entity.box.right) { //ran into right side of platform
                 this.x = entity.box.right;
                 this.velocityX = 0;
             } if (collide.bottom && lastBox.top >= entity.box.bottom) { //hit bottom of platform
                 this.y = entity.box.bottom;
                 this.velocityY = 0;
             }
-
-            // Saves bounding box before updating
-            var lastBox = this.box;
-
 			// Update bounding box following shunt out of collision
 			this.box = new BoundingBox(this.x, this.y,
-                                       this.animation.frameWidth * this.animation.scale,   //width
-                                       this.animation.frameHeight * this.animation.scale,  //height
-                                       "player");
+                               this.animation.frameWidth * this.animation.scale,   //width
+                               this.animation.frameHeight * this.animation.scale,  //height
+                               "player");
         }
     }
+	
+	if (!this.falling && !this.grappling){ // No friction in air to allow speed building
+		this.velocityX = Math.sign(this.velocityX) * Math.max(0, Math.abs(this.velocityX) - this.friction); //implements friction to simulate deceleration
 
+		//checks if player is not moving to switch to idle animation
+		if (!this.falling && !this.aiming && this.velocityX == 0) {
+		//checks the direction of the previous animation
+		if (this.animation.direction == "right")
+				this.animation = this.animationIdleR;
+			else
+				this.animation = this.animationIdleL;
+		}
+	}
+	
     Entity.prototype.update.call(this);
 }
 

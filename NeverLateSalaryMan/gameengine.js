@@ -121,8 +121,14 @@ GameEngine.prototype.startInput = function () {
             case 68: //D key
                 that.keyD = true;
                 break;
-            case 32: //Space key
-                that.keySpace = true;
+			case 87: // W key
+				that.keyW = true;
+				break;
+			case 88: // X key
+				that.keyX = true;
+				break;
+            case 16: //Left Shift key
+                that.keyShift = true;
 				e.preventDefault();
                 break;
             default:
@@ -138,8 +144,14 @@ GameEngine.prototype.startInput = function () {
             case 68: //D key
                 that.keyD = false;
                 break;
-            case 32: //Space key
-                that.keySpace = false;
+			case 87: // W key
+				that.keyW = false;
+				break;
+			case 88: // X key
+				that.keyX = false;
+				break;
+            case 16: //Space key
+                that.keyShift = false;
                 break;
             default:
                 //default action
@@ -290,42 +302,11 @@ function BoundingBox(x, y, width, height, tag) {
  * 
  * 
  * @param {BoundingBox} other
- * @returns {object: string, collision: boolean}
- */
-/*
-BoundingBox.prototype.collide = function (other) {
-    if (this.right > other.left && this.left < other.right && this.top < other.bottom && this.bottom > other.top) { //above
-        switch (other.tag) {
-            case "wall":
-                return { object: "wall", collision: true };
-                break;
-            case "enemy":
-                return { object: "enemy", collision: true };
-                break;
-            default:
-                //default action
-        }
-    } else if (this.right > other.left && this.left < other.right && this.top > other.bottom && this.bottom < other.top) { //below
-
-    } else if (this.right > other.left && this.left < other.right && this.top > other.bottom && this.bottom < other.top) {
-
-    }
-
-    return { object: "", collision: false };
-}
-*/
-
-/**
- * 
- * 
- * @param {BoundingBox} other
  * @returns { object: string, top: boolean, bottom: boolean, left: boolean, right: boolean }
  */
 BoundingBox.prototype.collide = function (other) {
     var collide = { object: "", top: false, bottom: false, left: false, right: false }; //collision data to return
 
-    /* TODO: Simplify logic if possible.
-     */
     //checks for directional collision
     if ((this.bottom > other.top && this.top < other.top) && !(this.left >= other.right) && !(this.right <= other.left)) //top
         collide.top = true;
@@ -341,4 +322,57 @@ BoundingBox.prototype.collide = function (other) {
         collide.object = other.tag;
 
     return collide;
+}
+
+/**
+Represents a two-dimensional vector.
+@param {integer} x
+@param {integer} y
+*/
+function Vector(x, y) {
+	this.x = x;
+	this.y = y;
+}
+
+/**
+Multiplies the vector by a scalar.
+*/
+Vector.prototype.multiply = function (coeff) {
+	this.x *= coeff;
+	this.y *= coeff;
+}
+
+/**
+Returns the magnitude of the vector.
+@return {number} vector's magnitude
+*/
+Vector.prototype.magnitude = function() {
+	return Math.sqrt(this.x * this.x + this.y * this.y);
+}
+
+/**
+Returns the distance between two points.
+@return {number} distance between points
+*/
+function dist(x1, y1, x2, y2) {
+	deltaX = x2 - x1;
+	deltaY = y2 - y1;
+	return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+}
+/**
+Finds the point of intersection between line segment A and line segment B, if it exists.
+@return {x: xpos, y: ypos} or null
+*/
+function lineIntersect(x1A, x2A, y1A, y2A, x1B, x2B, y1B, y2B) {
+	// Determine intersection of two lines using matrix algebra
+	var det = (y2B - y1B) * (x2A - x1A) - (x2B - x1B) * (y2A - y1A);
+	if (det == 0) return null; // Parallel lines, treat as no intersect
+	var sc1 = ((x2B - x1B) * (y1A - y1B) - (y2B - y1B) * (x1A - x1B)) / det;
+	var sc2 = ((x2A - x1A) * (y1A - y1B) - (y2A - y1A) * (x1A - x1B)) / det;
+	if (sc1 >= 0 && sc1 <= 1 && sc2 >= 0 && sc2 <= 1) {
+		// Intersection is within defined segments, return the point
+		return {x: Math.floor(x1A + sc1 * (x2A - x1A)), 
+				y: Math.floor(y1A + sc1 * (y2A - y1A))}
+	}
+	return null; // Lines intersect outside defined segment
 }
