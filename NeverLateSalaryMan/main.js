@@ -16,6 +16,32 @@ Background.prototype.update = function () {
 };
 */
 
+function Camera(game, x, y) {
+	this.x = x;
+	this.y = y;
+	this.game = game;
+	this.player = this.game.player;
+	// Box not used for interaction but can help with debugging
+	this.box = new BoundingBox(this.x, this.y, 600, 800, "camera");
+	
+	Entity.call(this, game, x, y);
+}
+
+Camera.prototype = new Entity();
+Camera.prototype.constructor = Camera;
+
+Camera.prototype.update = function() {
+	this.x = this.player.x - 400;
+	this.y = this.player.y - 300;
+	this.box = new BoundingBox(this.x, this.y, 600, 800, "camera");
+	Entity.prototype.update.call(this);
+}
+
+/**
+Required for inheritance. Camera is not a drawn entity.
+*/
+Camera.prototype.draw = function() {};
+
 //inheritance
 /**
  * 
@@ -31,9 +57,6 @@ function Platform(game, x, y, width, height) {
     this.width = width;
     this.height = height;
     this.box = new BoundingBox(this.x, this.y, this.width, this.height, "platform");
-
-    /* TODO: Have x,y position based on game world coordinates instead of canvas coordinates.
-     */
 
     Entity.call(this, game, x, y);
 }
@@ -58,18 +81,19 @@ Platform.prototype.draw = function () {
 
     //draws collider border for debugging
     this.ctx.strokeStyle = "red";
-    this.ctx.strokeRect(this.x, this.y, this.width, this.height);
+    this.ctx.strokeRect(this.x - this.game.camera.x, this.y - this.game.camera.y, this.width, this.height);
     
     Entity.prototype.draw.call(this);
 }
 
-function Hook(player) {
+function Hook(player, dirVector) {
 	this.player = player;
 	this.game = player.game;
 	this.ctx = player.game.ctx;
 	this.x = player.x;
 	this.y = player.y
-	this.box = new BoundingBox(this.x, this.y, 0, 0);
+	this.direction = dirVector;
+	this.box = new BoundingBox(this.x, this.y, 0, 0, "hook");
 	this.attached = false;
 }
 
@@ -81,7 +105,7 @@ Hook.prototype.update = function() {
 	var intPoint = null;
 	for (var i = 0; i < this.game.entities.length; i++) {
         var entity = this.game.entities[i];
-		if (entity !== this.player) { // No interaction between player and hook
+		if (entity !== this.player && entity !== this.game.camera) { // No interaction between player and hook
 			// Check collision with top of box
 			var collPoint = lineIntersect(this.player.x, this.x, this.player.y, this.y, entity.box.left, entity.box.right, entity.box.top, entity.box.top);			
 			if (collPoint) {
@@ -127,7 +151,17 @@ Hook.prototype.update = function() {
 		this.attached = true;
 		this.player.aiming = false;
 		this.player.grappling = true;
-	}		
+	} else if (!this.attached) {
+		this.x += this.direction.x;
+		this.y += this.direction.y;		
+
+		if (dist(this.x, this.y, this.player.x, this.player.y) > 600) {
+			// Hook is at max distance and found no target
+			this.player.aiming = false;
+			this.player.hook = null;
+			this.removeFromWorld = true;
+		}
+	}
 	
 	Entity.prototype.update.call(this);
 }
@@ -136,13 +170,13 @@ Hook.prototype.draw = function() {
 	this.ctx.beginPath();
 	this.ctx.lineWidth = 2;
 	this.ctx.strokeStyle = "brown";
-	this.ctx.moveTo(this.player.x, this.player.y);
-	this.ctx.lineTo(this.x, this.y);
+	this.ctx.moveTo(this.player.x - this.game.camera.x, this.player.y - this.game.camera.y);
+	this.ctx.lineTo(this.x - this.game.camera.x, this.y - this.game.camera.y);
 	this.ctx.stroke();
 	this.ctx.closePath();
 	
 	this.ctx.strokeStyle = "grey";
-	this.ctx.fillRect(this.x - 1, this.y - 1, 3, 3);
+	this.ctx.fillRect(this.x - 1 - this.game.camera.x, this.y - 1 - this.game.camera.y, 3, 3);
 }
 //inheritance
 /**
@@ -157,6 +191,10 @@ function Yamada(game, spritesheet) {
     this.animationIdleL = new Animation(spritesheet, "idle", 0, 32, 32, 32, 0, 0.10, 8, true, 2, "left");
     this.animationWalkR = new Animation(spritesheet, "walk", 0, 64, 32, 32, 0, 0.10, 8, true, 2, "right");
     this.animationWalkL = new Animation(spritesheet, "walk", 0, 96, 32, 32, 0, 0.10, 8, true, 2, "left");
+	this.animationFallR = new Animation(spritesheet, "fall", 0, 160, 32, 32, 0, 1, 1, true, 2, "right"); 
+    this.animationFallL = new Animation(spritesheet, "fall", 224, 160, 32, 32, 0, 1, 1, true, 2, "left");
+    this.animationAimStandUpR = new Animation(spritesheet, "aim", 64, 128, 32, 32, 0, 1, 1, true, 2, "right");
+    this.animationAimStandUpL = new Animation(spritesheet, "aim", 64, 160, 32, 32, 0, 1, 1, true, 2, "left");
     this.animation = this.animationIdleR; //initial animation
     this.ctx = game.ctx;
     this.speed = .65;
@@ -176,8 +214,6 @@ function Yamada(game, spritesheet) {
                                this.animation.frameHeight * this.animation.scale,  //height
                                "player");
 
-    /* TODO: Have x,y position based on game world coordinates instead of canvas coordinates.
-     */
 
     /* TODO: Keep animations in an array/list.
      */
@@ -217,12 +253,10 @@ Yamada.prototype.update = function () {
 		this.hook = null;
 		this.grappling = false;
 		this.aimVector = new Vector(Math.sqrt(2)/2, -Math.sqrt(2)/2);
-    } else if (this.aiming && !this.game.keyShift) {// Fire in aiming direction
-		this.aiming = false; // If changing to travel time hook, remove this
-		this.hook = new Hook(this);
-		this.aimVector.multiply(800);
-		this.hook.x = this.x + Math.floor(this.aimVector.x);
-		this.hook.y = this.y + Math.floor(this.aimVector.y);
+    } else if (this.aiming && !this.game.keyShift &&
+				!this.hook) {// Fire in aiming direction
+		this.aimVector.multiply(40);
+		this.hook = new Hook(this, this.aimVector);
 		this.game.addEntity(this.hook);
 	}
 	
@@ -356,14 +390,14 @@ Yamada.prototype.update = function () {
  * 
  */
 Yamada.prototype.draw = function () {
-    this.animation.drawFrame(this.game.clockTick, this.ctx, this.x, this.y);
+    this.animation.drawFrame(this.game.clockTick, this.ctx, this.x - this.game.camera.x, this.y - this.game.camera.y);
 
     var width = this.animation.frameWidth * this.animation.scale;
     var height = this.animation.frameHeight * this.animation.scale;
 
     //draws collider border for debugging
     this.ctx.strokeStyle = "green";
-    this.ctx.strokeRect(this.x, this.y, width, height);
+    this.ctx.strokeRect(this.x - this.game.camera.x, this.y - this.game.camera.y, width, height);
 
     Entity.prototype.draw.call(this);
 }
@@ -382,12 +416,15 @@ AM.downloadAll(function () {
     var gameEngine = new GameEngine();
     gameEngine.init(ctx);
     gameEngine.start();
-
-    gameEngine.addEntity(new Yamada(gameEngine, AM.getAsset("./img/Yamada.png")));
+	var player = new Yamada(gameEngine, AM.getAsset("./img/Yamada.png"))
+    gameEngine.addEntity(player);	
+	gameEngine.player = player;
     gameEngine.addEntity(new Platform(gameEngine, 0, 500, 500, 150)); //ground
     gameEngine.addEntity(new Platform(gameEngine, 650, 0, 150, 500)); //wall
     gameEngine.addEntity(new Platform(gameEngine, 0, 0, 500, 150));   //ceiling
     gameEngine.addEntity(new Platform(gameEngine, 50, 350, 200, 10)); //floating platform
-
+	var cam = new Camera(gameEngine, 0 , 0);
+	gameEngine.addEntity(cam);
+	gameEngine.camera = cam;
     console.log("All Done!");
 });
