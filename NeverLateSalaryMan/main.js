@@ -194,7 +194,15 @@ function Yamada(game, spritesheet) {
 	this.animationFallR = new Animation(spritesheet, "fall", 0, 160, 32, 32, 0, 1, 1, true, 2, "right"); 
     this.animationFallL = new Animation(spritesheet, "fall", 224, 160, 32, 32, 0, 1, 1, true, 2, "left");
     this.animationAimStandUpR = new Animation(spritesheet, "aim", 64, 128, 32, 32, 0, 1, 1, true, 2, "right");
-    this.animationAimStandUpL = new Animation(spritesheet, "aim", 64, 160, 32, 32, 0, 1, 1, true, 2, "left");
+    this.animationAimStandUpL = new Animation(spritesheet, "aim", 160, 128, 32, 32, 0, 1, 1, true, 2, "left");
+	this.animationAimDiagonalR = new Animation(spritesheet, "aim", 32, 128, 32, 32, 0, 1, 1, true, 2, "right");
+	this.animationAimDiagonalL = new Animation(spritesheet, "aim", 192, 128, 32, 32, 0, 1, 1, true, 2, "left");
+	this.animationAimStraightR = new Animation(spritesheet, "aim", 0, 128, 32, 32, 0, 1, 1, true, 2, "right");
+	this.animationAimStraightL = new Animation(spritesheet, "aim", 224, 128, 32, 32, 0, 1, 1, true, 2, "left");
+	this.animationAimFallUpR = new Animation(spritesheet, "aim", 96, 160, 32, 32, 0, 1, 1, true, 2, "right");;
+	this.animationAimFallUpL = new Animation(spritesheet, "aim", 128, 160, 32, 32, 0, 1, 1, true, 2, "left");;
+	this.animationAimFallDiagonalR = new Animation(spritesheet, "aim", 32, 160, 32, 32, 0, 1, 1, true, 2, "right");;
+	this.animationAimFallDiagonalL = new Animation(spritesheet, "aim", 192, 160, 32, 32, 0, 1, 1, true, 2, "left");;
     this.animation = this.animationIdleR; //initial animation
     this.ctx = game.ctx;
     this.speed = .65;
@@ -264,47 +272,62 @@ Yamada.prototype.update = function () {
 		if (this.aiming) {
 			this.aimVector = new Vector(-1,0);
 			//Set left aiming animation
-			// TEMPORARY ANIMATION
-			this.animation = this.animationIdleL;
+			if(!this.falling)
+				this.animation = this.animationAimStraightL;
+			else
+				this.animation = this.animationFallL;
 		} else if (!this.grappling){
 			this.velocityX = Math.max(-this.MAX_SPEED, this.velocityX - this.speed); //accelerates the player
 
 			//checks if player is not falling to switch to walk animation
 			if (!this.falling)
 				this.animation = this.animationWalkL;
-			else this.animation = this.animationIdleL;
+			else this.animation = this.animationFallL;
 		}
     } else if (this.game.keyD) {
 		if (this.aiming) {
 			this.aimVector = new Vector(1,0);
 			//Set right aiming animation
-			// TEMPORARY ANIMATION
-			this.animation = this.animationIdleR;
+			if(!this.falling)
+				this.animation = this.animationAimStraightR;
+			else
+				this.animation = this.animationFallR;
 		} else if (!this.grappling) {
 			this.velocityX = Math.min(this.MAX_SPEED, this.velocityX + this.speed); //accelerates the player
 
 			//checks if player is not falling to switch to walk animation
 			if (!this.falling)
 				this.animation = this.animationWalkR
-			else this.animation = this.animationIdleR;
+			else this.animation = this.animationFallR;
         }
 	} else if (this.game.keyW) {
 		if (this.aiming) {
 			this.aimVector = new Vector(0,-1);
-			if(this.animation.direction == "right")
+			if(this.animation.direction == "right") {
 				// Set up right aiming animation
-				// TEMPORARY ANIMATION
-				this.animation = this.animationIdleR;
-			else
+				if(this.falling) 
+					this.animation = this.animationAimFallUpR;
+				else
+					this.animation = this.animationAimStandUpR;
+			} else {
 				// Set up left aiming animation
-				// TEMPORARY ANIMATION
-				this.animation = this.animationIdleR;
+				if(this.falling)
+					this.animation = this.animationAimFallUpL;
+				else
+					this.animation = this.animationAimStandUpL;
+			}
 		}
     } else {
 		if (this.aiming) { // No direction, default to 45 degrees
 			if (this.animation.direction == "right")
 				this.aimVector = new Vector(Math.sqrt(2)/2, -Math.sqrt(2)/2);
 			else this.aimVector = new Vector(-Math.sqrt(2)/2, -Math.sqrt(2)/2);
+			
+			//Set the aiming animation for Diagonal.
+			if(this.animation.direction == "right")
+				this.animation = this.animationAimDiagonalR;
+			else
+				this.animation = this.animationAimDiagonalL;
 		}
 	}
 	if (this.game.keyX && this.grappling) { // Sever grappling hook
@@ -380,6 +403,12 @@ Yamada.prototype.update = function () {
 				this.animation = this.animationIdleR;
 			else
 				this.animation = this.animationIdleL;
+		}
+	}  else if(this.falling && !this.grappling && !this.aiming) {
+		if (this.animation.direction == "right") {
+				this.animation = this.animationAimFallDiagonalR;
+		} else {
+				this.animation = this.animationAimFallDiagonalL;
 		}
 	}
 	
