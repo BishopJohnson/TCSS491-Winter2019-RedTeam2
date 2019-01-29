@@ -406,7 +406,7 @@ Yamada.prototype.draw = function () {
 
 var AM = new AssetManager();
 
-AM.queueDownload("./img/Yamada.png");
+AM.queueDownload("./NeverLateSalaryMan/img/Yamada.png");
 
 AM.downloadAll(function () {
     var canvas = document.getElementById("gameWorld");
@@ -416,7 +416,7 @@ AM.downloadAll(function () {
     var gameEngine = new GameEngine();
     gameEngine.init(ctx);
     gameEngine.start();
-	var player = new Yamada(gameEngine, AM.getAsset("./img/Yamada.png"))
+    var player = new Yamada(gameEngine, AM.getAsset("./NeverLateSalaryMan/img/Yamada.png"))
     gameEngine.addEntity(player);	
 	gameEngine.player = player;
     gameEngine.addEntity(new Platform(gameEngine, 0, 500, 500, 150)); //ground
