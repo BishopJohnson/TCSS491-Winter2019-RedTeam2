@@ -1,4 +1,4 @@
-// no inheritance
+// No inheritance
 /*
 function Background(game, spritesheet) {
     this.x = 0;
@@ -16,6 +16,14 @@ Background.prototype.update = function () {
 };
 */
 
+// Inheritance from Entity
+/**
+ * 
+ * 
+ * @param {any} game
+ * @param {number} x The x coordinate of the camera.
+ * @param {number} y The y coordinate of the camera.
+ */
 function Camera(game, x, y) {
 	this.x = x;
 	this.y = y;
@@ -31,6 +39,9 @@ function Camera(game, x, y) {
 Camera.prototype = new Entity();
 Camera.prototype.constructor = Camera;
 
+/**
+ * 
+ */
 Camera.prototype.update = function() {
 	this.x = this.player.x - this.ctx.canvas.width / 2;
 	this.y = this.player.y - this.ctx.canvas.height / 2;
@@ -40,19 +51,19 @@ Camera.prototype.update = function() {
 }
 
 /**
-Required for inheritance. Camera is not a drawn entity.
-*/
+ * Required for inheritance. Camera is not a drawn entity.
+ */
 Camera.prototype.draw = function() {};
 
-//inheritance
+// Inheritance from Entity
 /**
  * 
  * 
- * @param {any} game
- * @param {number} x
- * @param {number} y
- * @param {number} width
- * @param {number} height
+ * @param {any} game The game engine.
+ * @param {number} x The x coordinate of the platform.
+ * @param {number} y The y coordinate of the platform.
+ * @param {number} width The width of the platform.
+ * @param {number} height The height of the platform.
  */
 function Platform(game, x, y, width, height) {
     this.ctx = game.ctx;
@@ -79,15 +90,22 @@ Platform.prototype.update = function () {
  * 
  */
 Platform.prototype.draw = function () {
-    //no image
+    // No sprite to draw
 
-    //draws collider border for debugging
+    // Draws collider border for debugging
     this.ctx.strokeStyle = "red";
     this.ctx.strokeRect(this.x - this.game.camera.x, this.y - this.game.camera.y, this.width, this.height);
     
     Entity.prototype.draw.call(this);
 }
 
+// Inheritance from Entity
+/**
+ * 
+ * 
+ * @param {any} player
+ * @param {any} dirVector
+ */
 function Hook(player, dirVector) {
 	this.player = player;
 	this.game = player.game;
@@ -102,6 +120,9 @@ function Hook(player, dirVector) {
 Hook.prototype = new Entity();
 Hook.prototype.constructor = Hook;
 
+/**
+ * 
+ */
 Hook.prototype.update = function() {
 	var minDist = 900;
 	var intPoint = null;
@@ -146,7 +167,7 @@ Hook.prototype.update = function() {
 			}
 		}
 	}
-	if (intPoint && !this.attached) { //Collided with something, move hook to that point
+	if (intPoint && !this.attached) { // Collided with something, move hook to that point
 		this.x = intPoint.x;
 		this.y = intPoint.y;
 		this.box = new BoundingBox(this.x, this.y, 0, 0);
@@ -168,6 +189,9 @@ Hook.prototype.update = function() {
 	Entity.prototype.update.call(this);
 }
 
+/**
+ * 
+ */
 Hook.prototype.draw = function() {
 	this.ctx.beginPath();
 	this.ctx.lineWidth = 2;
@@ -180,7 +204,8 @@ Hook.prototype.draw = function() {
 	this.ctx.strokeStyle = "grey";
 	this.ctx.fillRect(this.x - 1 - this.game.camera.x, this.y - 1 - this.game.camera.y, 3, 3);
 }
-//inheritance
+
+// Inheritance from Entity
 /**
  * 
  * 
@@ -189,22 +214,22 @@ Hook.prototype.draw = function() {
  */
 function Yamada(game, spritesheet) {
     this.spritesheet = spritesheet;
-    this.animationIdleR = new Animation(spritesheet, "idle", 0, 0, 32, 32, 0, 0.10, 8, true, 2, "right");
-    this.animationIdleL = new Animation(spritesheet, "idle", 0, 32, 32, 32, 0, 0.10, 8, true, 2, "left");
-    this.animationWalkR = new Animation(spritesheet, "walk", 0, 64, 32, 32, 0, 0.10, 8, true, 2, "right");
-    this.animationWalkL = new Animation(spritesheet, "walk", 0, 96, 32, 32, 0, 0.10, 8, true, 2, "left");
-	this.animationFallR = new Animation(spritesheet, "fall", 0, 160, 32, 32, 0, 1, 1, true, 2, "right"); 
-    this.animationFallL = new Animation(spritesheet, "fall", 224, 160, 32, 32, 0, 1, 1, true, 2, "left");
-    this.animationAimStandUpR = new Animation(spritesheet, "aim", 64, 128, 32, 32, 0, 1, 1, true, 2, "right");
-    this.animationAimStandUpL = new Animation(spritesheet, "aim", 160, 128, 32, 32, 0, 1, 1, true, 2, "left");
-	this.animationAimDiagonalR = new Animation(spritesheet, "aim", 32, 128, 32, 32, 0, 1, 1, true, 2, "right");
-	this.animationAimDiagonalL = new Animation(spritesheet, "aim", 192, 128, 32, 32, 0, 1, 1, true, 2, "left");
-	this.animationAimStraightR = new Animation(spritesheet, "aim", 0, 128, 32, 32, 0, 1, 1, true, 2, "right");
-	this.animationAimStraightL = new Animation(spritesheet, "aim", 224, 128, 32, 32, 0, 1, 1, true, 2, "left");
-	this.animationAimFallUpR = new Animation(spritesheet, "aim", 96, 160, 32, 32, 0, 1, 1, true, 2, "right");
-	this.animationAimFallUpL = new Animation(spritesheet, "aim", 128, 160, 32, 32, 0, 1, 1, true, 2, "left");
-	this.animationAimFallDiagonalR = new Animation(spritesheet, "aim", 32, 160, 32, 32, 0, 1, 1, true, 2, "right");
-	this.animationAimFallDiagonalL = new Animation(spritesheet, "aim", 192, 160, 32, 32, 0, 1, 1, true, 2, "left");
+    this.animationIdleR = new Animation(spritesheet, "idle", 0, 0, 32, 32, 0, 0.10, 8, true, 2, "right", 7, 0, 18, 32);
+    this.animationIdleL = new Animation(spritesheet, "idle", 0, 32, 32, 32, 0, 0.10, 8, true, 2, "left", 7, 0, 18, 32);
+    this.animationWalkR = new Animation(spritesheet, "walk", 0, 64, 32, 32, 0, 0.10, 8, true, 2, "right", 7, 0, 18, 32);
+    this.animationWalkL = new Animation(spritesheet, "walk", 0, 96, 32, 32, 0, 0.10, 8, true, 2, "left", 7, 0, 18, 32);
+    this.animationFallR = new Animation(spritesheet, "fall", 0, 160, 32, 32, 0, 1, 1, true, 2, "right", 7, 0, 18, 32); 
+    this.animationFallL = new Animation(spritesheet, "fall", 224, 160, 32, 32, 0, 1, 1, true, 2, "left", 7, 0, 18, 32);
+    this.animationAimStandUpR = new Animation(spritesheet, "aim", 64, 128, 32, 32, 0, 1, 1, true, 2, "right", 7, 0, 18, 32);
+    this.animationAimStandUpL = new Animation(spritesheet, "aim", 160, 128, 32, 32, 0, 1, 1, true, 2, "left", 7, 0, 18, 32);
+    this.animationAimDiagonalR = new Animation(spritesheet, "aim", 32, 128, 32, 32, 0, 1, 1, true, 2, "right", 7, 0, 18, 32);
+    this.animationAimDiagonalL = new Animation(spritesheet, "aim", 192, 128, 32, 32, 0, 1, 1, true, 2, "left", 7, 0, 18, 32);
+    this.animationAimStraightR = new Animation(spritesheet, "aim", 0, 128, 32, 32, 0, 1, 1, true, 2, "right", 7, 0, 18, 32);
+    this.animationAimStraightL = new Animation(spritesheet, "aim", 224, 128, 32, 32, 0, 1, 1, true, 2, "left", 7, 0, 18, 32);
+    this.animationAimFallUpR = new Animation(spritesheet, "aim", 96, 160, 32, 32, 0, 1, 1, true, 2, "right", 7, 0, 18, 32);
+    this.animationAimFallUpL = new Animation(spritesheet, "aim", 128, 160, 32, 32, 0, 1, 1, true, 2, "left", 7, 0, 18, 32);
+    this.animationAimFallDiagonalR = new Animation(spritesheet, "aim", 32, 160, 32, 32, 0, 1, 1, true, 2, "right", 7, 0, 18, 32);
+    this.animationAimFallDiagonalL = new Animation(spritesheet, "aim", 192, 160, 32, 32, 0, 1, 1, true, 2, "left", 7, 0, 18, 32);
     this.animation = this.animationIdleR; //initial animation
     this.ctx = game.ctx;
     this.speed = .65;
@@ -219,15 +244,12 @@ function Yamada(game, spritesheet) {
 	*/
 	this.hookSpeed = .02;
     this.platform = null;
-    this.box = new BoundingBox(this.x, this.y,
-                               this.animation.frameWidth * this.animation.scale,   //width
-                               this.animation.frameHeight * this.animation.scale,  //height
-                               "player");
+    this.box = null;
 
-
-    /* TODO: Keep animations in an array/list.
+    /* TODO: Make animations callable through a function.
      */
 
+    this.updateBox("player");
     Entity.call(this, game, 300, 300);
 }
 
@@ -238,108 +260,135 @@ Yamada.prototype.constructor = Yamada;
  * 
  */
 Yamada.prototype.update = function () {
-	//checks if still on platform
+	// Checks if still on platform
     if (this.platform) {
-		// Check with temporary hitbox, as shunted out after last collision
-		var tempBox = new BoundingBox(this.x, this.y + 1,
-                               this.animation.frameWidth * this.animation.scale,   //width
-                               this.animation.frameHeight * this.animation.scale,  //height
-                               "player");
+        // Check with temporary hitbox, as shunted out after last collision
+        var tempBox = new BoundingBox(this.box.x, this.box.y + 1, this.box.width, this.box.height, this.box.tag);
         var collide = tempBox.collide(this.platform.box);
 
         if (!collide.top) {
             this.falling = true;
-			this.platform = null;
+            this.platform = null;
         }
-    } else this.falling = true; // No platform reference, must be falling
-	
-	if(!this.grappling) {	// Grapple overrides gravity
-        this.velocityY += 9.8 * 0.012; //applies gravity if falling
+    } else {
+        this.falling = true; // No platform reference, must be falling
     }
 	
-	if (this.game.keyShift) {	// Begin aiming, cut existing grapple if needed
-		this.aiming = true;
-		if(this.hook) this.hook.removeFromWorld = true;
+	if (!this.grappling)	// Grapple overrides gravity
+        this.velocityY += 9.8 * 0.012; //applies gravity if falling
+    
+    // Begin aiming, cut existing grapple if needed
+    if (this.game.keyShift) {
+        this.aiming = true;
+
+        if (this.hook)
+            this.hook.removeFromWorld = true;
+
 		this.hook = null;
 		this.grappling = false;
 		this.aimVector = new Vector(Math.sqrt(2)/2, -Math.sqrt(2)/2);
-    } else if (this.aiming && !this.game.keyShift &&
-				!this.hook) {// Fire in aiming direction
+    } else if (this.aiming && !this.game.keyShift && !this.hook) { // Fire in aiming direction
 		this.aimVector.multiply(40);
 		this.hook = new Hook(this, this.aimVector);
 		this.game.addEntity(this.hook);
 	}
-	
-	if (this.game.keyA) {   //checks for left-right input
-		if (this.aiming) {
-			this.aimVector = new Vector(-1,0);
-			//Set left aiming animation
-			if(!this.falling)
-				this.animation = this.animationAimStraightL;
-			else
-				this.animation = this.animationFallL;
-		} else if (!this.grappling){
-			this.velocityX = Math.max(-this.MAX_SPEED, this.velocityX - this.speed); //accelerates the player
 
-			//checks if player is not falling to switch to walk animation
-			if (!this.falling)
-				this.animation = this.animationWalkL;
-			else this.animation = this.animationFallL;
+    // Checks for left-right input
+	if (this.game.keyA) {
+		if (this.aiming) {
+            this.aimVector = new Vector(-1, 0);
+
+			// Set left aiming animation
+            if (!this.falling) {
+                this.animation = this.animationAimStraightL;
+                this.updateBox("player");                  //
+            } else {
+                this.animation = this.animationFallL;
+                this.updateBox("player");                  //
+            }
+		} else if (!this.grappling){
+			this.velocityX = Math.max(-this.MAX_SPEED, this.velocityX - this.speed); // Accelerates the player
+
+			// Checks if player is not falling to switch to walk animation
+            if (!this.falling) {
+                this.animation = this.animationWalkL;
+                this.updateBox("player");                  //
+            } else {
+                this.animation = this.animationFallL;
+                this.updateBox("player");                  //
+            }
 		}
     } else if (this.game.keyD) {
 		if (this.aiming) {
 			this.aimVector = new Vector(1,0);
-			//Set right aiming animation
-			if(!this.falling)
-				this.animation = this.animationAimStraightR;
-			else
-				this.animation = this.animationFallR;
+			// Set right aiming animation
+            if (!this.falling) {
+                this.animation = this.animationAimStraightR;
+            } else {
+                this.animation = this.animationFallR;
+                this.updateBox("player");                  //
+            }
 		} else if (!this.grappling) {
-			this.velocityX = Math.min(this.MAX_SPEED, this.velocityX + this.speed); //accelerates the player
+			this.velocityX = Math.min(this.MAX_SPEED, this.velocityX + this.speed); // Accelerates the player
 
-			//checks if player is not falling to switch to walk animation
-			if (!this.falling)
-				this.animation = this.animationWalkR
-			else this.animation = this.animationFallR;
+			// Checks if player is not falling to switch to walk animation
+            if (!this.falling) {
+                this.animation = this.animationWalkR
+                this.updateBox("player");                  //
+            } else {
+                this.animation = this.animationFallR;
+                this.updateBox("player");                  //
+            }
         }
 	} else if (this.game.keyW) {
 		if (this.aiming) {
 			this.aimVector = new Vector(0,-1);
-			if(this.animation.direction == "right") {
+			if (this.animation.direction == "right") {
 				// Set up right aiming animation
-				if(this.falling) 
-					this.animation = this.animationAimFallUpR;
-				else
-					this.animation = this.animationAimStandUpR;
+                if (this.falling) {
+                    this.animation = this.animationAimFallUpR;
+                    this.updateBox("player");                  //
+                } else {
+                    this.animation = this.animationAimStandUpR;
+                    this.updateBox("player");                  //
+                }
 			} else {
 				// Set up left aiming animation
-				if(this.falling)
-					this.animation = this.animationAimFallUpL;
-				else
-					this.animation = this.animationAimStandUpL;
+                if (this.falling) {
+                    this.animation = this.animationAimFallUpL;
+                    this.updateBox("player");                  //
+                } else {
+                    this.animation = this.animationAimStandUpL;
+                    this.updateBox("player");                  //
+                }
 			}
 		}
     } else {
 		if (this.aiming) { // No direction, default to 45 degrees
 			if (this.animation.direction == "right")
 				this.aimVector = new Vector(Math.sqrt(2)/2, -Math.sqrt(2)/2);
-			else this.aimVector = new Vector(-Math.sqrt(2)/2, -Math.sqrt(2)/2);
+            else
+                this.aimVector = new Vector(-Math.sqrt(2) / 2, -Math.sqrt(2) / 2);
 			
 			//Set the aiming animation for Diagonal.
-			if(this.animation.direction == "right") {
+			if (this.animation.direction == "right") {
 				if(this.falling)
 					this.animation = this.animationAimFallDiagonalR;
 				else
-					this.animation = this.animationAimDiagonalR;
+                    this.animation = this.animationAimDiagonalR;
 			} else {
-				if(this.falling)
+				if (this.falling)
 					this.animation = this.animationAimFallDiagonalL;
 				else
-					this.animation = this.animationAimDiagonalL;
-			}
+                    this.animation = this.animationAimDiagonalL;
+            }
+
+            this.updateBox("player");                  //
 		}
-	}
-	if (this.game.keyX && this.grappling) { // Sever grappling hook
+    }
+
+    // Sever grappling hook
+	if (this.game.keyX && this.grappling) {
 		if(this.hook) this.hook.removeFromWorld = true;
 		this.hook = null;
 		this.grappling = false;
@@ -348,78 +397,87 @@ Yamada.prototype.update = function () {
 		
 	if (this.grappling) {
 		// Create direction vector to hook point
-		var dirVect = new Vector(this.hook.x - this.x, this.hook.y - this.y);
+        var dirVect = new Vector(this.hook.x - this.x, this.hook.y - this.y);
+
 		// Multiply by hook speed coefficient to get movement vector
-		dirVect.multiply(this.hookSpeed);
+        dirVect.multiply(this.hookSpeed);
+
 		this.velocityX = dirVect.x;
 		this.velocityY = dirVect.y;
 		if (this.falling) {
-			if (this.animation == this.animationAimDiagonalL)
-				this.animation = this.animationAimFallDiagonalL;
-			else if (this.animation == this.animationAimStandUpL)
-				this.animation = this.animationAimFallUpL;
-			else if (this.animation == this.animationAimStraightL)
-				this.animation = this.animationFallL;
-			else if (this.animation == this.animationAimDiagonalR)
-				this.animation = this.animationAimFallDiagonalR;
-			else if (this.animation == this.animationAimStandUpR)
-				this.animation = this.animationAimFallUpR;
-			else if (this.animation == this.animationAimStraightR)
-				this.animation = this.animationFallR;
+            if (this.animation == this.animationAimDiagonalL)
+                this.animation = this.animationAimFallDiagonalL;
+            else if (this.animation == this.animationAimStandUpL)
+                this.animation = this.animationAimFallUpL;
+            else if (this.animation == this.animationAimStraightL)
+                this.animation = this.animationFallL;
+            else if (this.animation == this.animationAimDiagonalR)
+                this.animation = this.animationAimFallDiagonalR;
+            else if (this.animation == this.animationAimStandUpR)
+                this.animation = this.animationAimFallUpR;
+            else if (this.animation == this.animationAimStraightR)
+                this.animation = this.animationFallR;
+
+            this.updateBox("player");                  //
 		}
 	}
 
-    //updates position
+    // Updates position
     this.x += this.velocityX;
     this.y += this.velocityY;
 
-    //saves bounding box before updating
+    // Saves bounding box before updating
     var lastBox = this.box;
 
-    //updates bounding box
-    this.box = new BoundingBox(this.x, this.y,
-                               this.animation.frameWidth * this.animation.scale,   //width
-                               this.animation.frameHeight * this.animation.scale,  //height
-                               "player");
+    // Updates bounding box
+    this.updateBox("player");                  //
 
-    //iterates over game entities to check for collision
+    // Iterates over game entities to check for collision
     for (var i = 0; i < this.game.entities.length; i++) {
         var entity = this.game.entities[i];
-        var collide = this.box.collide(entity.box); //the collision results
+        var collide = this.box.collide(entity.box); // The collision results
 
-        //checks if entity collided with a wall
+        // Checks if entity collided with a wall
         if (entity !== this && collide.object == "platform") {
-            //checks the collision direction
-            if (collide.top && lastBox.bottom <= entity.box.top) { //landed on platform
+            // Landed on platform
+            if (collide.top && lastBox.bottom <= entity.box.top) {
                 this.y = entity.box.top - this.box.height;
                 this.velocityY = 0;
                 this.falling = false;
                 this.platform = entity;
 
-                /* TODO: account for walking after landing
+                /* TODO: Switch to walking animation if moving after landing
                  */
-            } if (collide.left && lastBox.right <= entity.box.left) { //ran into left side of platform
-                this.x = entity.box.left - this.box.width;
+            }
+
+            // Ran into left side of platform
+            if (collide.left && lastBox.right <= entity.box.left) {
+                this.x = entity.box.left - this.box.width + (this.x - this.box.left);
                 this.velocityX = 0;
-            } if (collide.right && lastBox.left >= entity.box.right) { //ran into right side of platform
-                this.x = entity.box.right;
+            }
+
+            // Ran into right side of platform
+            if (collide.right && lastBox.left >= entity.box.right) {
+                this.x = entity.box.right - (this.box.left - this.x);
                 this.velocityX = 0;
-            } if (collide.bottom && lastBox.top >= entity.box.bottom) { //hit bottom of platform
+            }
+
+            // Hit bottom of platform
+            if (collide.bottom && lastBox.top >= entity.box.bottom) {
                 this.y = entity.box.bottom;
                 this.velocityY = 0;
             }
+
 			// Update bounding box following shunt out of collision
-			this.box = new BoundingBox(this.x, this.y,
-                               this.animation.frameWidth * this.animation.scale,   //width
-                               this.animation.frameHeight * this.animation.scale,  //height
-                               "player");
+            this.updateBox("player");                  //
         }
     }
-	
-	if (!this.falling && !this.grappling){ // No friction in air to allow speed building
-		this.velocityX = Math.sign(this.velocityX) * Math.max(0, Math.abs(this.velocityX) - this.friction); //implements friction to simulate deceleration
 
-		//checks if player is not moving to switch to idle animation
+    // No friction in air to allow speed building
+	if (!this.falling && !this.grappling) {
+		this.velocityX = Math.sign(this.velocityX) * Math.max(0, Math.abs(this.velocityX) - this.friction); // Implements friction to simulate deceleration
+
+		// Checks if player is not moving to switch to idle animation
 		if (!this.falling && !this.aiming && this.velocityX == 0) {
 		//checks the direction of the previous animation
 			if (this.animation.direction == "right") {
@@ -430,13 +488,17 @@ Yamada.prototype.update = function () {
 				if (!(this.animation == this.animationIdleL))
 					this.animationIdleL.elapsedTime = 0;
 				this.animation = this.animationIdleL;
-			}
+            }
+
+            this.updateBox("player");                  //
 		}
-	}  else if(this.falling && !this.grappling && !this.aiming) {
+	}  else if (this.falling && !this.grappling && !this.aiming) {
 		if (this.animation.direction == "right") {
-				this.animation = this.animationAimFallDiagonalR;
+            this.animation = this.animationAimFallDiagonalR;
+            this.updateBox("player");                  //
 		} else {
-				this.animation = this.animationAimFallDiagonalL;
+            this.animation = this.animationAimFallDiagonalL;
+            this.updateBox("player");                  //
 		}
 	}
 	
@@ -449,17 +511,61 @@ Yamada.prototype.update = function () {
 Yamada.prototype.draw = function () {
     this.animation.drawFrame(this.game.clockTick, this.ctx, this.x - this.game.camera.x, this.y - this.game.camera.y);
 
-    var width = this.box.width;
-    var height = this.box.height;
+    var animWidth = this.animation.frameWidth * this.animation.scale;
+    var animHeight = this.animation.frameHeight * this.animation.scale;
+    var boxWidth = this.box.width;
+    var boxHeight = this.box.height;
 
-    //draws collider border for debugging
+    // Draws animation border for debugging
     this.ctx.strokeStyle = "green";
-    this.ctx.strokeRect(this.box.x - this.game.camera.x, this.box.y - this.game.camera.y, width, height);
+    this.ctx.strokeRect(this.x - this.game.camera.x, this.y - this.game.camera.y, animWidth, animHeight);
+
+    // Draws collider border for debugging
+    this.ctx.strokeStyle = "red";
+    this.ctx.strokeRect(this.box.x - this.game.camera.x, this.box.y - this.game.camera.y, boxWidth, boxHeight);
 
     Entity.prototype.draw.call(this);
 }
 
-//main code begins here
+/** TODO: Have all Actors inherit this prototype.
+ * 
+ * 
+ * @param {string} character The character who's animation set will be used.
+ * @param {string} name The name of the animation.
+ * @param {string} direction The direction the animation is facing.
+ */
+Yamada.prototype.animate = function (character, name, direction) {
+    /* TODO: Sets new animation for actor and update their bounding box.
+     */
+}
+
+/** TODO: Have all Actors inherit this prototype.
+ * Updates the bounding box of the actor using their animation data.
+ * 
+ * @param {string} tag The tag attached to the box.
+ * @param {number} offsetX (Optional) Specified offsets for the x coordinate.
+ * @param {number} offsetY (Optional) Specified offsets for the y coordinate.
+ */
+Yamada.prototype.updateBox = function (tag, offsetX, offsetY) {
+    // Sets value to zero for any offset not passed
+    offsetX = offsetX || 0;
+    offsetY = offsetY || 0;
+
+    // Asserts tag was passed and is a string
+    if (tag.constructor !== String)
+        throw "Bounding box tag is not ";
+
+    this.box = new BoundingBox(this.x + (this.animation.offsetX * this.animation.scale) + offsetX, // x
+                               this.y + (this.animation.offsetY * this.animation.scale) + offsetY, // y
+                               this.animation.boxWidth * this.animation.scale,  // width
+                               this.animation.boxHeight * this.animation.scale, // height
+                               tag);
+
+    /* TODO: Return the new bounding box after Actor.animate has been implemented.
+     */
+}
+
+// Main code begins here
 
 var AM = new AssetManager();
 
@@ -468,20 +574,27 @@ AM.queueDownload("./NeverLateSalaryMan/img/Yamada.png");
 AM.downloadAll(function () {
     var canvas = document.getElementById("gameWorld");
     var ctx = canvas.getContext("2d");
-	ctx.imageSmoothingEnabled = false; //disables pixel smoothing
+	ctx.imageSmoothingEnabled = false; // Disables pixel smoothing
 
     var gameEngine = new GameEngine();
     gameEngine.init(ctx);
     gameEngine.start();
+
+    // Adds the player
     var player = new Yamada(gameEngine, AM.getAsset("./NeverLateSalaryMan/img/Yamada.png"))
     gameEngine.addEntity(player);	
-	gameEngine.player = player;
-    gameEngine.addEntity(new Platform(gameEngine, 0, 500, 500, 150)); //ground
-    gameEngine.addEntity(new Platform(gameEngine, 650, 0, 150, 500)); //wall
-    gameEngine.addEntity(new Platform(gameEngine, 0, 0, 500, 150));   //ceiling
-    gameEngine.addEntity(new Platform(gameEngine, 50, 350, 200, 10)); //floating platform
-	var cam = new Camera(gameEngine, 0 , 0);
-	gameEngine.addEntity(cam);
-	gameEngine.camera = cam;
+    gameEngine.player = player;
+
+    // Adds the camera
+    var cam = new Camera(gameEngine, 0, 0);
+    gameEngine.addEntity(cam);
+    gameEngine.camera = cam;
+
+    // Adds platforms
+    gameEngine.addEntity(new Platform(gameEngine, 0, 500, 500, 150)); // Ground
+    gameEngine.addEntity(new Platform(gameEngine, 650, 0, 150, 500)); // Wall
+    gameEngine.addEntity(new Platform(gameEngine, 0, 0, 500, 150));   // Ceiling
+    gameEngine.addEntity(new Platform(gameEngine, 50, 350, 200, 10)); // Floating platform
+
     console.log("All Done!");
 });
