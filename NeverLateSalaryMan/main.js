@@ -218,18 +218,18 @@ function Yamada(game, spritesheet) {
     this.animationIdleL = new Animation(spritesheet, "idle", 0, 32, 32, 32, 0, 0.10, 8, true, 2, "left", 7, 0, 18, 32);
     this.animationWalkR = new Animation(spritesheet, "walk", 0, 64, 32, 32, 0, 0.10, 8, true, 2, "right", 7, 0, 18, 32);
     this.animationWalkL = new Animation(spritesheet, "walk", 0, 96, 32, 32, 0, 0.10, 8, true, 2, "left", 7, 0, 18, 32);
-    this.animationFallR = new Animation(spritesheet, "fall", 0, 160, 32, 32, 0, 1, 1, true, 2, "right", 7, 0, 18, 32); 
-    this.animationFallL = new Animation(spritesheet, "fall", 224, 160, 32, 32, 0, 1, 1, true, 2, "left", 7, 0, 18, 32);
-    this.animationAimStandUpR = new Animation(spritesheet, "aim", 64, 128, 32, 32, 0, 1, 1, true, 2, "right", 7, 0, 18, 32);
-    this.animationAimStandUpL = new Animation(spritesheet, "aim", 160, 128, 32, 32, 0, 1, 1, true, 2, "left", 7, 0, 18, 32);
-    this.animationAimDiagonalR = new Animation(spritesheet, "aim", 32, 128, 32, 32, 0, 1, 1, true, 2, "right", 7, 0, 18, 32);
-    this.animationAimDiagonalL = new Animation(spritesheet, "aim", 192, 128, 32, 32, 0, 1, 1, true, 2, "left", 7, 0, 18, 32);
-    this.animationAimStraightR = new Animation(spritesheet, "aim", 0, 128, 32, 32, 0, 1, 1, true, 2, "right", 7, 0, 18, 32);
-    this.animationAimStraightL = new Animation(spritesheet, "aim", 224, 128, 32, 32, 0, 1, 1, true, 2, "left", 7, 0, 18, 32);
-    this.animationAimFallUpR = new Animation(spritesheet, "aim", 96, 160, 32, 32, 0, 1, 1, true, 2, "right", 7, 0, 18, 32);
-    this.animationAimFallUpL = new Animation(spritesheet, "aim", 128, 160, 32, 32, 0, 1, 1, true, 2, "left", 7, 0, 18, 32);
-    this.animationAimFallDiagonalR = new Animation(spritesheet, "aim", 32, 160, 32, 32, 0, 1, 1, true, 2, "right", 7, 0, 18, 32);
-    this.animationAimFallDiagonalL = new Animation(spritesheet, "aim", 192, 160, 32, 32, 0, 1, 1, true, 2, "left", 7, 0, 18, 32);
+    this.animationFallR = new Animation(spritesheet, "fall", 0, 160, 32, 32, 0, 1, 1, true, 2, "right", 7, 0, 25, 32); 
+    this.animationFallL = new Animation(spritesheet, "fall", 224, 160, 32, 32, 0, 1, 1, true, 2, "left", 0, 0, 25, 32);
+    this.animationAimStandUpR = new Animation(spritesheet, "aim", 64, 128, 32, 32, 0, 1, 1, true, 2, "right", 1, 0, 25, 32);
+    this.animationAimStandUpL = new Animation(spritesheet, "aim", 160, 128, 32, 32, 0, 1, 1, true, 2, "left", 6, 0, 25, 32);
+    this.animationAimDiagonalR = new Animation(spritesheet, "aim", 32, 128, 32, 32, 0, 1, 1, true, 2, "right", 7, 0, 20, 32);
+    this.animationAimDiagonalL = new Animation(spritesheet, "aim", 192, 128, 32, 32, 0, 1, 1, true, 2, "left", 5, 0, 20, 32);
+    this.animationAimStraightR = new Animation(spritesheet, "aim", 0, 128, 32, 32, 0, 1, 1, true, 2, "right", 7, 0, 25, 32);
+    this.animationAimStraightL = new Animation(spritesheet, "aim", 224, 128, 32, 32, 0, 1, 1, true, 2, "left", 0, 0, 25, 32);
+    this.animationAimFallUpR = new Animation(spritesheet, "aim", 96, 160, 32, 32, 0, 1, 1, true, 2, "right", 2, 0, 19, 32);
+    this.animationAimFallUpL = new Animation(spritesheet, "aim", 128, 160, 32, 32, 0, 1, 1, true, 2, "left", 11, 0, 19, 32);
+    this.animationAimFallDiagonalR = new Animation(spritesheet, "aim", 32, 160, 32, 32, 0, 1, 1, true, 2, "right", 7, 0, 22, 32);
+    this.animationAimFallDiagonalL = new Animation(spritesheet, "aim", 192, 160, 32, 32, 0, 1, 1, true, 2, "left", 3, 0, 22, 32);
     this.animation = this.animationIdleR; //initial animation
     this.ctx = game.ctx;
     this.speed = .65;
@@ -324,6 +324,7 @@ Yamada.prototype.update = function () {
 			// Set right aiming animation
             if (!this.falling) {
                 this.animation = this.animationAimStraightR;
+				this.updateBox("player");
             } else {
                 this.animation = this.animationFallR;
                 this.updateBox("player");                  //
