@@ -301,77 +301,65 @@ Yamada.prototype.update = function () {
 
     // Checks for left-right input
 	if (this.game.keyA) {
-		if (this.aiming) {
+		if (this.aiming && !this.hook) {
             this.aimVector = new Vector(-1, 0);
 
 			// Set left aiming animation
             if (!this.falling) {
                 this.animation = this.animationAimStraightL;
-                this.updateBox("player");                  //
             } else {
                 this.animation = this.animationFallL;
-                this.updateBox("player");                  //
             }
-		} else if (!this.grappling){
+		} else if (!this.grappling && !this.hook){
 			this.velocityX = Math.max(-this.MAX_SPEED, this.velocityX - this.speed); // Accelerates the player
 
 			// Checks if player is not falling to switch to walk animation
             if (!this.falling) {
                 this.animation = this.animationWalkL;
-                this.updateBox("player");                  //
             } else {
                 this.animation = this.animationFallL;
-                this.updateBox("player");                  //
             }
 		}
     } else if (this.game.keyD) {
-		if (this.aiming) {
+		if (this.aiming && !this.hook) {
 			this.aimVector = new Vector(1,0);
 			// Set right aiming animation
             if (!this.falling) {
                 this.animation = this.animationAimStraightR;
-				this.updateBox("player");
             } else {
                 this.animation = this.animationFallR;
-                this.updateBox("player");                  //
             }
-		} else if (!this.grappling) {
+		} else if (!this.grappling && !this.hook) {
 			this.velocityX = Math.min(this.MAX_SPEED, this.velocityX + this.speed); // Accelerates the player
 
 			// Checks if player is not falling to switch to walk animation
             if (!this.falling) {
-                this.animation = this.animationWalkR
-                this.updateBox("player");                  //
+                this.animation = this.animationWalkR;
             } else {
                 this.animation = this.animationFallR;
-                this.updateBox("player");                  //
             }
         }
 	} else if (this.game.keyW) {
-		if (this.aiming) {
+		if (this.aiming && !this.hook) {
 			this.aimVector = new Vector(0,-1);
 			if (this.animation.direction == "right") {
 				// Set up right aiming animation
                 if (this.falling) {
                     this.animation = this.animationAimFallUpR;
-                    this.updateBox("player");                  //
                 } else {
                     this.animation = this.animationAimStandUpR;
-                    this.updateBox("player");                  //
                 }
 			} else {
 				// Set up left aiming animation
                 if (this.falling) {
                     this.animation = this.animationAimFallUpL;
-                    this.updateBox("player");                  //
                 } else {
                     this.animation = this.animationAimStandUpL;
-                    this.updateBox("player");                  //
                 }
 			}
 		}
     } else {
-		if (this.aiming) { // No direction, default to 45 degrees
+		if (this.aiming && !this.hook) { // No direction, default to 45 degrees
 			if (this.animation.direction == "right")
 				this.aimVector = new Vector(Math.sqrt(2)/2, -Math.sqrt(2)/2);
             else
@@ -389,8 +377,6 @@ Yamada.prototype.update = function () {
 				else
                     this.animation = this.animationAimDiagonalL;
             }
-
-            this.updateBox("player");                  //
 		}
     }
 
@@ -424,8 +410,6 @@ Yamada.prototype.update = function () {
                 this.animation = this.animationAimFallUpR;
             else if (this.animation == this.animationAimStraightR)
                 this.animation = this.animationFallR;
-
-            this.updateBox("player");                  //
 		}
 	}
 
@@ -433,9 +417,9 @@ Yamada.prototype.update = function () {
     this.x += this.velocityX;
     this.y += this.velocityY;
 
-    // Saves bounding box before updating
+	   // Saves bounding box before updating
     var lastBox = this.box;
-
+	
     // Updates bounding box
     this.updateBox("player");                  //
 
@@ -443,7 +427,7 @@ Yamada.prototype.update = function () {
     for (var i = 0; i < this.game.entities.length; i++) {
         var entity = this.game.entities[i];
         var collide = this.box.collide(entity.box); // The collision results
-
+		if(collide.object == "platform") console.log(collide);
         // Checks if entity collided with a wall
         if (entity !== this && collide.object == "platform") {
             // Landed on platform
@@ -496,16 +480,12 @@ Yamada.prototype.update = function () {
 					this.animationIdleL.elapsedTime = 0;
 				this.animation = this.animationIdleL;
             }
-
-            this.updateBox("player");                  //
 		}
 	}  else if (this.falling && !this.grappling && !this.aiming) {
 		if (this.animation.direction == "right") {
-            this.animation = this.animationAimFallDiagonalR;
-            this.updateBox("player");                  //
+            this.animation = this.animationFallR;
 		} else {
-            this.animation = this.animationAimFallDiagonalL;
-            this.updateBox("player");                  //
+            this.animation = this.animationFallL;
 		}
 	}
 	
