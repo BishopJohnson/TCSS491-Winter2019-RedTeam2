@@ -110,11 +110,11 @@ function Hook(player, dirVector) {
 	this.player = player;
 	this.game = player.game;
 	this.ctx = player.game.ctx;
-	this.x = player.x;
-	this.y = player.y
+    this.x = player.x + player.animation.hotspotX;
+    this.y = player.y + player.animation.hotspotY;
 	this.direction = dirVector;
 	this.box = new BoundingBox(this.x, this.y, 0, 0, "hook");
-	this.attached = false;
+    this.attached = false;
 }
 
 Hook.prototype = new Entity();
@@ -124,42 +124,45 @@ Hook.prototype.constructor = Hook;
  * 
  */
 Hook.prototype.update = function() {
-	var minDist = 900;
-	var intPoint = null;
+    const originX = this.player.x + this.player.animation.hotspotX; // x position of the barrel
+    const originY = this.player.y + this.player.animation.hotspotY; // y position of the barrel
+    var minDist = 900;
+    var intPoint = null;
+
 	for (var i = 0; i < this.game.entities.length; i++) {
         var entity = this.game.entities[i];
 		if (entity !== this.player && entity !== this.game.camera) { // No interaction between player and hook
 			// Check collision with top of box
-			var collPoint = lineIntersect(this.player.x, this.x, this.player.y, this.y, entity.box.left, entity.box.right, entity.box.top, entity.box.top);			
+            var collPoint = lineIntersect(originX, this.x, originY, this.y, entity.box.left, entity.box.right, entity.box.top, entity.box.top);			
 			if (collPoint) {
-				thisDist = dist(this.player.x, this.player.y, collPoint.x, collPoint.y);
+                thisDist = dist(originX, originY, collPoint.x, collPoint.y);
 				if (thisDist <= minDist) {
 					intPoint = collPoint;
 					minDist = thisDist;
 				}
 			}
 			// Check collision with bottom of box
-			collPoint = lineIntersect(this.player.x, this.x, this.player.y, this.y, entity.box.left, entity.box.right, entity.box.bottom, entity.box.bottom);
+            collPoint = lineIntersect(originX, this.x, originY, this.y, entity.box.left, entity.box.right, entity.box.bottom, entity.box.bottom);
 			if (collPoint) {
-				thisDist = dist(this.player.x, this.player.y, collPoint.x, collPoint.y);
+                thisDist = dist(originX, originY, collPoint.x, collPoint.y);
 				if (thisDist <= minDist) {
 					intPoint = collPoint;
 					minDist = thisDist;
 				}
 			}
 			// Check collision with left of box
-			collPoint = lineIntersect(this.player.x, this.x, this.player.y, this.y, entity.box.left, entity.box.left, entity.box.bottom, entity.box.top);
+            collPoint = lineIntersect(originX, this.x, originY, this.y, entity.box.left, entity.box.left, entity.box.bottom, entity.box.top);
 			if (collPoint) {
-				thisDist = dist(this.player.x, this.player.y, collPoint.x, collPoint.y);
+                thisDist = dist(originX, originY, collPoint.x, collPoint.y);
 				if (thisDist <= minDist) {
 					intPoint = collPoint;
 					minDist = thisDist;
 				}
 			}
 			// Check collision with left of box
-			collPoint = lineIntersect(this.player.x, this.x, this.player.y, this.y, entity.box.right, entity.box.right, entity.box.bottom, entity.box.top);
+            collPoint = lineIntersect(originX, this.x, originY, this.y, entity.box.right, entity.box.right, entity.box.bottom, entity.box.top);
 			if (collPoint) {
-				thisDist = dist(this.player.x, this.player.y, collPoint.x, collPoint.y);
+                thisDist = dist(originX, originX, collPoint.x, collPoint.y);
 				if (thisDist <= minDist) {
 					intPoint = collPoint;
 					minDist = thisDist;
@@ -178,7 +181,7 @@ Hook.prototype.update = function() {
 		this.x += this.direction.x;
 		this.y += this.direction.y;		
 
-		if (dist(this.x, this.y, this.player.x, this.player.y) > 520) {
+        if (dist(this.x, this.y, originX, originY) > 520) {
 			// Hook is at max distance and found no target
 			this.player.aiming = false;
 			this.player.hook = null;
@@ -192,11 +195,14 @@ Hook.prototype.update = function() {
 /**
  * 
  */
-Hook.prototype.draw = function() {
+Hook.prototype.draw = function () {
+    const originX = this.player.x + this.player.animation.hotspotX; // x position of the barrel
+    const originY = this.player.y + this.player.animation.hotspotY; // y position of the barrel
+
 	this.ctx.beginPath();
 	this.ctx.lineWidth = 2;
 	this.ctx.strokeStyle = "brown";
-	this.ctx.moveTo(this.player.x - this.game.camera.x, this.player.y - this.game.camera.y);
+    this.ctx.moveTo(originX - this.game.camera.x, originY - this.game.camera.y);
 	this.ctx.lineTo(this.x - this.game.camera.x, this.y - this.game.camera.y);
 	this.ctx.stroke();
 	this.ctx.closePath();
@@ -218,18 +224,18 @@ function Yamada(game, spritesheet) {
     this.animationIdleL = new Animation(spritesheet, "idle", 0, 32, 32, 32, 0, 0.10, 8, true, 2, "left", 7, 0, 18, 32);
     this.animationWalkR = new Animation(spritesheet, "walk", 0, 64, 32, 32, 0, 0.10, 8, true, 2, "right", 7, 0, 18, 32);
     this.animationWalkL = new Animation(spritesheet, "walk", 0, 96, 32, 32, 0, 0.10, 8, true, 2, "left", 7, 0, 18, 32);
-    this.animationFallR = new Animation(spritesheet, "fall", 0, 160, 32, 32, 0, 1, 1, true, 2, "right", 7, 0, 25, 32); 
-    this.animationFallL = new Animation(spritesheet, "fall", 224, 160, 32, 32, 0, 1, 1, true, 2, "left", 0, 0, 25, 32);
-    this.animationAimStandUpR = new Animation(spritesheet, "aim", 64, 128, 32, 32, 0, 1, 1, true, 2, "right", 1, 0, 25, 32);
-    this.animationAimStandUpL = new Animation(spritesheet, "aim", 160, 128, 32, 32, 0, 1, 1, true, 2, "left", 6, 0, 25, 32);
-    this.animationAimDiagonalR = new Animation(spritesheet, "aim", 32, 128, 32, 32, 0, 1, 1, true, 2, "right", 7, 0, 20, 32);
-    this.animationAimDiagonalL = new Animation(spritesheet, "aim", 192, 128, 32, 32, 0, 1, 1, true, 2, "left", 5, 0, 20, 32);
-    this.animationAimStraightR = new Animation(spritesheet, "aim", 0, 128, 32, 32, 0, 1, 1, true, 2, "right", 7, 0, 25, 32);
-    this.animationAimStraightL = new Animation(spritesheet, "aim", 224, 128, 32, 32, 0, 1, 1, true, 2, "left", 0, 0, 25, 32);
-    this.animationAimFallUpR = new Animation(spritesheet, "aim", 96, 160, 32, 32, 0, 1, 1, true, 2, "right", 2, 0, 19, 32);
-    this.animationAimFallUpL = new Animation(spritesheet, "aim", 128, 160, 32, 32, 0, 1, 1, true, 2, "left", 11, 0, 19, 32);
-    this.animationAimFallDiagonalR = new Animation(spritesheet, "aim", 32, 160, 32, 32, 0, 1, 1, true, 2, "right", 7, 0, 22, 32);
-    this.animationAimFallDiagonalL = new Animation(spritesheet, "aim", 192, 160, 32, 32, 0, 1, 1, true, 2, "left", 3, 0, 22, 32);
+    this.animationFallR = new Animation(spritesheet, "fall", 0, 160, 32, 32, 0, 1, 1, true, 2, "right", 7, 0, 25, 32, 28, 11);
+    this.animationFallL = new Animation(spritesheet, "fall", 224, 160, 32, 32, 0, 1, 1, true, 2, "left", 0, 0, 25, 32, 3, 11);
+    this.animationAimStandUpR = new Animation(spritesheet, "aim", 64, 128, 32, 32, 0, 1, 1, true, 2, "right", 1, 0, 25, 32, 12, 2);
+    this.animationAimStandUpL = new Animation(spritesheet, "aim", 160, 128, 32, 32, 0, 1, 1, true, 2, "left", 6, 0, 25, 32, 20, 2);
+    this.animationAimDiagonalR = new Animation(spritesheet, "aim", 32, 128, 32, 32, 0, 1, 1, true, 2, "right", 7, 0, 20, 32, 23, 3);
+    this.animationAimDiagonalL = new Animation(spritesheet, "aim", 192, 128, 32, 32, 0, 1, 1, true, 2, "left", 5, 0, 20, 32, 8, 3);
+    this.animationAimStraightR = new Animation(spritesheet, "aim", 0, 128, 32, 32, 0, 1, 1, true, 2, "right", 7, 0, 25, 32, 29, 11);
+    this.animationAimStraightL = new Animation(spritesheet, "aim", 224, 128, 32, 32, 0, 1, 1, true, 2, "left", 0, 0, 25, 32, 2, 11);
+    this.animationAimFallUpR = new Animation(spritesheet, "aim", 96, 160, 32, 32, 0, 1, 1, true, 2, "right", 2, 0, 19, 32, 12, 2);
+    this.animationAimFallUpL = new Animation(spritesheet, "aim", 128, 160, 32, 32, 0, 1, 1, true, 2, "left", 11, 0, 19, 32, 20, 2);
+    this.animationAimFallDiagonalR = new Animation(spritesheet, "aim", 32, 160, 32, 32, 0, 1, 1, true, 2, "right", 7, 0, 22, 32, 26, 3);
+    this.animationAimFallDiagonalL = new Animation(spritesheet, "aim", 192, 160, 32, 32, 0, 1, 1, true, 2, "left", 3, 0, 22, 32, 6, 3);
     this.animation = this.animationIdleR; //initial animation
     this.ctx = game.ctx;
     this.speed = .65;
@@ -398,7 +404,7 @@ Yamada.prototype.update = function () {
 		
 	if (this.grappling) {
 		// Create direction vector to hook point
-        var dirVect = new Vector(this.hook.x - this.x, this.hook.y - this.y);
+        var dirVect = new Vector(this.hook.x - (this.x + this.animation.hotspotX), this.hook.y - (this.y + this.animation.hotspotY));
 
 		// Multiply by hook speed coefficient to get movement vector
         dirVect.multiply(this.hookSpeed);
@@ -556,11 +562,13 @@ Yamada.prototype.updateBox = function (tag, offsetX, offsetY) {
     if (tag.constructor !== String)
         throw "Bounding box tag is not ";
 
-    this.box = new BoundingBox(this.x + (this.animation.offsetX * this.animation.scale) + offsetX, // x
-                               this.y + (this.animation.offsetY * this.animation.scale) + offsetY, // y
-                               this.animation.boxWidth * this.animation.scale,  // width
-                               this.animation.boxHeight * this.animation.scale, // height
-                               tag);
+    var scale = this.animation.scale;
+
+    this.box = new BoundingBox(this.x + this.animation.offsetX + (offsetX * scale), // x
+                               this.y + this.animation.offsetY + (offsetY * scale), // y
+                               this.animation.boxWidth,                             // width
+                               this.animation.boxHeight,                            // height
+                               tag);                                                // tag
 
     /* TODO: Return the new bounding box after Actor.animate has been implemented.
      */
