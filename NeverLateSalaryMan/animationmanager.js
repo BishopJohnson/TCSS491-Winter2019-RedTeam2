@@ -13,8 +13,14 @@
  * @param {boolean} loop If the frame loops.
  * @param {number} scale The scale of the image when drawn.
  * @param {string} direction The direction the animation is facing.
+ * @param {number} offsetX The x offset of the animation's hit box.
+ * @param {number} offsetY The y offset of the animation's hit box.
+ * @param {number} boxWidth The width of the animation's hit box.
+ * @param {number} boxHeight The height of the animation's hit box.
+ * @param {number} hotspotX The x coordinate of the animation's hotspot.
+ * @param {number} hotspotY The y coordinate of the animation's hotspot.
  */
-function Animation(spriteSheet, animName, frameX, frameY, frameWidth, frameHeight, frameSpacing, frameDuration, frames, loop, scale, direction) {
+function Animation(spriteSheet, animName, frameX, frameY, frameWidth, frameHeight, frameSpacing, frameDuration, frames, loop, scale, direction, offsetX, offsetY, boxWidth, boxHeight, hotspotX, hotspotY) {
     this.spriteSheet = spriteSheet;
     this.animName = animName;
     this.frameX = frameX;
@@ -29,6 +35,12 @@ function Animation(spriteSheet, animName, frameX, frameY, frameWidth, frameHeigh
     this.loop = loop;
     this.scale = scale;
     this.direction = direction;
+    this.offsetX = offsetX * scale;
+    this.offsetY = offsetY * scale;
+    this.boxWidth = boxWidth * scale;
+    this.boxHeight = boxHeight * scale;
+    this.hotspotX = hotspotX * scale;
+    this.hotspotY = hotspotY * scale;
 }
 
 /**
