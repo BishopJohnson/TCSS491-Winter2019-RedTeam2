@@ -487,7 +487,7 @@ function Yamada(game, spritesheet) {
      */
 
     this.updateBox("player");
-    Entity.call(this, game, 300, 300);
+    Entity.call(this, game, 100, 100);
 }
 
 Yamada.prototype = new Entity();
@@ -823,13 +823,28 @@ AM.downloadAll(function () {
     gameEngine.camera = cam;
 
     // Adds platforms
+	/**
     gameEngine.addEntity(new Platform(gameEngine, 0, 500, 500, 150)); // Ground
     gameEngine.addEntity(new Platform(gameEngine, 650, 0, 150, 500)); // Wall
     gameEngine.addEntity(new Platform(gameEngine, 0, 0, 500, 150));   // Ceiling
-    gameEngine.addEntity(new Platform(gameEngine, 50, 350, 200, 10)); // Floating platform
-
+    gameEngine.addEntity(new Platform(gameEngine, 50, 350, 200, 10)); // Floating platform*/
+	gameEngine.addEntity(new Platform(gameEngine, 0, 0, 1992, 34)); //Ceiling
+	gameEngine.addEntity(new Platform(gameEngine, 0, 34, 30, 287)); //First column.
+	gameEngine.addEntity(new Platform(gameEngine, 0, 322, 502, 30));//Floor 1.
+	gameEngine.addEntity(new Platform(gameEngine, 377, 222, 124, 99)); //Box 1
+	gameEngine.addEntity(new Platform(gameEngine, 439, 353, 504, 30)); //Floor 2.
+	gameEngine.addEntity(new Platform(gameEngine, 817, 228, 126, 125)); //Box 2
+	gameEngine.addEntity(new Platform(gameEngine, 643, 34, 30, 192)); //Second column.
+	gameEngine.addEntity(new Platform(gameEngine, 1315, 34, 30, 192)); //Third column.
+	gameEngine.addEntity(new Platform(gameEngine, 1961, 34, 30, 319)); //Last column.
+	gameEngine.addEntity(new Platform(gameEngine, 1173, 353, 818, 30)); //Floor 3.
+	gameEngine.addEntity(new Platform(gameEngine, 1173, 258, 62, 95)); //Box 3.
+	gameEngine.addEntity(new Platform(gameEngine, 1488, 259, 126, 94)); //Box 4.
+	
+	
+	
     // Adds enemies
-    gameEngine.addEntity(new ConWorker(gameEngine, AM.getAsset("./NeverLateSalaryMan/img/ConstrWorker.png")));
+    //gameEngine.addEntity(new ConWorker(gameEngine, AM.getAsset("./NeverLateSalaryMan/img/ConstrWorker.png")));
 
     console.log("All Done!");
 });
