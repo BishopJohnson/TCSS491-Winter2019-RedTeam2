@@ -834,7 +834,7 @@ AM.downloadAll(function () {
 	gameEngine.addEntity(new Platform(gameEngine, 377, 222, 124, 99)); //Box 1
 	gameEngine.addEntity(new Platform(gameEngine, 439, 353, 504, 30)); //Floor 2.
 	gameEngine.addEntity(new Platform(gameEngine, 817, 228, 126, 125)); //Box 2
-	gameEngine.addEntity(new Platform(gameEngine, 643, 34, 30, 192)); //Second column.
+	gameEngine.addEntity(new Platform(gameEngine, 643, 34, 30, 151)); //Second column.
 	gameEngine.addEntity(new Platform(gameEngine, 1315, 34, 30, 192)); //Third column.
 	gameEngine.addEntity(new Platform(gameEngine, 1961, 34, 30, 319)); //Last column.
 	gameEngine.addEntity(new Platform(gameEngine, 1173, 353, 818, 30)); //Floor 3.
