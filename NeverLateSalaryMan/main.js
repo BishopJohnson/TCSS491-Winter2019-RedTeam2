@@ -305,7 +305,7 @@ function ConWorker(game, spritesheet) {
     this.movingPlatform = new ConWorkerPlatform(game, this.x, this.y, this.box.width, this.x - this.box.x);
 
     game.addEntity(this.movingPlatform); // Adds the platform to the list of entities
-    Entity.call(this, game, 300, 300);
+    Entity.call(this, game, 600, 100);
 }
 
 ConWorker.prototype = new Entity();
@@ -844,7 +844,7 @@ AM.downloadAll(function () {
 	
 	
     // Adds enemies
-    //gameEngine.addEntity(new ConWorker(gameEngine, AM.getAsset("./NeverLateSalaryMan/img/ConstrWorker.png")));
+    gameEngine.addEntity(new ConWorker(gameEngine, AM.getAsset("./NeverLateSalaryMan/img/ConstrWorker.png")));
 
     console.log("All Done!");
 });
