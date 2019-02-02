@@ -1,20 +1,19 @@
 // No inheritance
-/*
 function Background(game, spritesheet) {
     this.x = 0;
     this.y = 0;
     this.spritesheet = spritesheet;
     this.game = game;
     this.ctx = game.ctx;
+    this.box = new BoundingBox(0, 0, 0, 0, "scene");
 };
 
 Background.prototype.draw = function () {
-    this.ctx.drawImage(this.spritesheet, this.x, this.y);
+    this.ctx.drawImage(this.spritesheet, this.x - this.game.camera.x, this.y - this.game.camera.y);
 };
 
 Background.prototype.update = function () {
 };
-*/
 
 // Inheritance from Entity
 /**
@@ -46,7 +45,7 @@ Camera.prototype.update = function() {
 	this.x = this.player.x - this.ctx.canvas.width / 2;
 	this.y = this.player.y - this.ctx.canvas.height / 2;
 	this.box = new BoundingBox(this.x, this.y,
-							this.ctx.canvas.width, this.ctx.canvas.height, "camera");
+							   this.ctx.canvas.width, this.ctx.canvas.height, "camera");
 	Entity.prototype.update.call(this);
 }
 
@@ -101,66 +100,59 @@ Platform.prototype.draw = function () {
 
 // Inheritance from Entity
 /**
- * 
+ * A moving platform used by the Construction Worker enemy.
  * 
  * @param {any} game The game engine.
  * @param {number} x The x coordinate of the platform.
  * @param {number} y The y coordinate of the platform.
  * @param {number} width The width of the platform.
  * @param {number} height The height of the platform.
- * @param {number} speed The speed of the platform.
- * @param {number} xMin The left bound on the x axis.
- * @param {number} xMax The right bound on the x axis.
- * @param {number} yMin The left bound on the y axis.
- * @param {number} yMax The right bound on the y axis.
  */
-function MovingPlatform(game, x, y, width, height, speed, xMin, xMax, yMin, yMax) {
+function ConWorkerPlatform(game, x, y, width, height) {
     this.ctx = game.ctx;
     this.width = width;
     this.height = height;
-    this.speed = speed;
-    this.xMin = xMin;
-    this.xMax = xMax;
-    this.yMin = yMin;
-    this.yMax = yMax;
     this.box = new BoundingBox(this.x, this.y, this.width, this.height, "platform");
+    this.riders = []; // Array of entities riding the platform
 
     Entity.call(this, game, x, y);
 }
 
-MovingPlatform.prototype = new Entity();
-MovingPlatform.prototype.constructor = MovingPlatform;
+ConWorkerPlatform.prototype = new Entity();
+ConWorkerPlatform.prototype.constructor = ConWorkerPlatform;
 
 /**
  * 
  */
-MovingPlatform.prototype.update = function () {
-    var riders = [];
+ConWorkerPlatform.prototype.update = function () {
+    // Iterates over platform riders to check for collision
+    for (var i = 0; i < this.riders.length; i++) {
+        var rider = this.riders[i];
+        var collide = this.box.collide(entity.box); // The collision results
 
+        if (!collide.top) { // Rider is not colliding with the platform anymore
+            // Removes entity from array
+            for (var j = i; j < this.riders.length - 1; j++) {
+                this.riders[j] = this.riders[j + 1];
+            }
+
+            this.riders.pop();
+            i--;
+        }
+    }
+
+    // Iterates over game entities to check for collision
     for (var i = 0; i < this.game.entities.length; i++) {
         var entity = this.game.entities[i];
         var collide = this.box.collide(entity.box); // The collision results
 
-        if (entity !== this && (collide.object == "player" || collide.object == "enemy")) { // Player or enemy is colliding with the platform
+        if (entity !== this && (collide.object == "player" || collide.object == "enemy") && !this.riders.includes(entity)) { // Player or enemy is colliding with the platform
             // Checks if entity is on top of platform
             if (collide.top) {
-                riders.push(entity); // Registers entity as a rider.
+                this.riders.push(entity); // Registers entity as a rider.
             }
-        } else if (entity !== this && collide.object == "platform") { // Another platform is colliding with the platform
-            /*if () {
-
-            }*/
         }
     }
-
-    /*if () {
-
-    }*/
-
-    this.x += this.velocityX;
-    this.y += this.velocityY;
-
-    this.box = new BoundingBox(this.x, this.y, this.width, this.height, "platform");
 
     Entity.prototype.update.call(this);
 }
@@ -168,7 +160,7 @@ MovingPlatform.prototype.update = function () {
 /**
  * 
  */
-MovingPlatform.prototype.draw = function () {
+ConWorkerPlatform.prototype.draw = function () {
     // No sprite to draw
 
     // Draws collider border for debugging
@@ -299,9 +291,9 @@ Hook.prototype.draw = function () {
  */
 function ConWorker(game, spritesheet) {
     this.spritesheet = spritesheet;
-    this.animationWalkR = new Animation(spritesheet, "walk", 0, 0, 42, 42, 0, 0.10, 8, true, 2, "right", 0, 0, 42, 42);
-    this.animationWalkL = new Animation(spritesheet, "walk", 0, 42, 42, 42, 0, 0.10, 8, true, 2, "left", 0, 0, 42, 42);
-    this.animation = this.animationWalkR; //initial animation
+    this.animationWalkR = new Animation(spritesheet, "walk", 0, 0, 42, 42, 0, 0.10, 8, true, 2, "right", 0, 7, 42, 35);
+    this.animationWalkL = new Animation(spritesheet, "walk", 0, 42, 42, 42, 0, 0.10, 8, true, 2, "left", 0, 7, 42, 35);
+    this.animation = this.animationWalkR; // Initial animation
     this.ctx = game.ctx;
     this.speed = 2;
     this.falling = false;
@@ -309,6 +301,10 @@ function ConWorker(game, spritesheet) {
     this.box = null;
 
     this.updateBox("enemy");
+
+    this.movingPlatform = new ConWorkerPlatform(game, this.x, this.y, this.box.width, this.x - this.box.x);
+
+    game.addEntity(this.movingPlatform); // Adds the platform to the list of entities
     Entity.call(this, game, 300, 300);
 }
 
@@ -362,7 +358,7 @@ ConWorker.prototype.update = function () {
         if (entity !== this && collide.object == "platform") {
             // Landed on platform
             if (collide.top && lastBox.bottom <= entity.box.top) {
-                this.y = entity.box.top - this.box.height;
+                this.y = entity.box.top - this.box.height - (this.box.top - this.y);
                 this.velocityY = 0;
                 this.falling = false;
                 this.platform = entity;
@@ -382,14 +378,18 @@ ConWorker.prototype.update = function () {
 
             // Hit bottom of platform
             if (collide.bottom && lastBox.top >= entity.box.bottom) {
-                this.y = entity.box.bottom;
+                this.y = entity.box.bottom + (this.y - this.box.top);
                 this.velocityY = 0;
             }
 
             // Update bounding box following shunt out of collision
             this.updateBox("enemy");                  //
+        } else if (entity !== this && collide.object == "player") { // Knocks out the player
+            entity.knockout();
         }
     }
+
+    this.movingPlatform.box = new BoundingBox(this.x, this.y, this.box.width, this.x - this.box.x, "platform");
 
     Entity.prototype.update.call(this);
 }
@@ -469,7 +469,7 @@ function Yamada(game, spritesheet) {
     this.animationAimFallUpL = new Animation(spritesheet, "aim", 128, 160, 32, 32, 0, 1, 1, true, 2, "left", 11, 0, 19, 32, 20, 2);
     this.animationAimFallDiagonalR = new Animation(spritesheet, "aim", 32, 160, 32, 32, 0, 1, 1, true, 2, "right", 7, 0, 22, 32, 26, 3);
     this.animationAimFallDiagonalL = new Animation(spritesheet, "aim", 192, 160, 32, 32, 0, 1, 1, true, 2, "left", 3, 0, 22, 32, 6, 3);
-    this.animation = this.animationIdleR; //initial animation
+    this.animation = this.animationIdleR; // Initial animation
     this.ctx = game.ctx;
     this.speed = .65;
     this.MAX_SPEED = 2.5;
@@ -663,7 +663,7 @@ Yamada.prototype.update = function () {
         if (entity !== this && collide.object == "platform") {
             // Landed on platform
             if (collide.top && lastBox.bottom <= entity.box.top) {
-                this.y = entity.box.top - this.box.height;
+                this.y = entity.box.top - this.box.height - (this.box.top - this.y);
                 this.velocityY = 0;
                 this.falling = false;
                 this.platform = entity;
@@ -686,7 +686,7 @@ Yamada.prototype.update = function () {
 
             // Hit bottom of platform
             if (collide.bottom && lastBox.top >= entity.box.bottom) {
-                this.y = entity.box.bottom;
+                this.y = entity.box.bottom + (this.y - this.box.top);
                 this.velocityY = 0;
             }
 
@@ -785,12 +785,20 @@ Yamada.prototype.updateBox = function (tag, offsetX, offsetY) {
      */
 }
 
+/**
+ * Knocks out character.
+ */
+Yamada.prototype.knockout = function () {
+
+}
+
 // Main code begins here
 
 var AM = new AssetManager();
 
 AM.queueDownload("./NeverLateSalaryMan/img/Yamada.png");
 AM.queueDownload("./NeverLateSalaryMan/img/ConstrWorker.png");
+AM.queueDownload("./NeverLateSalaryMan/img/PrototypeLevel.png");
 
 AM.downloadAll(function () {
     var canvas = document.getElementById("gameWorld");
@@ -800,6 +808,9 @@ AM.downloadAll(function () {
     var gameEngine = new GameEngine();
     gameEngine.init(ctx);
     gameEngine.start();
+
+    // Adds background
+    gameEngine.addEntity(new Background(gameEngine, AM.getAsset("./NeverLateSalaryMan/img/PrototypeLevel.png")));
 
     // Adds the player
     var player = new Yamada(gameEngine, AM.getAsset("./NeverLateSalaryMan/img/Yamada.png"));
