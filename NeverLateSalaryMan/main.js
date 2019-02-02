@@ -170,6 +170,39 @@ ConWorkerPlatform.prototype.draw = function () {
     Entity.prototype.draw.call(this);
 }
 
+/**
+Defines the area that Yamada must reach to win the level.
+*/
+function WinArea(game, x, y, width, height) {
+	this.game = game;
+	this.ctx = game.ctx;
+    this.width = width;
+    this.height = height;
+    this.box = new BoundingBox(this.x, this.y, this.width, this.height, "win");
+	
+	Entity.call(this, game, x, y);
+}
+
+WinArea.prototype = new Entity();
+WinArea.prototype.constructor = WinArea;
+
+WinArea.prototype.update = function () {
+	this.box = new BoundingBox(this.x, this.y, this.width, this.height, "win");
+	var wincon = this.box.collide(this.game.player.box);
+	if(wincon.object == "player")
+		shiftScene(2, this.game);
+	// TEMPORARY, checking loss conditions will fall on SceneManager
+	else if (this.game.player.y > 800)
+		shiftScene(3, this.game);
+	
+	Entity.prototype.update.call(this);
+}
+
+WinArea.prototype.draw = function () {
+	this.ctx.strokeStyle = "yellow";
+    this.ctx.strokeRect(this.x - this.game.camera.x, this.y - this.game.camera.y, this.width, this.height);
+}
+
 // Inheritance from Entity
 /**
  * 
@@ -202,7 +235,7 @@ Hook.prototype.update = function() {
 
 	for (var i = 0; i < this.game.entities.length; i++) {
         var entity = this.game.entities[i];
-		if (entity !== this.player && entity !== this.game.camera) { // No interaction between player and hook
+		if (entity.box.tag == "platform") { // TEMPORARY, only check platforms
 			// Check collision with top of box
             var collPoint = lineIntersect(originX, this.x, originY, this.y, entity.box.left, entity.box.right, entity.box.top, entity.box.top);			
 			if (collPoint) {
@@ -789,8 +822,112 @@ Yamada.prototype.updateBox = function (tag, offsetX, offsetY) {
  * Knocks out character.
  */
 Yamada.prototype.knockout = function () {
-
+	this.aiming = false;
+	this.grappling = false;
+	if (this.hook)
+		this.hook.removeFromWorld = true;
+	this.hook = null;
+	this.x = 100;
+	this.y = 100;
+	this.velocityX = 0;
+	this.velocityY = 0;
+	this.updateBox("player");
 }
+
+/********************************************************************************
+TEMPORARY CODE, FUTURE REVISIONS WILL HAVE OPERATIONS HANDLED BY SCENE MANAGER
+********************************************************************************/
+
+function MenuDisplay(msg, levelID, x, y, game) {
+	this.string = msg.split("\n");
+	this.transitionID = levelID;
+	this.x = x;
+	this.y = y;
+	this.game = game;
+	this.ctx = game.ctx;	
+}
+
+MenuDisplay.prototype.update = function() {
+	// When clicked, change game ID
+	if (this.game.click)
+		// Shift to appropriate scene
+		shiftScene(this.transitionID, this.game);
+}
+
+MenuDisplay.prototype.draw = function() {
+	this.ctx.font = "30px serif";
+	for (var i = 0; i < this.string.length; i++) {
+		this.ctx.fillText(this.string[i], this.x, this.y + i * 30);
+	}
+}
+
+function shiftScene(levelID, gameEngine) {
+	switch (levelID) {
+		case 0: // Load splash screen
+		gameEngine.entities = [];
+		gameEngine.addEntity(new MenuDisplay("A moves left\nD moves right\nHold Left Shift to aim\nPress W while aiming to aim up\nPress A or D while aiming to aim straight left or right\nRelease Left Shift to fire hook\nPress X to detatch hook\n\nYou can stand on the worker's beam, but\ntouching the worker will send you back to the start.\n\nGet to the yellow area at the end to win.\n\nClick to start", 1, 100, 100, gameEngine));
+		break;
+		
+		case 1: // Load first level
+		gameEngine.entities = []; // Remove the splash screen assets
+		
+		var background = new Background(gameEngine, AM.getAsset("./NeverLateSalaryMan/img/PrototypeLevel.png"));
+		gameEngine.addEntity(background);
+		
+		// Adds the player
+		var player = new Yamada(gameEngine, AM.getAsset("./NeverLateSalaryMan/img/Yamada.png"))
+		gameEngine.addEntity(player);	
+		gameEngine.player = player;
+
+		// Adds the camera
+		var cam = new Camera(gameEngine, 0, 0);
+		gameEngine.addEntity(cam);
+		gameEngine.camera = cam;
+		
+		gameEngine.addEntity(new ConWorker(gameEngine, AM.getAsset("./NeverLateSalaryMan/img/ConstrWorker.png")));
+
+		// Adds platforms
+		/**
+		gameEngine.addEntity(new Platform(gameEngine, 0, 500, 500, 150)); // Ground
+		gameEngine.addEntity(new Platform(gameEngine, 650, 0, 150, 500)); // Wall
+		gameEngine.addEntity(new Platform(gameEngine, 0, 0, 500, 150));   // Ceiling
+		gameEngine.addEntity(new Platform(gameEngine, 50, 350, 200, 10)); // Floating platform*/
+		gameEngine.addEntity(new Platform(gameEngine, 0, 0, 1992, 34)); //Ceiling
+		gameEngine.addEntity(new Platform(gameEngine, 0, 34, 30, 287)); //First column.
+		gameEngine.addEntity(new Platform(gameEngine, 0, 322, 502, 30));//Floor 1.
+		gameEngine.addEntity(new Platform(gameEngine, 377, 222, 124, 99)); //Box 1
+		gameEngine.addEntity(new Platform(gameEngine, 439, 353, 504, 30)); //Floor 2.
+		gameEngine.addEntity(new Platform(gameEngine, 817, 228, 126, 125)); //Box 2
+		gameEngine.addEntity(new Platform(gameEngine, 643, 34, 30, 151)); //Second column.
+		gameEngine.addEntity(new Platform(gameEngine, 1315, 34, 30, 192)); //Third column.
+		gameEngine.addEntity(new Platform(gameEngine, 1961, 34, 30, 319)); //Last column.
+		gameEngine.addEntity(new Platform(gameEngine, 1173, 353, 818, 30)); //Floor 3.
+		gameEngine.addEntity(new Platform(gameEngine, 1173, 258, 62, 95)); //Box 3.
+		gameEngine.addEntity(new Platform(gameEngine, 1488, 259, 126, 94)); //Box 4.
+	
+		gameEngine.addEntity(new WinArea(gameEngine, 1900, 300, 50, 50));
+		//End of level
+	
+	
+		// Adds enemies
+		gameEngine.addEntity(new ConWorker(gameEngine, AM.getAsset("./NeverLateSalaryMan/img/ConstrWorker.png")));
+		break;
+		
+		case 2: // Display basic win screen
+		gameEngine.entities = []; // Remove the level assets
+		gameEngine.addEntity(new MenuDisplay("You won!\nClick to return to splash screen", 0, 100, 100, gameEngine));
+		break;
+		
+		case 3: // Display basic lose screen
+		gameEngine.entities = []; // Remove the level assets
+		gameEngine.addEntity(new MenuDisplay("You fell out!\nClick to return to splash screen", 0, 100, 100, gameEngine));
+		break;
+	}
+}
+
+/********************************************************************************
+END SCENE MANAGER TEMPORARY CODE
+********************************************************************************/
 
 // Main code begins here
 
@@ -809,42 +946,8 @@ AM.downloadAll(function () {
     gameEngine.init(ctx);
     gameEngine.start();
 
-    // Adds background
-    gameEngine.addEntity(new Background(gameEngine, AM.getAsset("./NeverLateSalaryMan/img/PrototypeLevel.png")));
-
-    // Adds the player
-    var player = new Yamada(gameEngine, AM.getAsset("./NeverLateSalaryMan/img/Yamada.png"));
-    gameEngine.addEntity(player);	
-    gameEngine.player = player;
-
-    // Adds the camera
-    var cam = new Camera(gameEngine, 0, 0);
-    gameEngine.addEntity(cam);
-    gameEngine.camera = cam;
-
-    // Adds platforms
-	/**
-    gameEngine.addEntity(new Platform(gameEngine, 0, 500, 500, 150)); // Ground
-    gameEngine.addEntity(new Platform(gameEngine, 650, 0, 150, 500)); // Wall
-    gameEngine.addEntity(new Platform(gameEngine, 0, 0, 500, 150));   // Ceiling
-    gameEngine.addEntity(new Platform(gameEngine, 50, 350, 200, 10)); // Floating platform*/
-	gameEngine.addEntity(new Platform(gameEngine, 0, 0, 1992, 34)); //Ceiling
-	gameEngine.addEntity(new Platform(gameEngine, 0, 34, 30, 287)); //First column.
-	gameEngine.addEntity(new Platform(gameEngine, 0, 322, 502, 30));//Floor 1.
-	gameEngine.addEntity(new Platform(gameEngine, 377, 222, 124, 99)); //Box 1
-	gameEngine.addEntity(new Platform(gameEngine, 439, 353, 504, 30)); //Floor 2.
-	gameEngine.addEntity(new Platform(gameEngine, 817, 228, 126, 125)); //Box 2
-	gameEngine.addEntity(new Platform(gameEngine, 643, 34, 30, 151)); //Second column.
-	gameEngine.addEntity(new Platform(gameEngine, 1315, 34, 30, 192)); //Third column.
-	gameEngine.addEntity(new Platform(gameEngine, 1961, 34, 30, 319)); //Last column.
-	gameEngine.addEntity(new Platform(gameEngine, 1173, 353, 818, 30)); //Floor 3.
-	gameEngine.addEntity(new Platform(gameEngine, 1173, 258, 62, 95)); //Box 3.
-	gameEngine.addEntity(new Platform(gameEngine, 1488, 259, 126, 94)); //Box 4.
-	
-	
-	
-    // Adds enemies
-    gameEngine.addEntity(new ConWorker(gameEngine, AM.getAsset("./NeverLateSalaryMan/img/ConstrWorker.png")));
+	// Display basic splash screen
+	shiftScene(0, gameEngine);
 
     console.log("All Done!");
 });
