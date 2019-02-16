@@ -20,19 +20,25 @@ Background.prototype.update = function () {
  * 
  * 
  * @param {GameEngine} game
- * @param {number} x The x coordinate of the camera.
- * @param {number} y The y coordinate of the camera.
+ * @param {number} mixX The minimum x coordinate the camera may move to.
+ * @param {number} maxX The maximum x coordinate the camera may move to.
+ * @param {number} mixY The minimum y coordinate the camera may move to.
+ * @param {number} maxY The maximum y coordinate the camera may move to.
  */
-function Camera(game, x, y) {
-	this.x = x;
-	this.y = y;
+function Camera(game, minX, maxX, minY, maxY) {
+	this.x = 0;
+	this.y = 0;
+	this.minX = minX;
+	this.maxX = maxX;
+	this.minY = minY;
+	this.maxY = maxY;
 	this.game = game;
 	this.ctx = this.game.ctx;
 	this.player = this.game.player;
 	// Box not used for interaction but can help with debugging
-    this.box = new BoundingBox(this.x, this.y, this.ctx.canvas.width, this.ctx.canvas.height, "camera");
-
-	Entity.call(this, game, x, y);
+	this.box = new BoundingBox(this.x, this.y, this.ctx.canvas.width, this.ctx.canvas.height, "camera");
+	
+	Entity.call(this, game, this.x, this.y);
 }
 
 Camera.prototype = new Entity();
@@ -42,10 +48,21 @@ Camera.prototype.constructor = Camera;
  * 
  */
 Camera.prototype.update = function() {
+	var oldX = this.x;
+	var oldY = this.y;
+	
 	this.x = this.player.x - this.ctx.canvas.width / 2;
+	// Verify camera is within defined level bounds
+	if (this.x + this.ctx.canvas.width > this.maxX) this.x = oldX;
+	else if (this.x < this.minX) this.x = this.minX;
+	
 	this.y = this.player.y - this.ctx.canvas.height / 2;
+	// Verify camera is within defined level bounds
+	if (this.y + this.ctx.canvas.height > this.maxY) this.y = oldY;
+	else if (this.y < this.minY) this.y = this.minY;
 	this.box = new BoundingBox(this.x, this.y,
 							   this.ctx.canvas.width, this.ctx.canvas.height, "camera");
+							   
 	Entity.prototype.update.call(this);
 }
 
@@ -190,10 +207,7 @@ WinArea.prototype.update = function () {
 	this.box = new BoundingBox(this.x, this.y, this.width, this.height, "win");
 	var wincon = this.box.collide(this.game.player.box);
 	if(wincon.object == "player")
-		shiftScene(2, this.game);
-	// TEMPORARY, checking loss conditions will fall on SceneManager
-	else if (this.game.player.y > 800)
-		shiftScene(3, this.game);
+		this.game.sceneManager.loadLevel(this.game.sceneManager.nextLevel);
 	
 	Entity.prototype.update.call(this);
 }
@@ -322,7 +336,7 @@ Hook.prototype.draw = function () {
  * @param {any} game
  * @param {any} spritesheet
  */
-function ConWorker(game, spritesheet) {
+function ConWorker(game, spritesheet, x, y) {
     this.spritesheet = spritesheet;
     this.animationWalkR = new Animation(spritesheet, "walk", 0, 0, 42, 42, 0, 0.10, 8, true, 2, "right", 0, 7, 42, 35);
     this.animationWalkL = new Animation(spritesheet, "walk", 0, 42, 42, 42, 0, 0.10, 8, true, 2, "left", 0, 7, 42, 35);
@@ -338,7 +352,7 @@ function ConWorker(game, spritesheet) {
     this.movingPlatform = new ConWorkerPlatform(game, this.x, this.y, this.box.width, this.x - this.box.x);
 
     game.addEntity(this.movingPlatform); // Adds the platform to the list of entities
-    Entity.call(this, game, 600, 100);
+    Entity.call(this, game, x, y);
 }
 
 ConWorker.prototype = new Entity();
@@ -477,97 +491,6 @@ ConWorker.prototype.updateBox = function (tag, offsetX, offsetY) {
      */
 }
 
-/********************************************************************************
-TEMPORARY CODE, FUTURE REVISIONS WILL HAVE OPERATIONS HANDLED BY SCENE MANAGER
-********************************************************************************/
-
-function MenuDisplay(msg, levelID, x, y, game) {
-	this.string = msg.split("\n");
-	this.transitionID = levelID;
-	this.x = x;
-	this.y = y;
-	this.game = game;
-	this.ctx = game.ctx;	
-}
-
-MenuDisplay.prototype.update = function() {
-	// When clicked, change game ID
-	if (this.game.click)
-		// Shift to appropriate scene
-		shiftScene(this.transitionID, this.game);
-}
-
-MenuDisplay.prototype.draw = function() {
-	this.ctx.font = "30px serif";
-	for (var i = 0; i < this.string.length; i++) {
-		this.ctx.fillText(this.string[i], this.x, this.y + i * 30);
-	}
-}
-
-function shiftScene(levelID, gameEngine) {
-	switch (levelID) {
-		case 0: // Load splash screen
-		    gameEngine.entities = [];
-		    gameEngine.addEntity(new MenuDisplay("A moves left\nD moves right\nHold Left Shift to aim\nPress W while aiming to aim up\nPress A or D while aiming to aim straight left or right\nRelease Left Shift to fire hook\nPress X to detatch hook\n\nYou can stand on the worker's beam, but\ntouching the worker will send you back to the start.\n\nGet to the yellow area at the end to win.\n\nClick to start", 1, 100, 100, gameEngine));
-		    break;
-		case 1: // Load first level
-		    gameEngine.entities = []; // Remove the splash screen assets
-		    
-		    var background = new Background(gameEngine, AM.getAsset("./NeverLateSalaryMan/img/PrototypeLevel.png"));
-		    gameEngine.addEntity(background);
-		    
-		    // Adds the player
-            var player = new Yamada(gameEngine, 100, 100, AM.getAsset("./NeverLateSalaryMan/img/Yamada.png"));
-		    gameEngine.addEntity(player);	
-		    gameEngine.player = player;
-            
-		    // Adds the camera
-		    var cam = new Camera(gameEngine, 0, 0);
-		    gameEngine.addEntity(cam);
-		    gameEngine.camera = cam;
-		    
-		    gameEngine.addEntity(new ConWorker(gameEngine, AM.getAsset("./NeverLateSalaryMan/img/ConstrWorker.png")));
-            
-		    // Adds platforms
-		    /**
-		    gameEngine.addEntity(new Platform(gameEngine, 0, 500, 500, 150)); // Ground
-		    gameEngine.addEntity(new Platform(gameEngine, 650, 0, 150, 500)); // Wall
-		    gameEngine.addEntity(new Platform(gameEngine, 0, 0, 500, 150));   // Ceiling
-		    gameEngine.addEntity(new Platform(gameEngine, 50, 350, 200, 10)); // Floating platform*/
-		    gameEngine.addEntity(new Platform(gameEngine, 0, 0, 1992, 34)); //Ceiling
-		    gameEngine.addEntity(new Platform(gameEngine, 0, 34, 30, 287)); //First column.
-		    gameEngine.addEntity(new Platform(gameEngine, 0, 322, 502, 30));//Floor 1.
-		    gameEngine.addEntity(new Platform(gameEngine, 377, 222, 124, 99)); //Box 1
-		    gameEngine.addEntity(new Platform(gameEngine, 439, 353, 504, 30)); //Floor 2.
-		    gameEngine.addEntity(new Platform(gameEngine, 817, 228, 126, 125)); //Box 2
-		    gameEngine.addEntity(new Platform(gameEngine, 643, 34, 30, 151)); //Second column.
-		    gameEngine.addEntity(new Platform(gameEngine, 1315, 34, 30, 192)); //Third column.
-		    gameEngine.addEntity(new Platform(gameEngine, 1961, 34, 30, 319)); //Last column.
-		    gameEngine.addEntity(new Platform(gameEngine, 1173, 353, 818, 30)); //Floor 3.
-		    gameEngine.addEntity(new Platform(gameEngine, 1173, 258, 62, 95)); //Box 3.
-		    gameEngine.addEntity(new Platform(gameEngine, 1488, 259, 126, 94)); //Box 4.
-	
-		    gameEngine.addEntity(new WinArea(gameEngine, 1900, 300, 50, 50));
-		    //End of level
-
-		    // Adds enemies
-		    gameEngine.addEntity(new ConWorker(gameEngine, AM.getAsset("./NeverLateSalaryMan/img/ConstrWorker.png")));
-		    break;
-		case 2: // Display basic win screen
-		    gameEngine.entities = []; // Remove the level assets
-		    gameEngine.addEntity(new MenuDisplay("You won!\nClick to return to splash screen", 0, 100, 100, gameEngine));
-		    break;
-		case 3: // Display basic lose screen
-		    gameEngine.entities = []; // Remove the level assets
-		    gameEngine.addEntity(new MenuDisplay("You fell out!\nClick to return to splash screen", 0, 100, 100, gameEngine));
-		    break;
-	}
-}
-
-/********************************************************************************
-END SCENE MANAGER TEMPORARY CODE
-********************************************************************************/
-
 // Main code begins here
 
 var AM = new AssetManager();
@@ -582,11 +505,12 @@ AM.downloadAll(function () {
 	ctx.imageSmoothingEnabled = false; // Disables pixel smoothing
 
     var gameEngine = new GameEngine();
+	gameEngine.SceneManager = new SceneManager(gameEngine);
     gameEngine.init(ctx);
     gameEngine.start();
 
 	// Display basic splash screen
-	shiftScene(0, gameEngine);
+	gameEngine.SceneManager.loadLevel(0);
 
     console.log("All Done!");
 });
