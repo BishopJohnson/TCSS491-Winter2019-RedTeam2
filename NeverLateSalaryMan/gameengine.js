@@ -43,9 +43,11 @@ function GameEngine() {
     this.click = null;
     this.mouse = null;
     this.wheel = null;
+    this.keyW = false;
     this.keyA = false;
     this.keyD = false;
-    this.keySpace = false;
+    this.keyX = false;
+    this.keyShift = false;
     this.surfaceWidth = null;
     this.surfaceHeight = null;
 }
@@ -102,11 +104,11 @@ GameEngine.prototype.startInput = function () {
     this.ctx.canvas.addEventListener("click", function (e) {
         that.click = getXandY(e);
     }, false);
-
+    /*
     this.ctx.canvas.addEventListener("wheel", function (e) {
         that.wheel = e;
         e.preventDefault();
-    }, false);
+    }, false);*/
 
     this.ctx.canvas.addEventListener("contextmenu", function (e) {
         that.rightclick = getXandY(e);
@@ -150,7 +152,7 @@ GameEngine.prototype.startInput = function () {
 			case 88: // X key
 				that.keyX = false;
 				break;
-            case 16: //Space key
+            case 16: //Left Shift key
                 that.keyShift = false;
                 break;
             default:
@@ -280,11 +282,21 @@ Entity.prototype.rotateAndCache = function (image, angle) {
  * 
  * @param {number} x
  * @param {number} y
- * @param {number} width
- * @param {number} height
- * @param {string} tag
+ * @param {number} width (Optional)
+ * @param {number} height (Optional)
+ * @param {string} tag (Optional)
  */
 function BoundingBox(x, y, width, height, tag) {
+    // Sets default value if parameter(s) are not passed
+    width = width || 0;
+    height = height || 0;
+    tag = tag || TAG_EMPTY;
+
+    if (width < 0) // Asserts width is greater than or equal to zero
+        throw "Bounding box width is less than 0!";
+    if (height < 0) // Asserts height is greater than or equal to zero
+        throw "Bounding box height is less than 0!";
+
     this.x = x;
     this.y = y;
     this.width = width;
@@ -304,20 +316,21 @@ function BoundingBox(x, y, width, height, tag) {
  * @returns { object: string, top: boolean, bottom: boolean, left: boolean, right: boolean }
  */
 BoundingBox.prototype.collide = function (other) {
-    var collide = { object: "", top: false, bottom: false, left: false, right: false }; //collision data to return
+    var collide = { object: TAG_EMPTY, top: false, bottom: false, left: false, right: false }; // Collision data to return
 
-    //checks for directional collision
-    if ((this.bottom > other.top && this.top < other.top) && !(this.left >= other.right) && !(this.right <= other.left)) //top
+    if (other == null) // Checks if other bounding box exists
+        return collide;
+
+    if (this.bottom > other.top && this.top < other.top && !(this.left >= other.right) && !(this.right <= other.left)) // Collided with top side of other
         collide.top = true;
-    if (this.top < other.bottom && this.bottom > other.bottom && !(this.left >= other.right) && !(this.right <= other.left)) //bottom
+    if (this.top < other.bottom && this.bottom > other.bottom && !(this.left >= other.right) && !(this.right <= other.left)) // Collided with bottom side of other
         collide.bottom = true;
-    if (this.right > other.left && this.left < other.left && !(this.top >= other.bottom) && !(this.bottom <= other.top)) //left
+    if (this.right > other.left && this.left < other.left && !(this.top >= other.bottom) && !(this.bottom <= other.top)) // Collided with left side of other
         collide.left = true;
-    if (this.left < other.right && this.right > other.right && !(this.top >= other.bottom) && !(this.bottom <= other.top)) //right
+    if (this.left < other.right && this.right > other.right && !(this.top >= other.bottom) && !(this.bottom <= other.top)) // Collided with right side of other
         collide.right = true;
 
-    //sets tag if collision occured
-    if (collide.top || collide.bottom || collide.left || collide.right)
+    if (collide.top || collide.bottom || collide.left || collide.right) // Sets tag if collision occured
         collide.object = other.tag;
 
     return collide;
@@ -358,6 +371,7 @@ function dist(x1, y1, x2, y2) {
 	deltaY = y2 - y1;
 	return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 }
+
 /**
 Finds the point of intersection between line segment A and line segment B, if it exists.
 @return {x: xpos, y: ypos} or null
