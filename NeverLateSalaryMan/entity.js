@@ -457,14 +457,12 @@ class Yamada extends ActorClass {
      * Sends Yamada to the last checkpoint.
      */
     knockout() {
-        /* TODO: Values for x and y must be based on checkpoints positions, instead of being fixed values.
-         */
 
         // Resets relavent values
         this.aiming = false;
         this.grappling = false;
-        this.x = 100;
-        this.y = 100;
+        this.x = this.game.sceneManager.activeCheckpoint.x;
+        this.y = this.game.sceneManager.activeCheckpoint.y;
         this.velocityX = 0;
         this.velocityY = 0;
 
