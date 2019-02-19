@@ -203,11 +203,7 @@ class ActorClass extends EntityClass {
      * @param {number} offsetX (Optional) Specified offsets for the x coordinate.
      * @param {number} offsetY (Optional) Specified offsets for the y coordinate.
      */
-    updateBox(offsetX, offsetY) {
-        // Sets default value for parameter(s) not passed
-        offsetX = offsetX || 0;
-        offsetY = offsetY || 0;
-
+    updateBox(offsetX = 0, offsetY = 0) {
         if (this.animation) { // Checks if actor currently has an animation
             var scale = this.animation.scale;
 
@@ -601,8 +597,8 @@ class Yamada extends ActorClass {
         // Resets relavent values
         this.aiming = false;
         this.grappling = false;
-        this.x = 100;
-        this.y = 100;
+        this.x = this.game.sceneManager.activeCheckpoint.x;
+        this.y = this.game.sceneManager.activeCheckpoint.y;
         this.velocityX = 0;
         this.velocityY = 0;
 

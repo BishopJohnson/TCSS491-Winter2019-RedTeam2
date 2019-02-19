@@ -183,10 +183,12 @@ GameEngine.prototype.addEntity = function (entity) {
  */
 GameEngine.prototype.draw = function () {
     this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
-    this.ctx.save();
+    this.ctx.save();	
+	if (this.background) this.background.draw();
     for (var i = 0; i < this.entities.length; i++) {
         this.entities[i].draw(this.ctx);
     }
+	if (this.camera) this.camera.draw(this.ctx);
     this.ctx.restore();
 }
 
@@ -322,13 +324,13 @@ BoundingBox.prototype.collide = function (other) {
     if (other == null) // Checks if other bounding box exists
         return collide;
 
-    if (this.bottom > other.top && this.top < other.top && !(this.left >= other.right) && !(this.right <= other.left)) // Collided with top side of other
+    if (this.bottom >= other.top && this.top <= other.top && !(this.left >= other.right) && !(this.right <= other.left)) // Collided with top side of other
         collide.top = true;
-    if (this.top < other.bottom && this.bottom > other.bottom && !(this.left >= other.right) && !(this.right <= other.left)) // Collided with bottom side of other
+    if (this.top <= other.bottom && this.bottom >= other.bottom && !(this.left >= other.right) && !(this.right <= other.left)) // Collided with bottom side of other
         collide.bottom = true;
-    if (this.right > other.left && this.left < other.left && !(this.top >= other.bottom) && !(this.bottom <= other.top)) // Collided with left side of other
+    if (this.right >= other.left && this.left <= other.left && !(this.top >= other.bottom) && !(this.bottom <= other.top)) // Collided with left side of other
         collide.left = true;
-    if (this.left < other.right && this.right > other.right && !(this.top >= other.bottom) && !(this.bottom <= other.top)) // Collided with right side of other
+    if (this.left <= other.right && this.right >= other.right && !(this.top >= other.bottom) && !(this.bottom <= other.top)) // Collided with right side of other
         collide.right = true;
 
     if (collide.top || collide.bottom || collide.left || collide.right) // Sets tag if collision occured

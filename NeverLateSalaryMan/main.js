@@ -69,7 +69,17 @@ Camera.prototype.update = function() {
 /**
  * Required for inheritance. Camera is not a drawn entity.
  */
-Camera.prototype.draw = function() {};
+Camera.prototype.draw = function() {
+	this.ctx.font = "30px serif";
+	this.ctx.fillStyle = "black";	
+	this.ctx.fillRect(29, 5, 118, 30);
+	this.ctx.fillStyle = "yellow";	
+	var time = Math.ceil(this.game.sceneManager.timeLimit);
+	this.ctx.fillText("Time:" + time, 30, 30);
+	/**************************************************
+	Can be expanded to display energy, power up status
+	**************************************************/
+};
 
 // Inheritance from Entity
 /**
@@ -125,12 +135,14 @@ Platform.prototype.draw = function () {
  * @param {number} width The width of the platform.
  * @param {number} height The height of the platform.
  */
-function ConWorkerPlatform(game, x, y, width, height) {
+function ConWorkerPlatform(game, x, y, width, height, owner) {
     this.ctx = game.ctx;
     this.width = width;
     this.height = height;
+	this.owner = owner;
+	this.deltaX = 0;
+	this.deltaY = 0;
     this.box = new BoundingBox(this.x, this.y, this.width, this.height, "platform");
-    this.riders = []; // Array of entities riding the platform
 
     Entity.call(this, game, x, y);
 }
@@ -142,35 +154,22 @@ ConWorkerPlatform.prototype.constructor = ConWorkerPlatform;
  * 
  */
 ConWorkerPlatform.prototype.update = function () {
-    // Iterates over platform riders to check for collision
-    for (var i = 0; i < this.riders.length; i++) {
-        var rider = this.riders[i];
-        var collide = this.box.collide(entity.box); // The collision results
-
-        if (!collide.top) { // Rider is not colliding with the platform anymore
-            // Removes entity from array
-            for (var j = i; j < this.riders.length - 1; j++) {
-                this.riders[j] = this.riders[j + 1];
-            }
-
-            this.riders.pop();
-            i--;
-        }
-    }
-
+	
     // Iterates over game entities to check for collision
     for (var i = 0; i < this.game.entities.length; i++) {
         var entity = this.game.entities[i];
-        var collide = this.box.collide(entity.box); // The collision results
+        var tempBox = new BoundingBox(this.box.x, this.box.y, this.box.width, this.box.height + 1, this.box.tag);
+        var collide = tempBox.collide(entity.box);
 
-        if (entity !== this && (collide.object == "player" || collide.object == "enemy") && !this.riders.includes(entity)) { // Player or enemy is colliding with the platform
+        if (entity !== this && entity !== this.owner && (collide.object == "player" || collide.object == "enemy"|| collide.object == "hook")) { // Player, hook, or enemy is colliding with the platform
             // Checks if entity is on top of platform
-            if (collide.top) {
-                this.riders.push(entity); // Registers entity as a rider.
+            if (collide.bottom || collide.left || collide.right) {
+				// Apply shift from construction worker to all colliding entities
+                entity.x += this.deltaX;
+				entity.y += this.deltaY;
             }
         }
     }
-
     Entity.prototype.update.call(this);
 }
 
@@ -217,6 +216,42 @@ WinArea.prototype.draw = function () {
     this.ctx.strokeRect(this.x - this.game.camera.x, this.y - this.game.camera.y, this.width, this.height);
 }
 
+/**
+A checkpoint for Yamada to respawn at when he runs out of stamina.
+*/
+function Checkpoint(game, x, y, pointID) {
+	this.game = game;
+	this.ctx = game.ctx;
+	this.scene = game.sceneManager;
+	this.ID = pointID;
+	this.active = false;
+	// Set animation to use inactive sprite
+    this.box = new BoundingBox(this.x, this.y, 32, 64, "checkpoint");
+	
+	Entity.call(this, game, x, y);
+}
+
+Checkpoint.prototype = new Entity();
+Checkpoint.prototype.constructor = Checkpoint;
+
+Checkpoint.prototype.update = function () {
+	this.box = new BoundingBox(this.x, this.y, 32, 64, "checkpoint");
+	var playerCheck = this.box.collide(this.game.player.box);
+	if(playerCheck.object == "player") {
+		this.active = true;
+		// In future set checkpoint to use active sprite
+		if (!this.scene.activeCheckpoint || this.scene.activeCheckpoint.ID < this.ID)
+			this.game.sceneManager.activeCheckpoint = this;
+	}
+	Entity.prototype.update.call(this);
+}
+
+Checkpoint.prototype.draw = function () {
+	this.ctx.strokeStyle = "Blue";
+	if(this.active) this.ctx.strokeStyle = "Lime";
+    this.ctx.strokeRect(this.x - this.game.camera.x, this.y - this.game.camera.y, 32, 64);
+}
+
 // Inheritance from Entity
 /**
  * 
@@ -246,6 +281,7 @@ Hook.prototype.update = function() {
     const originY = this.player.y + this.player.animation.hotspotY; // y position of the barrel
     var minDist = 900;
     var intPoint = null;
+	this.box = new BoundingBox(this.x, this.y, 0, 0, "hook");
 
 	for (var i = 0; i < this.game.entities.length; i++) {
         var entity = this.game.entities[i];

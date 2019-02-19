@@ -4,6 +4,7 @@ function SceneManager(game) {
 	this.nextLevel = 0;
 	this.timeLimit = 0;
 	this.playLevel = false;
+	this.activeCheckpoint = null;
 	this.score = 0;
 	this.box = new BoundingBox("manager", 0, 0, 0, 0);
 	// Hardcode each level's time and other properties as JSON objects
@@ -15,9 +16,11 @@ function SceneManager(game) {
 	this.levelProps.push(JSON.stringify(
 		{playLevel: true, nextLevel: 2, timeLimit: 180, 
 		camData: {minX: 0, maxX: 1991, minY: 0, maxY: 1000}, deathPlane: 1000,
-		playerData: {x: 100, y: 100},
+		playerData: {x: 100, y: 255},
 		entities: [{tag: "ConWorker", x: 600, y: 237},
                    {tag: "Bird", x: 800, y: 100},
+				   {tag: "Checkpoint", x: 100, y: 255, ID: 0},
+				   {tag: "Checkpoint", x: 900, y: 160, ID: 1},
 				   {tag: "WinArea", x: 1900, y: 300, width: 50, height:50}],
 		platforms: [{x: 0, y: 0, width: 1992, height: 34},
 					{x: 0, y: 34, width: 30, height: 287},
@@ -49,7 +52,7 @@ Prop.camData: object {minX, maxX, minY, maxY} or null if not a play level
 Prop.deathPlane: y position to define death plane or null if not a play level
 Prop.playerData: object {x, y} or null if not a play level
 Prop.entities: array of objects, format depending if stage is gameplay or not
-	if gameplay: objects of format {tag, x, y}
+	if gameplay: objects of format {tag, x, y, otherFields...}
 	if not gameplay: objects of format {msg, transitionID, x, y}
 Prop.platforms: array of objects, of format {x, y, width, height}
 Prop.background: URL for asset as a string
@@ -59,13 +62,16 @@ Prop.background: URL for asset as a string
 Updates the timer based on the actual elapsed time.
 */
 SceneManager.prototype.update = function() {
-	this.timeLimit -= this.game.clockTick;
-
-    //console.log(this.timeLimit);
-
-	if (this.playLevel && (this.timeLimit <= 0 
-							|| this.game.player.y > this.deathPlane)) {
-		this.loadLevel(3);
+	if (this.playLevel) {
+		this.timeLimit -= this.game.clockTick;
+		// Game ends if player runs out of time
+		if (this.timeLimit <= 0) {
+			this.loadLevel(3);
+		}
+		
+		// Respawn player at checkpoint if they fall below death plane
+		if (this.game.player.y > this.deathPlane)
+			this.game.player.knockout();
 	}
 }
 
@@ -84,6 +90,7 @@ SceneManager.prototype.loadLevel = function(sceneID) {
 	this.playLevel = properties.playLevel;
 	this.nextLevel = properties.nextLevel;
 	this.timeLimit = properties.timeLimit;
+	this.activeCheckpoint = null;
 	this.game.entities = []; // Remove all objects from current level
 	
 	if (properties.playLevel) {
@@ -110,8 +117,8 @@ SceneManager.prototype.loadLevel = function(sceneID) {
                 this.game.addEntity(new ConWorker(this.game, newThing.x, newThing.y, AM.getAsset("./NeverLateSalaryMan/img/ConstrWorker.png")));
 			else if (newThing.tag == "WinArea")
 				this.game.addEntity(new WinArea(this.game, newThing.x, newThing.y, newThing.width, newThing.height));
-			else if (newThing.tag == "DisplayMenu")
-				this.game.addEntity(new DisplayMenu(newThing.msg, newThing.level,newThing.x, newThing.y, this.game));
+			else if (newThing.tag == "Checkpoint")
+				this.game.addEntity(new Checkpoint(this.game, newThing.x, newThing.y, newThing.ID));
 			// else if (newThing.tag == something)
 		}
 		
@@ -123,10 +130,12 @@ SceneManager.prototype.loadLevel = function(sceneID) {
 		}
 		
 		// Add the background for the level
-		this.game.addEntity(new Background(this.game, 
-								AM.getAsset(properties.background)));
+		this.game.background = new Background(this.game, 
+								AM.getAsset(properties.background));
 		
 	} else { // Scene is not a gameplay level, get other assets
+		this.game.camera = null;
+		this.game.background = null;
 		var menuData = properties.entities[0];
 		this.game.addEntity(new MenuDisplay(menuData.msg, menuData.transitionID,
 							menuData.x, menuData.y, this.game));
