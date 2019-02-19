@@ -7,13 +7,26 @@ class EntityClass {
      * The constructor for the Entity class.
      * 
      * @param {GameEngine} game The game engine.
-     * @param {number} x The x position to spawn the entity at.
-     * @param {number} y The y position to spawn the entity at.
+     * @param {number} x (Optional) The x position to spawn the entity at.
+     * @param {number} y (Optional) The y position to spawn the entity at.
      */
-    constructor(game, x, y) {
+    constructor(game, x = 0, y = 0) {
         this.game = game;
         this.x = x;
         this.y = y;
+        this.initialX = x;
+        this.initialY = y;
+        this.velocityX = 0;
+        this.velocityY = 0;
+        this.removeFromWorld = false;
+    }
+
+    /**
+     * Resets the Entity's attributes.
+     */
+    reset() {
+        this.x = initialX;
+        this.y = initialY;
         this.velocityX = 0;
         this.velocityY = 0;
         this.removeFromWorld = false;
@@ -74,26 +87,23 @@ class ActorClass extends EntityClass {
      * The constructor for the Actor class.
      * 
      * @param {GameEngine} game The game engine.
+     * @param {number} x The x position to spawn the actor at.
+     * @param {number} y The y position to spawn the actor at.
      * @param {string} spritesheet The file path of the spritesheet in the asset manager.
-     * @param {number} x The x position to spawn the entity at.
-     * @param {number} y The y position to spawn the entity at.
-     * @param {string} tag (Optional) The tag of the bounding box.
-     * @param {boolean} gravity (Optional) Determines if the actor is affected by gravity.
-     * @param {boolean} collision (Optional) Determines if the actor collides with platforms.
+     * @param {string} tag (Optional) The tag of the bounding box. Default is TAG_EMPTY.
+     * @param {boolean} gravity (Optional) Determines if the actor is affected by gravity. Default is enabled (true).
+     * @param {boolean} collision (Optional) Determines if the actor collides with platforms. Default is enabled (true).
      */
-    constructor(game, x, y, spritesheet, tag, gravity, collision) {
+    constructor(game, x, y, spritesheet, tag = TAG_EMPTY, gravity = true, collision = true) {
         super(game, x, y); // Call to super constructor
-
-        // Sets default value for parameter(s) not passed
-        tag = tag || TAG_EMPTY;
-        gravity = (gravity === undefined) || gravity;       // Performs operation to handle an undefined boolean
-        collision = (collision === undefined) || collision; //
 
         this.ctx = game.ctx;
         this.spritesheet = spritesheet;
         this.tag = tag;
         this.gravity = gravity;
         this.collision = collision;
+        this.initialGravity = gravity;
+        this.initialCollision = collision;
         this.animation = null;
         this.box = null;
         this.falling = false;
@@ -103,7 +113,21 @@ class ActorClass extends EntityClass {
     }
 
     /**
-     * Updates the actor's position and check for collision with platforms.
+     * Resets the Actor's attributes.
+     */
+    reset() {
+        super.reset(); // Call to super method
+
+        this.gravity = initialGravity;
+        this.collision = initialCollision;
+        this.falling = false;
+        this.platform = null;
+
+        this.updateBox();
+    }
+
+    /**
+     * Updates the Actor's position and check for collision with platforms.
      * 
      * @see EntityClass.update
      */
@@ -112,7 +136,7 @@ class ActorClass extends EntityClass {
 
         if (this.platform) { // Checks if still on platform
             // Check with temporary hitbox if shunted out after last collision
-            var tempBox = new BoundingBox(this.box.x, this.box.y + 1, this.box.width, this.box.height, this.box.tag);
+            var tempBox = new BoundingBox(this.box.x, this.box.y + 1, this.box.width, this.box.height, this.tag);
             var collide = tempBox.collide(this.platform.box);
 
             if (!collide.top) { // Not on top of platform anymore
@@ -169,16 +193,12 @@ class ActorClass extends EntityClass {
                 this.updateBox();
             }
         }
-
-        // No friction in air to allow speed building
-        if (!this.falling)
-            this.velocityX = Math.sign(this.velocityX) * Math.max(0, Math.abs(this.velocityX) - this.friction); // Implements friction to simulate deceleration
     }
 
     /**
-     * Updates the bounding box of the actor.
+     * Updates the bounding box of the Actor.
      * 
-     * <p>Creates a box using actor's animation data or a box with a width and height of 0 if no animation is assigned.</p>
+     * <p>Creates a box using Actor's animation data or a box with a width and height of 0 if no animation is assigned.</p>
      * 
      * @param {number} offsetX (Optional) Specified offsets for the x coordinate.
      * @param {number} offsetY (Optional) Specified offsets for the y coordinate.
@@ -231,13 +251,98 @@ class ActorClass extends EntityClass {
     }
 
     /**
-     * Updates the actor's animation with the new animation.
+     * Updates the Actor's animation with the new animation.
      * 
      * @param {Animation} animation The animation to apply to the actor.
      */
     animate(animation) {
         if (!this.animation.equals(animation)) // Checks if animation is already playing
             this.animation = animation;
+    }
+}
+
+/**
+ * Enemy class for entities that are enemies to the player.
+ */
+class EnemyClass extends ActorClass {
+
+    /**
+     * The constructor for the Enemy class.
+     * 
+     * @param {GameEngine} game The game engine.
+     * @param {number} x The x position to spawn the enemy at.
+     * @param {number} y The x position to spawn the enemy at.
+     * @param {string} spritesheet The file path of the spritesheet in the asset manager.
+     * @param {number} damage
+     * @param {number} stunTime
+     * @param {boolean} gravity (Optional) Determines if the actor is affected by gravity. Default is enabled (true).
+     * @param {boolean} collision (Optional) Determines if the actor collides with platforms. Default is enabled (true).
+     */
+    constructor(game, x, y, spritesheet, damage = 10, stunTime = 3, gravity = true, collision = true) {
+        super(game, x, y, spritesheet, TAG_ENEMY, gravity, collision); // Call to super constructor
+
+        this.awake = false;
+        this.stunned = false;
+        this.damage = damage;
+        this.stunTime = stunTime;
+        this.stunTimer = 0;
+        this.dead = false;
+
+        /* TODO: Remove call to awaken from constructor once dynamic awaken from the player
+         * approaching enemies is incorporated into the game.
+         */
+        this.awaken();
+    }
+
+    /**
+     * Wakes the Enemy up so that they may start updating.
+     */
+    awaken() {
+        this.awake = true;
+    }
+
+    /**
+     * Resets the Enemy's attributes.
+     */
+    reset() {
+        super.reset(); // Call to super method
+
+        this.awake = false;
+        this.stunned = false;
+        this.stunTimer = 0;
+    }
+
+    /**
+     * Updates the Enemy's status and checks for collision with the player.
+     *
+     * @see ActorClass.update
+     */
+    update() {
+        if (this.awake) { // Checks if enemy actor is awake
+            if (this.stunned) { // Checks if enemy is stunned
+                this.stunTimer = Math.max(0, this.stunTimer - this.game.clockTick); // Updates timer
+
+                if (this.stunTimer == 0) // Unstuns the enemy once timer is zero
+                    this.stunned = false;
+            } else {
+                super.update(); // Call to super method
+
+                var collide = this.box.collide(this.game.player.box); // The collision results with the player
+
+                if (collide.object == TAG_PLAYER && !this.dead) // Damages the player
+                    this.game.player.damage();
+            }
+        }
+    }
+
+    /**
+     * Stuns the Enemy.
+     */
+    stun() {
+        if (this.awake && !this.dead) {
+            this.stunned = true;
+            this.stunTimer = this.stunTime;
+        }
     }
 }
 
@@ -250,21 +355,26 @@ class Yamada extends ActorClass {
      * The constructor for the Yamada class.
      * 
      * @param {GameEngine} game The game engine.
-     * @param {string} spritesheet The file path of the spritesheet in the asset manager.
      * @param {number} x The x position to spawn the entity at.
      * @param {number} y The y position to spawn the entity at.
+     * @param {string} spritesheet The file path of the spritesheet in the asset manager.
      */
     constructor(game, x, y, spritesheet) {
         super(game, x, y, spritesheet, TAG_PLAYER); // Call to super constructor
 
-        this.speed = .65;
+        this.maxhealth = 30;
+        this.health = this.maxhealth;
+        this.damageTime = 3;
+        this.damageTimer = 0;
+        this.speed = 0.65;
         this.MAX_SPEED = 2.5;
-        this.friction = .5;
+        this.friction = 0.5;
         this.aiming = false;
         this.grappling = false;
         this.hook = null;
         this.aimVector = new Vector(0, 0);
-        this.hookSpeed = .02;
+        this.hookSpeed = 0.02;
+
         this.animation = new Animation(spritesheet, "idle", 0, 0, 32, 32, 0, 0.10, 8, true, 2, DIR_RIGHT, 7, 0, 18, 32); // Initial animation
     }
 
@@ -275,6 +385,10 @@ class Yamada extends ActorClass {
      */
     update() {
         super.update();
+
+        if (this.damageTimer > 0) { // Updates damageTimer
+            this.damageTimer = Math.max(0, this.damageTimer - this.game.clockTick);
+        }
 
         if (this.grappling) // Grappling overrides gravity
             this.gravity = false;
@@ -345,6 +459,10 @@ class Yamada extends ActorClass {
             this.velocityX = dirVect.x;
             this.velocityY = dirVect.y;
         }
+
+        // No friction in air to allow speed building
+        if (!this.falling)
+            this.velocityX = Math.sign(this.velocityX) * Math.max(0, Math.abs(this.velocityX) - this.friction); // Implements friction to simulate deceleration
 
         this.animate(); // Call to update animation
     }
@@ -454,9 +572,29 @@ class Yamada extends ActorClass {
     }
 
     /**
+     * Applies damage to Yamada and knocks him out if his health falls to zero or below.
+     * 
+     * @param {number} damage (Optional) The amount of damage Yamada recieves. Default is 10.
+     */
+    damage(damage = 10) {
+        if (this.damageTimer == 0) { // Checks if Yamada may be damaged
+            console.log("damaged");
+
+            this.damageTimer = this.damageTime;
+            this.health -= damage;
+
+            if (this.health <= 0)
+                this.knockout();
+        } else {
+            console.log("invulnerable");
+        }
+    }
+
+    /**
      * Sends Yamada to the last checkpoint.
      */
     knockout() {
+        console.log("knockout");
         /* TODO: Values for x and y must be based on checkpoints positions, instead of being fixed values.
          */
 
@@ -474,5 +612,161 @@ class Yamada extends ActorClass {
         }
 
         this.updateBox();
+    }
+}
+
+/**
+ * Class for the Bird enemy type.
+ */
+class Bird extends EnemyClass {
+
+    /**
+     * The constructor for the Bird class.
+     *
+     * @param {GameEngine} game The game engine.
+     * @param {number} x The x position to spawn the enemy at.
+     * @param {number} y The y position to spawn the enemy at.
+     * @param {string} spritesheet The file path of the spritesheet in the asset manager.
+     * @param {boolean} collision (Optional) Determines if the bird collides with platforms.
+     */
+    constructor(game, x, y, spritesheet, collision = false) {
+        super(game, x, y, spritesheet, undefined/* default damage */, undefined/* default stunTimer */, false, collision); // Call to super constructor
+
+        this.speed = 2;
+
+        this.velocityX = -this.speed; // Initial speed
+        this.animation = new Animation(spritesheet, "fly", 0, 0, 32, 32, 0, 0.10, 2, true, 2, DIR_RIGHT, 5, 11, 21, 9); // Initial animation
+    }
+
+    /**
+     * Updates the Bird.
+     * 
+     * @see EnemyClass.update
+     */
+    update() {
+        super.update(); // Call to super method
+
+        // Iterates over game entities to check for collision
+        for (var i = 0; i < this.game.entities.length; i++) {
+            // Check with temporary hitbox from before the super class update
+            var entity = this.game.entities[i];
+            var tempBox = new BoundingBox(this.box.x + this.velocityX, this.box.y, this.box.width, this.box.height, this.tag);
+            var collide = tempBox.collide(entity.box); // The collision results
+
+            if (entity !== this && collide.object == TAG_PLATFORM && this.collision) { // Checks if entity collided with a platform
+                if (collide.right && this.box.left >= entity.box.right) { // Ran into right side of a platform
+                    this.velocityX = this.speed;
+                }
+
+                if (collide.left && this.box.right <= entity.box.left) { // Ran into left side of a platform
+                    this.velocityX = -this.speed;
+                }
+            }
+        }
+
+        this.animate(); // Call to update animation
+    }
+
+    /**
+     * Updates the Bird's animation based on its current state.
+     */
+    animate() {
+        let animation = this.animation;
+
+        if (this.velocityX > 0) { // Is walking right
+            animation = new Animation(this.spritesheet, "fly", 0, 0, 32, 32, 0, 0.10, 2, true, 2, DIR_RIGHT, 5, 11, 21, 9);
+        } else if (this.velocityX < 0) { // Is walking left
+            animation = new Animation(this.spritesheet, "fly", 0, 32, 32, 32, 0, 0.10, 2, true, 2, DIR_LEFT, 5, 11, 21, 9);
+        }
+
+        super.animate(animation); // Call to super method
+    }
+}
+
+/**
+ * Class for the Construction Worker enemy type.
+ */
+class ConWorker extends EnemyClass {
+
+    /**
+     * The constructor for the Construction Worker class.
+     * 
+     * @param {GameEngine} game The game engine.
+     * @param {number} x The x position to spawn the enemy at.
+     * @param {number} y The y position to spawn the enemy at.
+     * @param {string} spritesheet The file path of the spritesheet in the asset manager.
+     */
+    constructor(game, x, y, spritesheet) {
+        super(game, x, y, spritesheet, TAG_ENEMY); // Call to super constructor
+
+
+        this.speed = 2;
+
+        this.velocityX = this.speed; // Initial speed
+        this.animation = new Animation(spritesheet, "walk", 0, 0, 42, 42, 0, 0.10, 8, true, 2, DIR_RIGHT, 0, 7, 42, 35); // Initial animation
+
+        // Creates a platform that follows the construction worker
+        this.movingPlatform = new ConWorkerPlatform(game, this.x, this.y, this.box.width, this.x - this.box.x);
+        game.addEntity(this.movingPlatform);
+    }
+
+    /**
+     * Updates the Construction Worker.
+     * 
+     * @see EnemyClass.update
+     */
+    update() {
+        super.update(); // Call to super method
+
+        // Checks if still on platform
+        if (this.platform) {
+            // Check with temporary hitbox, as shunted out after last collision
+            var tempBox = new BoundingBox(this.box.x, this.box.y + 1, this.box.width, this.box.height, this.tag);
+            var collide = tempBox.collide(this.platform.box);
+
+            if (!collide.top) {
+                if (this.box.x + (this.box.width / 2) < this.platform.x)
+                    this.velocityX = this.speed;
+                else if (this.box.x + (this.box.width / 2) > this.platform.x + this.platform.width)
+                    this.velocityX = -this.speed;
+            }
+        }
+
+        // Iterates over game entities to check for collision
+        for (var i = 0; i < this.game.entities.length; i++) {
+            // Check with temporary hitbox from before the super class update
+            var entity = this.game.entities[i];
+            var tempBox = new BoundingBox(this.box.x + this.velocityX, this.box.y, this.box.width, this.box.height, this.tag);
+            var collide = tempBox.collide(entity.box); // The collision results
+
+            if (entity !== this && collide.object == TAG_PLATFORM && this.collision) { // Checks if entity collided with a platform
+                if (collide.right && this.box.left >= entity.box.right) { // Ran into right side of a platform
+                    this.velocityX = this.speed;
+                }
+
+                if (collide.left && this.box.right <= entity.box.left) { // Ran into left side of a platform
+                    this.velocityX = -this.speed;
+                }
+            }
+        }
+
+        this.movingPlatform.box = new BoundingBox(this.x, this.y, this.box.width, this.x - this.box.x, TAG_PLATFORM); // Updates platform's box
+
+        this.animate(); // Call to update animation
+    }
+
+    /**
+     * Updates the Construction Worker's animation based on its current state.
+     */
+    animate() {
+        let animation = this.animation;
+
+        if (this.velocityX > 0) { // Is walking right
+            animation = new Animation(this.spritesheet, "walk", 0, 0, 42, 42, 0, 0.10, 8, true, 2, DIR_RIGHT, 0, 7, 42, 35);
+        } else if (this.velocityX < 0) { // Is walking left
+            animation = new Animation(this.spritesheet, "walk", 0, 42, 42, 42, 0, 0.10, 8, true, 2, DIR_LEFT, 0, 7, 42, 35);
+        }
+        
+        super.animate(animation); // Call to super method
     }
 }

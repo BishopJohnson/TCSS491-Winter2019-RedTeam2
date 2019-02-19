@@ -30,6 +30,7 @@ Timer.prototype.tick = function () {
 
     var gameDelta = Math.min(wallDelta, this.maxStep);
     this.gameTime += gameDelta;
+
     return gameDelta;
 }
 
@@ -40,6 +41,7 @@ function GameEngine() {
     this.entities = [];
     this.showOutlines = false;
     this.ctx = null;
+    this.player = null;
     this.click = null;
     this.mouse = null;
     this.wheel = null;
@@ -63,6 +65,7 @@ GameEngine.prototype.init = function (ctx) {
     this.surfaceHeight = this.ctx.canvas.height;
     this.startInput();
     this.timer = new Timer();
+
     console.log('game initialized');
 }
 
@@ -71,7 +74,9 @@ GameEngine.prototype.init = function (ctx) {
  */
 GameEngine.prototype.start = function () {
     console.log("starting game");
+
     var that = this;
+
     (function gameLoop() {
         that.loop();
         requestAnimFrame(gameLoop, that.ctx.canvas);
@@ -169,8 +174,8 @@ GameEngine.prototype.startInput = function () {
  * @param {any} entity
  */
 GameEngine.prototype.addEntity = function (entity) {
-    console.log('added entity');
     this.entities.push(entity);
+    //console.log('added entity');
 }
 
 /**
@@ -201,6 +206,7 @@ GameEngine.prototype.update = function () {
     for (var i = this.entities.length - 1; i >= 0; --i) {
         if (this.entities[i].removeFromWorld) {
             this.entities.splice(i, 1);
+            //console.log('removed entity');
         }
     }
 }
@@ -286,12 +292,7 @@ Entity.prototype.rotateAndCache = function (image, angle) {
  * @param {number} height (Optional)
  * @param {string} tag (Optional)
  */
-function BoundingBox(x, y, width, height, tag) {
-    // Sets default value if parameter(s) are not passed
-    width = width || 0;
-    height = height || 0;
-    tag = tag || TAG_EMPTY;
-
+function BoundingBox(x, y, width = 0, height = 0, tag = TAG_EMPTY) {
     if (width < 0) // Asserts width is greater than or equal to zero
         throw "Bounding box width is less than 0!";
     if (height < 0) // Asserts height is greater than or equal to zero

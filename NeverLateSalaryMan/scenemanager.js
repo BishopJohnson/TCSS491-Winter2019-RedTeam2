@@ -16,8 +16,9 @@ function SceneManager(game) {
 		{playLevel: true, nextLevel: 2, timeLimit: 180, 
 		camData: {minX: 0, maxX: 1991, minY: 0, maxY: 1000}, deathPlane: 1000,
 		playerData: {x: 100, y: 100},
-		entities: [{tag: "ConWorker", x: 600, y: 237}, 
-					 {tag: "WinArea", x: 1900, y: 300, width: 50, height:50}],
+		entities: [{tag: "ConWorker", x: 600, y: 237},
+                   {tag: "Bird", x: 800, y: 100},
+				   {tag: "WinArea", x: 1900, y: 300, width: 50, height:50}],
 		platforms: [{x: 0, y: 0, width: 1992, height: 34},
 					{x: 0, y: 34, width: 30, height: 287},
 					{x: 0, y: 322, width: 502, height: 30},
@@ -59,7 +60,9 @@ Updates the timer based on the actual elapsed time.
 */
 SceneManager.prototype.update = function() {
 	this.timeLimit -= this.game.clockTick;
-	console.log(this.timeLimit);
+
+    //console.log(this.timeLimit);
+
 	if (this.playLevel && (this.timeLimit <= 0 
 							|| this.game.player.y > this.deathPlane)) {
 		this.loadLevel(3);
@@ -101,11 +104,10 @@ SceneManager.prototype.loadLevel = function(sceneID) {
 		for(i = 0; i < properties.entities.length; i++) {
 			var newThing = properties.entities[i];
 			// Determine which type of entity is needed by entity tags
-			if(newThing.tag == "Bird")
-				this.game.addEntity(new Bird(/*bird stuff*/));
-			else if (newThing.tag == "ConWorker")
-				this.game.addEntity(new ConWorker(this.game, 
-				AM.getAsset("./NeverLateSalaryMan/img/ConstrWorker.png"), newThing.x, newThing.y));
+			if (newThing.tag == "Bird")
+                this.game.addEntity(new Bird(this.game, newThing.x, newThing.y, AM.getAsset("./NeverLateSalaryMan/img/Bird.png")));
+            else if (newThing.tag == "ConWorker")
+                this.game.addEntity(new ConWorker(this.game, newThing.x, newThing.y, AM.getAsset("./NeverLateSalaryMan/img/ConstrWorker.png")));
 			else if (newThing.tag == "WinArea")
 				this.game.addEntity(new WinArea(this.game, newThing.x, newThing.y, newThing.width, newThing.height));
 			else if (newThing.tag == "DisplayMenu")

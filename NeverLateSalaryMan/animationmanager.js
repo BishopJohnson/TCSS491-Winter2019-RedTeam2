@@ -20,15 +20,7 @@
  * @param {number} hotspotX (Optional) The x coordinate of the animation's hotspot.
  * @param {number} hotspotY (Optional) The y coordinate of the animation's hotspot.
  */
-function Animation(spriteSheet, animName, frameX, frameY, frameWidth, frameHeight, frameSpacing, frameDuration, frames, loop, scale, direction, offsetX, offsetY, boxWidth, boxHeight, hotspotX, hotspotY) {
-    // Sets default value for parameter(s) not passed
-    offsetX = offsetX || 0;
-    offsetY = offsetY || 0;
-    boxWidth = boxWidth || 0;
-    boxHeight = boxHeight || 0;
-    hotspotX = hotspotX || 0;
-    hotspotY = hotspotY || 0;
-
+function Animation(spriteSheet, animName, frameX, frameY, frameWidth, frameHeight, frameSpacing, frameDuration, frames, loop, scale, direction, offsetX = 0, offsetY = 0, boxWidth = 0, boxHeight = 0, hotspotX = 0, hotspotY = 0) {
     this.spriteSheet = spriteSheet;
     this.animName = animName;
     this.frameX = frameX;
