@@ -532,8 +532,9 @@ class Yamada extends ActorClass {
             } else { // Is not grappling
 
                 if (this.aiming) { // Is aiming
-
-                    if (this.game.keyW) { // Up
+					if (this.hook) { // Hook is out, keep same animation
+						animation = animation;
+					}else if (this.game.keyW) { // Up
                         if (animation.direction == DIR_RIGHT)
                             animation = new Animation(this.spritesheet, "f_aim_u", 96, 160, 32, 32, 0, 1, 1, true, 2, DIR_RIGHT, 2, 0, 19, 32, 12, 2);
                         else
@@ -591,14 +592,13 @@ class Yamada extends ActorClass {
      */
     knockout() {
         console.log("knockout");
-        /* TODO: Values for x and y must be based on checkpoints positions, instead of being fixed values.
-         */
 
         // Resets relavent values
         this.aiming = false;
         this.grappling = false;
         this.x = this.game.sceneManager.activeCheckpoint.x;
         this.y = this.game.sceneManager.activeCheckpoint.y;
+		this.health = this.maxhealth;
         this.velocityX = 0;
         this.velocityY = 0;
 
@@ -696,13 +696,13 @@ class ConWorker extends EnemyClass {
         super(game, x, y, spritesheet, TAG_ENEMY); // Call to super constructor
 
 
-        this.speed = 2;
+        this.speed = 1.9;
 
         this.velocityX = this.speed; // Initial speed
         this.animation = new Animation(spritesheet, "walk", 0, 0, 42, 42, 0, 0.10, 8, true, 2, DIR_RIGHT, 0, 7, 42, 35); // Initial animation
 
         // Creates a platform that follows the construction worker
-        this.movingPlatform = new ConWorkerPlatform(game, this.x, this.y, this.box.width, this.x - this.box.x);
+        this.movingPlatform = new ConWorkerPlatform(game, this.x, this.y, this.box.width, this.box.y - this.y, this);
         game.addEntity(this.movingPlatform);
     }
 
@@ -712,6 +712,7 @@ class ConWorker extends EnemyClass {
      * @see EnemyClass.update
      */
     update() {
+		
         super.update(); // Call to super method
 
         // Checks if still on platform
@@ -746,7 +747,7 @@ class ConWorker extends EnemyClass {
             }
         }
 
-        this.movingPlatform.box = new BoundingBox(this.x, this.y, this.box.width, this.x - this.box.x, TAG_PLATFORM); // Updates platform's box
+        this.movingPlatform.box = new BoundingBox(this.x, this.y, this.box.width, this.box.y - this.y, TAG_PLATFORM); // Updates platform's box
 
         this.animate(); // Call to update animation
     }

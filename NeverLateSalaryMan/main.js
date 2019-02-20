@@ -72,10 +72,11 @@ Camera.prototype.update = function() {
 Camera.prototype.draw = function() {
 	this.ctx.font = "30px serif";
 	this.ctx.fillStyle = "black";	
-	this.ctx.fillRect(29, 5, 118, 30);
+	this.ctx.fillRect(29, 5, 118, 61);
 	this.ctx.fillStyle = "yellow";	
 	var time = Math.ceil(this.game.sceneManager.timeLimit);
 	this.ctx.fillText("Time:" + time, 30, 30);
+	this.ctx.fillText("HP: " + this.game.player.health, 30, 61);
 	/**************************************************
 	Can be expanded to display energy, power up status
 	**************************************************/
@@ -140,6 +141,8 @@ function ConWorkerPlatform(game, x, y, width, height, owner) {
     this.width = width;
     this.height = height;
 	this.owner = owner;
+	this.x = x;
+	this.y = y;
 	this.deltaX = 0;
 	this.deltaY = 0;
     this.box = new BoundingBox(this.x, this.y, this.width, this.height, "platform");
@@ -154,11 +157,16 @@ ConWorkerPlatform.prototype.constructor = ConWorkerPlatform;
  * 
  */
 ConWorkerPlatform.prototype.update = function () {
-	
+	var oldX = this.x;
+	var oldY = this.y;
+	this.x = this.box.x;
+	this.y = this.box.y;
+	this.deltaX = this.x - oldX;
+	this.deltaY = this.y - oldY;
     // Iterates over game entities to check for collision
     for (var i = 0; i < this.game.entities.length; i++) {
         var entity = this.game.entities[i];
-        var tempBox = new BoundingBox(this.box.x, this.box.y, this.box.width, this.box.height + 1, this.box.tag);
+        var tempBox = new BoundingBox(this.box.x, this.box.y - 1, this.box.width, this.box.height + 2, this.box.tag);
         var collide = tempBox.collide(entity.box);
 
         if (entity !== this && entity !== this.owner && (collide.object == "player" || collide.object == "enemy"|| collide.object == "hook")) { // Player, hook, or enemy is colliding with the platform
@@ -305,7 +313,7 @@ Hook.prototype.update = function() {
 				}
 			}
 			// Check collision with left of box
-            collPoint = lineIntersect(originX, this.x, originY, this.y, entity.box.left, entity.box.left, entity.box.bottom, entity.box.top);
+            collPoint = lineIntersect(originX, this.x, originY, this.y, entity.box.left, entity.box.left, entity.box.top, entity.box.bottom);
 			if (collPoint) {
                 thisDist = dist(originX, originY, collPoint.x, collPoint.y);
 				if (thisDist <= minDist) {
@@ -313,10 +321,10 @@ Hook.prototype.update = function() {
 					minDist = thisDist;
 				}
 			}
-			// Check collision with left of box
-            collPoint = lineIntersect(originX, this.x, originY, this.y, entity.box.right, entity.box.right, entity.box.bottom, entity.box.top);
+			// Check collision with right of box
+            collPoint = lineIntersect(originX, this.x, originY, this.y, entity.box.right, entity.box.right, entity.box.top, entity.box.bottom);
 			if (collPoint) {
-                thisDist = dist(originX, originX, collPoint.x, collPoint.y);
+                thisDist = dist(originX, originY, collPoint.x, collPoint.y);
 				if (thisDist <= minDist) {
 					intPoint = collPoint;
 					minDist = thisDist;
@@ -361,7 +369,7 @@ Hook.prototype.draw = function () {
 	this.ctx.stroke();
 	this.ctx.closePath();
 	
-	this.ctx.strokeStyle = "grey";
+	this.ctx.fillStyle = "grey";
 	this.ctx.fillRect(this.x - 1 - this.game.camera.x, this.y - 1 - this.game.camera.y, 3, 3);
 }
 
