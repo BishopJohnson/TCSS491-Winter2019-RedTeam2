@@ -35,6 +35,7 @@ function SceneManager(game) {
 					{x: 1173, y: 258, width: 62, height: 95},
 					{x: 1488, y: 259, width: 126, height: 94}],
 		background: "./NeverLateSalaryMan/img/PrototypeLevel.png"}));
+	this.levelProps.push('{"timeLimit":100,"playLevel":true,"entities":[{"x":2016,"y":128,"tag":"Checkpoint","ID":4},{"x":1408,"y":192,"tag":"Checkpoint","ID":3},{"x":1248,"y":384,"tag":"ConWorker","ID":0},{"x":1120,"y":768,"tag":"ConWorker","ID":0},{"x":1184,"y":768,"tag":"Checkpoint","ID":2},{"x":1376,"y":768,"tag":"ConWorker","ID":0},{"x":2336,"y":768,"tag":"WinArea","ID":0},{"x":512,"y":800,"tag":"Checkpoint","ID":1},{"x":480,"y":896,"tag":"ConWorker","ID":0},{"x":544,"y":896,"tag":"ConWorker","ID":0},{"x":832,"y":896,"tag":"ConWorker","ID":0}],"background":".\/NeverLateSalaryMan\/img\/PrototypeLevel.png","camData":{"minY":0,"minX":0,"maxY":960,"maxX":2368},"nextLevel":4,"ID":3,"deathPlane":992,"playerData":{"x":32,"y":896},"platforms":[{"x":2016,"width":192,"y":0,"ID":0,"height":32},{"x":1216,"width":32,"y":32,"ID":2,"height":576},{"x":1248,"width":128,"y":32,"ID":0,"height":32},{"x":2176,"width":32,"y":32,"ID":2,"height":576},{"x":1696,"width":32,"y":64,"ID":2,"height":32},{"x":1856,"width":32,"y":64,"ID":2,"height":32},{"x":1536,"width":32,"y":96,"ID":2,"height":32},{"x":1664,"width":96,"y":160,"ID":0,"height":32},{"x":1824,"width":96,"y":160,"ID":0,"height":32},{"x":2016,"width":32,"y":160,"ID":2,"height":640},{"x":1472,"width":32,"y":192,"ID":4,"height":32},{"x":1408,"width":160,"y":224,"ID":0,"height":32},{"x":1536,"width":32,"y":256,"ID":2,"height":320},{"x":1248,"width":32,"y":288,"ID":2,"height":32},{"x":1248,"width":160,"y":416,"ID":0,"height":32},{"x":832,"width":384,"y":544,"ID":0,"height":32},{"x":832,"width":32,"y":576,"ID":1,"height":32},{"x":1408,"width":160,"y":576,"ID":0,"height":32},{"x":0,"width":864,"y":608,"ID":0,"height":32},{"x":1408,"width":32,"y":608,"ID":2,"height":192},{"x":0,"width":32,"y":640,"ID":1,"height":288},{"x":704,"width":32,"y":640,"ID":1,"height":64},{"x":928,"width":32,"y":768,"ID":2,"height":32},{"x":1152,"width":32,"y":768,"ID":2,"height":32},{"x":672,"width":96,"y":800,"ID":0,"height":32},{"x":864,"width":576,"y":800,"ID":0,"height":32},{"x":2016,"width":352,"y":800,"ID":0,"height":32},{"x":512,"width":32,"y":832,"ID":2,"height":32},{"x":864,"width":32,"y":832,"ID":1,"height":96},{"x":224,"width":32,"y":864,"ID":2,"height":32},{"x":320,"width":32,"y":864,"ID":2,"height":32},{"x":512,"width":32,"y":864,"ID":2,"height":32},{"x":192,"width":32,"y":896,"ID":2,"height":32},{"x":224,"width":32,"y":896,"ID":2,"height":32},{"x":320,"width":32,"y":896,"ID":2,"height":32},{"x":352,"width":32,"y":896,"ID":2,"height":32},{"x":512,"width":32,"y":896,"ID":2,"height":32},{"x":0,"width":896,"y":928,"ID":0,"height":32}]}');
 	this.levelProps.push(JSON.stringify(
 		{playLevel: false, nextLevel: 0, timeLimit: 0, camData: null, deathPlane: 0, playerData: null,
 		entities:[{msg: "You won!\nClick to return to splash screen", transitionID: 0, x: 100, y: 100}], platforms: null, background: null}));
@@ -103,6 +104,8 @@ SceneManager.prototype.loadLevel = function(sceneID) {
 		
 		// Set up the level's camera properties
 		var newCam = new Camera(this.game, properties.camData.minX, properties.camData.maxX, properties.camData.minY, properties.camData.maxY);
+		newCam.x = newPlayer.x;
+		newCam.y = newPlayer.y-450;
 		this.game.camera = newCam;
 		this.game.addEntity(newCam);
 		this.deathPlane = properties.deathPlane;
@@ -116,9 +119,9 @@ SceneManager.prototype.loadLevel = function(sceneID) {
             else if (newThing.tag == "ConWorker")
                 this.game.addEntity(new ConWorker(this.game, newThing.x, newThing.y, AM.getAsset("./NeverLateSalaryMan/img/ConstrWorker.png")));
 			else if (newThing.tag == "WinArea")
-				this.game.addEntity(new WinArea(this.game, newThing.x, newThing.y, newThing.width, newThing.height));
+				this.game.addEntity(new WinArea(this.game, newThing.x, newThing.y, 50, 50));
 			else if (newThing.tag == "Checkpoint")
-				this.game.addEntity(new Checkpoint(this.game, newThing.x, newThing.y, newThing.ID));
+				this.game.addEntity(new Checkpoint(this.game, newThing.x, 50, 50));
 			// else if (newThing.tag == something)
 		}
 		
