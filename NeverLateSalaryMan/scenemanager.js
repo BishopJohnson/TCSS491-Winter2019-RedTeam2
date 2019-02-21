@@ -12,16 +12,16 @@ function SceneManager(game) {
 	// Push each JSON object into the level properties according to indexing rule
 	this.levelProps.push(JSON.stringify(
 		{playLevel: false, nextLevel: 1, timeLimit: 0, camData: null, deathPlane: 0, playerData: null,
-		entities:[{msg: "A moves left\nD moves right\nHold Left Shift to aim\nPress W while aiming to aim up\nPress A or D while aiming to aim straight left or right\nRelease Left Shift to fire hook\nPress X to detatch hook\n\nYou can stand on the worker's beam, but\ntouching the worker will send you back to the start.\n\nGet to the yellow area at the end in three minutes to win.\n\nClick to start", transitionID: 1, x: 100, y: 100}], platforms: null, background: null}));
+		entities:[{msg: "A and D to move\nHold K to aim\nHold W while aiming to aim up\nPress A or D while aiming to aim straight left or right\nRelease K to fire hook\nPress L to detatch hook\n\nYou can stand on the worker's beam, but touching him\nwill damage you.\nVending machines are checkpoints.\n\nGet to the bus stop before time runs out!\n\nClick to start", transitionID: 1, x: 50, y: 100}], platforms: null, background: null}));
 	this.levelProps.push(JSON.stringify(
 		{playLevel: true, nextLevel: 2, timeLimit: 180, 
 		camData: {minX: 0, maxX: 1991, minY: 0, maxY: 1000}, deathPlane: 1000,
 		playerData: {x: 100, y: 255},
 		entities: [{tag: "ConWorker", x: 600, y: 237},
                    {tag: "Bird", x: 800, y: 100},
-				   {tag: "Checkpoint", x: 100, y: 255, ID: 0},
-				   {tag: "Checkpoint", x: 900, y: 160, ID: 1},
-				   {tag: "WinArea", x: 1900, y: 300, width: 50, height:50}],
+				   {tag: "Checkpoint", x: 100, y: 257, ID: 0},
+				   {tag: "Checkpoint", x: 850, y: 162, ID: 1},
+				   {tag: "WinArea", x: 1900, y: 289}],
 		platforms: [{x: 0, y: 0, width: 1992, height: 34},
 					{x: 0, y: 34, width: 30, height: 287},
 					{x: 0, y: 322, width: 502, height: 30},
@@ -64,14 +64,16 @@ Updates the timer based on the actual elapsed time.
 SceneManager.prototype.update = function() {
 	if (this.playLevel) {
 		this.timeLimit -= this.game.clockTick;
-		// Game ends if player runs out of time
-		if (this.timeLimit <= 0) {
-			this.loadLevel(3);
-		}
 		
 		// Respawn player at checkpoint if they fall below death plane
 		if (this.game.player.y > this.deathPlane)
 			this.game.player.knockout();
+		
+		
+		// Game ends if player runs out of time
+		if (this.timeLimit <= 0) {
+			this.loadLevel(3);
+		}
 	}
 }
 
@@ -116,9 +118,9 @@ SceneManager.prototype.loadLevel = function(sceneID) {
             else if (newThing.tag == "ConWorker")
                 this.game.addEntity(new ConWorker(this.game, newThing.x, newThing.y, AM.getAsset("./NeverLateSalaryMan/img/ConstrWorker.png")));
 			else if (newThing.tag == "WinArea")
-				this.game.addEntity(new WinArea(this.game, newThing.x, newThing.y, newThing.width, newThing.height));
+				this.game.addEntity(new WinArea(this.game, newThing.x, newThing.y, AM.getAsset("./NeverLateSalaryMan/img/BusStop.png")));
 			else if (newThing.tag == "Checkpoint")
-				this.game.addEntity(new Checkpoint(this.game, newThing.x, newThing.y, newThing.ID));
+				this.game.addEntity(new Checkpoint(this.game, newThing.x, newThing.y, newThing.ID, AM.getAsset("./NeverLateSalaryMan/img/Checkpoint.png")));
 			// else if (newThing.tag == something)
 		}
 		
@@ -135,6 +137,7 @@ SceneManager.prototype.loadLevel = function(sceneID) {
 		
 	} else { // Scene is not a gameplay level, get other assets
 		this.game.camera = null;
+		this.game.player = null;
 		this.game.background = null;
 		var menuData = properties.entities[0];
 		this.game.addEntity(new MenuDisplay(menuData.msg, menuData.transitionID,
