@@ -228,22 +228,25 @@ class ActorClass extends EntityClass {
     draw() {
         super.draw(); // Call to super method
 
-        if (this.animation)
+        if (this.animation) {
             this.animation.drawFrame(this.game.clockTick, this.ctx, this.x - this.game.camera.x, this.y - this.game.camera.y);
-        /*else*/
 
-        var animWidth = this.animation.frameWidth * this.animation.scale;
-        var animHeight = this.animation.frameHeight * this.animation.scale;
-        var boxWidth = this.box.width;
-        var boxHeight = this.box.height;
+            if (this.game.showOutlines) { // Draws animation border for debugging
+                var animWidth = this.animation.frameWidth * this.animation.scale;
+                var animHeight = this.animation.frameHeight * this.animation.scale;
 
-        // Draws animation border for debugging
-        this.ctx.strokeStyle = "green";
-        this.ctx.strokeRect(this.x - this.game.camera.x, this.y - this.game.camera.y, animWidth, animHeight);
+                this.ctx.strokeStyle = "green";
+                this.ctx.strokeRect(this.x - this.game.camera.x, this.y - this.game.camera.y, animWidth, animHeight);
+            }
+        } /*else {} */
 
-        // Draws collider border for debugging
-        this.ctx.strokeStyle = "red";
-        this.ctx.strokeRect(this.box.x - this.game.camera.x, this.box.y - this.game.camera.y, boxWidth, boxHeight);
+        if (this.game.showOutlines) { // Draws collider border for debugging
+            var boxWidth = this.box.width;
+            var boxHeight = this.box.height;
+
+            this.ctx.strokeStyle = "red";
+            this.ctx.strokeRect(this.box.x - this.game.camera.x, this.box.y - this.game.camera.y, boxWidth, boxHeight);
+        }
     }
 
     /**
@@ -269,16 +272,15 @@ class EnemyClass extends ActorClass {
      * @param {number} x The x position to spawn the enemy at.
      * @param {number} y The x position to spawn the enemy at.
      * @param {string} spritesheet The file path of the spritesheet in the asset manager.
-     * @param {number} damage
-     * @param {number} stunTime
+     * @param {number} damage The amount of damage the enemy deals. Default damage is 1.
+     * @param {number} stunTime The amount of time in seconds the enemy is stunned for. Default time is 2 seconds.
      * @param {boolean} gravity (Optional) Determines if the actor is affected by gravity. Default is enabled (true).
      * @param {boolean} collision (Optional) Determines if the actor collides with platforms. Default is enabled (true).
      */
-    constructor(game, x, y, spritesheet, damage = 10, stunTime = 3, gravity = true, collision = true) {
+    constructor(game, x, y, spritesheet, damage = 1, stunTime = 2, gravity = true, collision = true) {
         super(game, x, y, spritesheet, TAG_ENEMY, gravity, collision); // Call to super constructor
 
         this.awake = false;
-        this.stunned = false;
         this.damage = damage;
         this.stunTime = stunTime;
         this.stunTimer = 0;
@@ -304,8 +306,8 @@ class EnemyClass extends ActorClass {
         super.reset(); // Call to super method
 
         this.awake = false;
-        this.stunned = false;
         this.stunTimer = 0;
+        this.dead = false;
     }
 
     /**
@@ -315,11 +317,8 @@ class EnemyClass extends ActorClass {
      */
     update() {
         if (this.awake) { // Checks if enemy actor is awake
-            if (this.stunned) { // Checks if enemy is stunned
+            if (this.stunTimer > 0) { // Checks if enemy is stunned
                 this.stunTimer = Math.max(0, this.stunTimer - this.game.clockTick); // Updates timer
-
-                if (this.stunTimer == 0) // Unstuns the enemy once timer is zero
-                    this.stunned = false;
             } else {
                 super.update(); // Call to super method
 
@@ -335,10 +334,8 @@ class EnemyClass extends ActorClass {
      * Stuns the Enemy.
      */
     stun() {
-        if (this.awake && !this.dead) {
-            this.stunned = true;
+        if (this.awake && !this.dead)
             this.stunTimer = this.stunTime;
-        }
     }
 }
 
@@ -358,7 +355,7 @@ class Yamada extends ActorClass {
     constructor(game, x, y, spritesheet) {
         super(game, x, y, spritesheet, TAG_PLAYER); // Call to super constructor
 
-        this.maxhealth = 30;
+        this.maxhealth = 3;
         this.health = this.maxhealth;
         this.damageTime = 3;
         this.damageTimer = 0;
@@ -367,6 +364,8 @@ class Yamada extends ActorClass {
         this.friction = 0.5;
         this.aiming = false;
         this.grappling = false;
+        this.stunned = false;
+        this.invulnerable = false;
         this.hook = null;
         this.aimVector = new Vector(0, 0);
         this.hookSpeed = 0.02;
@@ -380,7 +379,10 @@ class Yamada extends ActorClass {
      * @see ActorClass.update
      */
     update() {
-        super.update();
+        super.update(); // Call to super method
+
+        /* TODO: Once stunned, Yamada may only be unstunned once he touches the ground.
+         */
 
         if (this.damageTimer > 0) { // Updates damageTimer
             this.damageTimer = Math.max(0, this.damageTimer - this.game.clockTick);
@@ -571,19 +573,48 @@ class Yamada extends ActorClass {
     /**
      * Applies damage to Yamada and knocks him out if his health falls to zero or below.
      * 
-     * @param {number} damage (Optional) The amount of damage Yamada recieves. Default is 10.
+     * @param {number} damage (Optional) The amount of damage Yamada recieves. Default is 1.
+     * @param {BoundingBox} other (Optional) The bounding box that hit Yamada.
      */
-    damage(damage = 10) {
-        if (this.damageTimer == 0) { // Checks if Yamada may be damaged
-            console.log("damaged");
-
+    damage(damage = 1, other) {
+        if (this.damageTimer == 0/* && !this.stunned*/ && !this.invulnerable) { // Checks if Yamada may be damaged
             this.damageTimer = this.damageTime;
             this.health -= damage;
 
-            if (this.health <= 0)
+            if (this.health <= 0) { // Checks if player should be knocked out
                 this.knockout();
-        } else {
-            console.log("invulnerable");
+            } else {
+                /* TODO: Determine direction based on position of Yamada's bounding box versus other box.
+                 */
+
+                if (other) { // Determines direction of recoil
+                    this.recoil(/* direction */);
+                } else {
+                    this.recoil();
+                }
+            }
+        }
+    }
+
+    /**
+     * Stuns and makes Yamada recoil in a given direction.
+     * 
+     * <p>If no direction is passed, then Yamada will recoil in the opposite direction than he's facing.</p>
+     * 
+     * @param {string} direction (Optional) The direction Yamada recoils in.
+     */
+    recoil(direction) {
+        if (!this.invulnerable) { // Checks if Yamada is vulnerable
+            this.cancelAction(); // Cancels all actions first
+            this.stunned = true;
+
+            if (direction) { // Checks if a direction was passed
+                if (direction == DIR_RIGHT) {
+
+                } else {
+
+                }
+            }
         }
     }
 
@@ -591,11 +622,11 @@ class Yamada extends ActorClass {
      * Sends Yamada to the last checkpoint.
      */
     knockout() {
-        console.log("knockout");
-
         // Resets relavent values
         this.aiming = false;
         this.grappling = false;
+        this.stunned = false;
+        this.invulnerable = false;
         this.x = this.game.sceneManager.activeCheckpoint.x;
         this.y = this.game.sceneManager.activeCheckpoint.y;
 		this.health = this.maxhealth;
@@ -608,6 +639,17 @@ class Yamada extends ActorClass {
         }
 
         this.updateBox();
+    }
+
+    /**
+     * Cancels Yamada's current action.
+     */
+    cancelAction() {
+        if (this.aiming || this.grappling) { // Cancels aiming and grappling
+            this.aiming = false;
+            this.grappling = false;
+            this.hook = null;
+        }
     }
 }
 
@@ -677,6 +719,16 @@ class Bird extends EnemyClass {
 
         super.animate(animation); // Call to super method
     }
+
+    /**
+     * TODO: Overrides super method to kill the bird.
+     */
+    stun() {
+        super.stun(); // Call to super method (temporary)
+
+        /* TODO: Stun should kill the bird.
+         */
+    }
 }
 
 /**
@@ -693,8 +745,7 @@ class ConWorker extends EnemyClass {
      * @param {string} spritesheet The file path of the spritesheet in the asset manager.
      */
     constructor(game, x, y, spritesheet) {
-        super(game, x, y, spritesheet, TAG_ENEMY); // Call to super constructor
-
+        super(game, x, y, spritesheet, undefined/* default damage */, 0); // Call to super constructor
 
         this.speed = 1.9;
 
@@ -712,7 +763,6 @@ class ConWorker extends EnemyClass {
      * @see EnemyClass.update
      */
     update() {
-		
         super.update(); // Call to super method
 
         // Checks if still on platform

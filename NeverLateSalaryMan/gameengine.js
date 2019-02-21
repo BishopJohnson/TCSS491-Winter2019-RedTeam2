@@ -226,6 +226,19 @@ GameEngine.prototype.loop = function () {
 }
 
 /**
+ * Toggles the debug mode for the game.
+ */
+GameEngine.prototype.debugMode = function () {
+    if (this.showOutlines) { // Checks if debug mode is enabled
+        console.log("Debug Mode Disabled");
+        this.showOutlines = false;
+    } else {
+        console.log("Debug Mode Enabled");
+        this.showOutlines = true;
+    }
+}
+
+/**
  * 
  * 
  * @param {any} game
@@ -381,14 +394,18 @@ Finds the point of intersection between line segment A and line segment B, if it
 */
 function lineIntersect(x1A, x2A, y1A, y2A, x1B, x2B, y1B, y2B) {
 	// Determine intersection of two lines using matrix algebra
-	var det = (y2B - y1B) * (x2A - x1A) - (x2B - x1B) * (y2A - y1A);
-	if (det == 0) return null; // Parallel lines, treat as no intersect
+    var det = (y2B - y1B) * (x2A - x1A) - (x2B - x1B) * (y2A - y1A);
+
+    if (det == 0) // Parallel lines, treat as no intersect
+        return null;
+
 	var sc1 = ((x2B - x1B) * (y1A - y1B) - (y2B - y1B) * (x1A - x1B)) / det;
-	var sc2 = ((x2A - x1A) * (y1A - y1B) - (y2A - y1A) * (x1A - x1B)) / det;
-	if (sc1 >= 0 && sc1 <= 1 && sc2 >= 0 && sc2 <= 1) {
-		// Intersection is within defined segments, return the point
+    var sc2 = ((x2A - x1A) * (y1A - y1B) - (y2A - y1A) * (x1A - x1B)) / det;
+
+    if (sc1 >= 0 && sc1 <= 1 && sc2 >= 0 && sc2 <= 1) { // Intersection is within defined segments, return the point
 		return {x: Math.floor(x1A + sc1 * (x2A - x1A)), 
 				y: Math.floor(y1A + sc1 * (y2A - y1A))}
-	}
+    }
+
 	return null; // Lines intersect outside defined segment
 }

@@ -96,7 +96,7 @@ function Platform(game, x, y, width, height) {
     this.ctx = game.ctx;
     this.width = width;
     this.height = height;
-    this.box = new BoundingBox(this.x, this.y, this.width, this.height, "platform");
+    this.box = new BoundingBox(this.x, this.y, this.width, this.height, TAG_PLATFORM);
 
     Entity.call(this, game, x, y);
 }
@@ -108,7 +108,7 @@ Platform.prototype.constructor = Platform;
  * 
  */
 Platform.prototype.update = function () {
-    this.box = new BoundingBox(this.x, this.y, this.width, this.height, "platform");
+    this.box = new BoundingBox(this.x, this.y, this.width, this.height, TAG_PLATFORM);
 
     Entity.prototype.update.call(this);
 }
@@ -119,9 +119,10 @@ Platform.prototype.update = function () {
 Platform.prototype.draw = function () {
     // No sprite to draw
 
-    // Draws collider border for debugging
-    this.ctx.strokeStyle = "red";
-    this.ctx.strokeRect(this.x - this.game.camera.x, this.y - this.game.camera.y, this.width, this.height);
+    if (this.game.showOutlines) { // Draws collider border for debugging
+        this.ctx.strokeStyle = "red";
+        this.ctx.strokeRect(this.x - this.game.camera.x, this.y - this.game.camera.y, this.width, this.height);
+    }
     
     Entity.prototype.draw.call(this);
 }
@@ -145,7 +146,7 @@ function ConWorkerPlatform(game, x, y, width, height, owner) {
 	this.y = y;
 	this.deltaX = 0;
 	this.deltaY = 0;
-    this.box = new BoundingBox(this.x, this.y, this.width, this.height, "platform");
+    this.box = new BoundingBox(this.x, this.y, this.width, this.height, TAG_PLATFORM);
 
     Entity.call(this, game, x, y);
 }
@@ -169,7 +170,9 @@ ConWorkerPlatform.prototype.update = function () {
         var tempBox = new BoundingBox(this.box.x, this.box.y - 1, this.box.width, this.box.height + 2, this.box.tag);
         var collide = tempBox.collide(entity.box);
 
-        if (entity !== this && entity !== this.owner && (collide.object == "player" || collide.object == "enemy"|| collide.object == "hook")) { // Player, hook, or enemy is colliding with the platform
+        if (entity !== this
+            && entity !== this.owner
+            && (collide.object == TAG_PLAYER || collide.object == TAG_ENEMY || collide.object == TAG_HOOK)) { // Player, hook, or enemy is colliding with the platform
             // Checks if entity is on top of platform
             if (collide.bottom || collide.left || collide.right) {
 				// Apply shift from construction worker to all colliding entities
@@ -187,9 +190,10 @@ ConWorkerPlatform.prototype.update = function () {
 ConWorkerPlatform.prototype.draw = function () {
     // No sprite to draw
 
-    // Draws collider border for debugging
-    this.ctx.strokeStyle = "blue";
-    this.ctx.strokeRect(this.x - this.game.camera.x, this.y - this.game.camera.y, this.width, this.height);
+    if (this.game.showOutlines) { // Draws collider border for debugging
+        this.ctx.strokeStyle = "blue";
+        this.ctx.strokeRect(this.x - this.game.camera.x, this.y - this.game.camera.y, this.width, this.height);
+    }
 
     Entity.prototype.draw.call(this);
 }
@@ -213,15 +217,17 @@ WinArea.prototype.constructor = WinArea;
 WinArea.prototype.update = function () {
 	this.box = new BoundingBox(this.x, this.y, this.width, this.height, "win");
 	var wincon = this.box.collide(this.game.player.box);
-	if(wincon.object == "player")
+    if (wincon.object == TAG_PLAYER)
 		this.game.sceneManager.loadLevel(this.game.sceneManager.nextLevel);
 	
 	Entity.prototype.update.call(this);
 }
 
 WinArea.prototype.draw = function () {
-	this.ctx.strokeStyle = "yellow";
-    this.ctx.strokeRect(this.x - this.game.camera.x, this.y - this.game.camera.y, this.width, this.height);
+    if (this.game.showOutlines) { // Draws collider border for debugging
+        this.ctx.strokeStyle = "yellow";
+        this.ctx.strokeRect(this.x - this.game.camera.x, this.y - this.game.camera.y, this.width, this.height);
+    }
 }
 
 /**
@@ -244,8 +250,9 @@ Checkpoint.prototype.constructor = Checkpoint;
 
 Checkpoint.prototype.update = function () {
 	this.box = new BoundingBox(this.x, this.y, 32, 64, "checkpoint");
-	var playerCheck = this.box.collide(this.game.player.box);
-	if(playerCheck.object == "player") {
+    var playerCheck = this.box.collide(this.game.player.box);
+
+    if (playerCheck.object == TAG_PLAYER) {
 		this.active = true;
 		// In future set checkpoint to use active sprite
 		if (!this.scene.activeCheckpoint || this.scene.activeCheckpoint.ID < this.ID)
@@ -255,9 +262,14 @@ Checkpoint.prototype.update = function () {
 }
 
 Checkpoint.prototype.draw = function () {
-	this.ctx.strokeStyle = "Blue";
-	if(this.active) this.ctx.strokeStyle = "Lime";
-    this.ctx.strokeRect(this.x - this.game.camera.x, this.y - this.game.camera.y, 32, 64);
+    if (this.game.showOutlines) { // Draws collider border for debugging
+        this.ctx.strokeStyle = "Blue";
+
+        if (this.active)
+            this.ctx.strokeStyle = "Lime";
+
+        this.ctx.strokeRect(this.x - this.game.camera.x, this.y - this.game.camera.y, 32, 64);
+    }
 }
 
 // Inheritance from Entity
@@ -274,7 +286,7 @@ function Hook(player, dirVector) {
     this.x = player.x + player.animation.hotspotX;
     this.y = player.y + player.animation.hotspotY;
 	this.direction = dirVector;
-	this.box = new BoundingBox(this.x, this.y, 0, 0, "hook");
+    this.box = new BoundingBox(this.x, this.y, 0, 0, TAG_HOOK);
     this.attached = false;
 }
 
@@ -284,54 +296,32 @@ Hook.prototype.constructor = Hook;
 /**
  * 
  */
-Hook.prototype.update = function() {
+Hook.prototype.update = function () {
     const originX = this.player.x + this.player.animation.hotspotX; // x position of the barrel
     const originY = this.player.y + this.player.animation.hotspotY; // y position of the barrel
     var minDist = 900;
     var intPoint = null;
-	this.box = new BoundingBox(this.x, this.y, 0, 0, "hook");
+	this.box = new BoundingBox(this.x, this.y, 0, 0, TAG_HOOK);
 
 	for (var i = 0; i < this.game.entities.length; i++) {
         var entity = this.game.entities[i];
-		if (entity.box.tag == "platform") { // TEMPORARY, only check platforms
-			// Check collision with top of box
-            var collPoint = lineIntersect(originX, this.x, originY, this.y, entity.box.left, entity.box.right, entity.box.top, entity.box.top);			
-			if (collPoint) {
-                thisDist = dist(originX, originY, collPoint.x, collPoint.y);
-				if (thisDist <= minDist) {
-					intPoint = collPoint;
-					minDist = thisDist;
-				}
-			}
-			// Check collision with bottom of box
-            collPoint = lineIntersect(originX, this.x, originY, this.y, entity.box.left, entity.box.right, entity.box.bottom, entity.box.bottom);
-			if (collPoint) {
-                thisDist = dist(originX, originY, collPoint.x, collPoint.y);
-				if (thisDist <= minDist) {
-					intPoint = collPoint;
-					minDist = thisDist;
-				}
-			}
-			// Check collision with left of box
-            collPoint = lineIntersect(originX, this.x, originY, this.y, entity.box.left, entity.box.left, entity.box.top, entity.box.bottom);
-			if (collPoint) {
-                thisDist = dist(originX, originY, collPoint.x, collPoint.y);
-				if (thisDist <= minDist) {
-					intPoint = collPoint;
-					minDist = thisDist;
-				}
-			}
-			// Check collision with right of box
-            collPoint = lineIntersect(originX, this.x, originY, this.y, entity.box.right, entity.box.right, entity.box.top, entity.box.bottom);
-			if (collPoint) {
-                thisDist = dist(originX, originY, collPoint.x, collPoint.y);
-				if (thisDist <= minDist) {
-					intPoint = collPoint;
-					minDist = thisDist;
-				}
-			}
-		}
-	}
+        var collPoint = this.boxIntersect(entity.box);
+
+        if (collPoint && entity.box.tag == TAG_PLATFORM) { // Hook hit a platform
+            intPoint = collPoint;
+        } else if (collPoint && entity.box.tag == TAG_ENEMY) { // Hook hit a enemy
+            /* TODO: Differentiate between the hook hitting an enemy and
+             * an enemy cutting the hook for stun.
+             */
+
+            if (true) // Checks if the hook was not cut by the enemy
+                entity.stun();
+
+            this.player.cancelAction();
+            this.removeFromWorld = true;
+        }
+    }
+
 	if (intPoint && !this.attached) { // Collided with something, move hook to that point
 		this.x = intPoint.x;
 		this.y = intPoint.y;
@@ -343,15 +333,77 @@ Hook.prototype.update = function() {
 		this.x += this.direction.x;
 		this.y += this.direction.y;		
 
-        if (dist(this.x, this.y, originX, originY) > 520) {
-			// Hook is at max distance and found no target
-			this.player.aiming = false;
-			this.player.hook = null;
+        if (dist(this.x, this.y, originX, originY) > 520) { // Hook is at max distance and found no target
+            this.player.cancelAction();
             this.removeFromWorld = true;
 		}
 	}
 	
 	Entity.prototype.update.call(this);
+}
+
+/**
+ * A method that checks for collision between the hook and a bounding box.
+ * 
+ * @param {BoundingBox} other The bounding box of the entity collision is checked for.
+ * @return {x: xpos, y: ypos} The x,y coordinate for point of collision. Null if no collision occured.
+ */
+Hook.prototype.boxIntersect = function (other) {
+    const originX = this.player.x + this.player.animation.hotspotX; // x position of the barrel
+    const originY = this.player.y + this.player.animation.hotspotY; // y position of the barrel
+    var minDist = 900;
+    var intPoint = null; // Final collision point to be returned
+
+    /* TODO: Have minDist distance be a attribute of the hook.
+     */
+
+    let collPoint; // Variable for collision point
+
+    // Check collision with top of box
+    collPoint = lineIntersect(originX, this.x, originY, this.y, other.left, other.right, other.top, other.top);
+    if (collPoint) {
+        thisDist = dist(originX, originY, collPoint.x, collPoint.y);
+
+        if (thisDist <= minDist) {
+            intPoint = collPoint;
+            minDist = thisDist;
+        }
+    }
+
+    // Check collision with bottom of box
+    collPoint = lineIntersect(originX, this.x, originY, this.y, other.left, other.right, other.bottom, other.bottom);
+    if (collPoint) {
+        thisDist = dist(originX, originY, collPoint.x, collPoint.y);
+
+        if (thisDist <= minDist) {
+            intPoint = collPoint;
+            minDist = thisDist;
+        }
+    }
+
+    // Check collision with left of box
+    collPoint = lineIntersect(originX, this.x, originY, this.y, other.left, other.left, other.top, other.bottom);
+    if (collPoint) {
+        thisDist = dist(originX, originY, collPoint.x, collPoint.y);
+
+        if (thisDist <= minDist) {
+            intPoint = collPoint;
+            minDist = thisDist;
+        }
+    }
+
+    // Check collision with right of box
+    collPoint = lineIntersect(originX, this.x, originY, this.y, other.right, other.right, other.top, other.bottom);
+    if (collPoint) {
+        thisDist = dist(originX, originY, collPoint.x, collPoint.y);
+
+        if (thisDist <= minDist) {
+            intPoint = collPoint;
+            minDist = thisDist;
+        }
+    }
+
+    return intPoint;
 }
 
 /**
@@ -385,6 +437,7 @@ AM.queueDownload("./NeverLateSalaryMan/img/PrototypeLevel.png");
 AM.downloadAll(function () {
     var canvas = document.getElementById("gameWorld");
     var ctx = canvas.getContext("2d");
+    const debug = document.getElementById("debug_btn");
 	ctx.imageSmoothingEnabled = false; // Disables pixel smoothing
 
     var gameEngine = new GameEngine();
@@ -394,6 +447,10 @@ AM.downloadAll(function () {
 
 	// Display basic splash screen
 	gameEngine.SceneManager.loadLevel(0);
+
+    debug.addEventListener('click', function (event) {
+        gameEngine.debugMode();
+    });
 
     console.log("All Done!");
 });
