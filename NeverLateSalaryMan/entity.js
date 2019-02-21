@@ -391,7 +391,7 @@ class Yamada extends ActorClass {
         else
             this.gravity = true;
 
-        if (this.game.keyShift) { // Begin aiming
+        if (this.game.keyGrapple) { // Begin aiming
             this.aiming = true;
 
             if (this.hook) // Removes grappling hook if one exists
@@ -400,27 +400,27 @@ class Yamada extends ActorClass {
             this.hook = null;
             this.grappling = false;
             this.aimVector = new Vector(Math.sqrt(2) / 2, -Math.sqrt(2) / 2);
-        } else if (this.aiming && !this.game.keyShift && !this.hook) { // Fire in aimed direction
+        } else if (this.aiming && !this.game.keyGrapple && !this.hook) { // Fire in aimed direction
             this.aimVector.multiply(40);
             this.hook = new Hook(this, this.aimVector);
             this.game.addEntity(this.hook);
         }
 
-        if (this.game.keyA) { // Left input
+        if (this.game.keyLeft) { // Left input
 
             if (this.aiming && !this.hook)
                 this.aimVector = new Vector(-1, 0);
             else if (!this.grappling && !this.hook)
                 this.velocityX = Math.max(-this.MAX_SPEED, this.velocityX - this.speed); // Accelerates the player
 
-        } else if (this.game.keyD) { // Right input
+        } else if (this.game.keyRight) { // Right input
 
             if (this.aiming && !this.hook)
                 this.aimVector = new Vector(1, 0);
             else if (!this.grappling && !this.hook)
                 this.velocityX = Math.min(this.MAX_SPEED, this.velocityX + this.speed); // Accelerates the player
 
-        } else if (this.game.keyW) { // Up input
+        } else if (this.game.keyUp) { // Up input
 
             if (this.aiming && !this.hook)
                 this.aimVector = new Vector(0, -1);
@@ -436,7 +436,7 @@ class Yamada extends ActorClass {
 
         }
 
-        if (this.game.keyX && this.grappling) { // Sever grappling hook
+        if (this.game.keySever && this.grappling) { // Sever grappling hook
             if (this.hook)
                 this.hook.removeFromWorld = true;
 
@@ -473,25 +473,25 @@ class Yamada extends ActorClass {
 
             if (this.velocityX != 0) { // Is moving
 
-                if (this.game.keyD && !this.game.keyA) // Walking right
+                if (this.game.keyRight && !this.game.keyLeft) // Walking right
                     animation = new Animation(this.spritesheet, "walk", 0, 64, 32, 32, 0, 0.10, 8, true, 2, DIR_RIGHT, 7, 0, 18, 32);
-                else if (this.game.keyA) // Walking left
+                else if (this.game.keyLeft) // Walking left
                     animation = new Animation(this.spritesheet, "walk", 0, 96, 32, 32, 0, 0.10, 8, true, 2, DIR_LEFT, 7, 0, 18, 32);
 
             } else { // Is not moving
 
                 if (this.aiming) { // Is aiming
 
-                    if (this.game.keyW && this.game.keyShift) { // Up
+                    if (this.game.keyUp && this.game.keyGrapple) { // Up
                         if (animation.direction == DIR_RIGHT)
                             animation = new Animation(this.spritesheet, "g_aim_u", 64, 128, 32, 32, 0, 1, 1, true, 2, DIR_RIGHT, 1, 0, 25, 32, 12, 2);
                         else
                             animation = new Animation(this.spritesheet, "g_aim_u", 160, 128, 32, 32, 0, 1, 1, true, 2, DIR_LEFT, 6, 0, 25, 32, 20, 2);
-                    } else if (this.game.keyD && this.game.keyShift) { // Right-Straight
+                    } else if (this.game.keyRight && this.game.keyGrapple) { // Right-Straight
                         animation = new Animation(this.spritesheet, "g_aim_s", 0, 128, 32, 32, 0, 1, 1, true, 2, DIR_RIGHT, 7, 0, 25, 32, 29, 11);
-                    } else if (this.game.keyA) { // Left-Straight
+                    } else if (this.game.keyLeft) { // Left-Straight
                         animation = new Animation(this.spritesheet, "g_aim_s", 224, 128, 32, 32, 0, 1, 1, true, 2, DIR_LEFT, 0, 0, 25, 32, 2, 11);
-                    } else if (this.game.keyShift) { // Diagonal
+                    } else if (this.game.keyGrapple) { // Diagonal
                         if (animation.direction == DIR_RIGHT)
                             animation = new Animation(this.spritesheet, "g_aim_d", 32, 128, 32, 32, 0, 1, 1, true, 2, DIR_RIGHT, 7, 0, 20, 32, 23, 3);
                         else
@@ -534,14 +534,14 @@ class Yamada extends ActorClass {
                 if (this.aiming) { // Is aiming
 					if (this.hook) { // Hook is out, keep same animation
 						animation = animation;
-					}else if (this.game.keyW) { // Up
+					}else if (this.game.keyUp) { // Up
                         if (animation.direction == DIR_RIGHT)
                             animation = new Animation(this.spritesheet, "f_aim_u", 96, 160, 32, 32, 0, 1, 1, true, 2, DIR_RIGHT, 2, 0, 19, 32, 12, 2);
                         else
                             animation = new Animation(this.spritesheet, "f_aim_u", 128, 160, 32, 32, 0, 1, 1, true, 2, DIR_LEFT, 11, 0, 19, 32, 20, 2);
-                    } else if (this.game.keyD) { // Right-Straight
+                    } else if (this.game.keyRight) { // Right-Straight
                         animation = new Animation(this.spritesheet, "f_aim_s", 0, 160, 32, 32, 0, 1, 1, true, 2, DIR_RIGHT, 7, 0, 25, 32, 28, 11);
-                    } else if (this.game.keyA) { // Left-Straight
+                    } else if (this.game.keyLeft) { // Left-Straight
                         animation = new Animation(this.spritesheet, "f_aim_s", 224, 160, 32, 32, 0, 1, 1, true, 2, DIR_LEFT, 0, 0, 25, 32, 3, 11);
                     } else { // Diagonal
                         if (animation.direction == DIR_RIGHT)
@@ -555,9 +555,9 @@ class Yamada extends ActorClass {
                     /* Implicit 'Is falling' at this stage of the state check.
                      */
 
-                    if (this.game.keyD || (animation.direction == DIR_RIGHT && !this.game.keyA)) // Moving right
+                    if (this.game.keyRight || (animation.direction == DIR_RIGHT && !this.game.keyLeft)) // Moving right
                         animation = new Animation(this.spritesheet, "f_aim_s", 0, 160, 32, 32, 0, 1, 1, true, 2, DIR_RIGHT, 7, 0, 25, 32, 28, 11);
-                    else if (this.game.keyA || animation.direction == DIR_LEFT) // Moving left
+                    else if (this.game.keyLeft || animation.direction == DIR_LEFT) // Moving left
                         animation = new Animation(this.spritesheet, "f_aim_s", 224, 160, 32, 32, 0, 1, 1, true, 2, DIR_LEFT, 0, 0, 25, 32, 3, 11);
 
                 }

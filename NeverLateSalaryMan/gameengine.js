@@ -45,11 +45,11 @@ function GameEngine() {
     this.click = null;
     this.mouse = null;
     this.wheel = null;
-    this.keyW = false;
-    this.keyA = false;
-    this.keyD = false;
-    this.keyX = false;
-    this.keyShift = false;
+    this.keyUp = false;
+    this.keyLeft = false;
+    this.keyRight = false;
+    this.keySever = false;
+    this.keyGrapple = false;
     this.surfaceWidth = null;
     this.surfaceHeight = null;
 }
@@ -123,20 +123,19 @@ GameEngine.prototype.startInput = function () {
     this.ctx.canvas.addEventListener("keydown", function (e) {
         switch (e.keyCode) {
             case 65: //A key
-                that.keyA = true;
+                that.keyLeft = true;
                 break;
             case 68: //D key
-                that.keyD = true;
+                that.keyRight = true;
                 break;
 			case 87: // W key
-				that.keyW = true;
+				that.keyUp = true;
 				break;
-			case 88: // X key
-				that.keyX = true;
+			case 76: //L key
+				that.keySever = true;
 				break;
-            case 16: //Left Shift key
-                that.keyShift = true;
-				e.preventDefault();
+            case 75: //K key
+                that.keyGrapple = true;
                 break;
             default:
             //default action
@@ -146,19 +145,19 @@ GameEngine.prototype.startInput = function () {
     this.ctx.canvas.addEventListener("keyup", function (e) {
         switch (e.keyCode) {
             case 65: //A key
-                that.keyA = false;
+                that.keyLeft = false;
                 break;
             case 68: //D key
-                that.keyD = false;
+                that.keyRight = false;
                 break;
 			case 87: // W key
-				that.keyW = false;
+				that.keyUp = false;
 				break;
-			case 88: // X key
-				that.keyX = false;
+			case 76: // L key
+				that.keySever = false;
 				break;
-            case 16: //Left Shift key
-                that.keyShift = false;
+            case 75: //K key
+                that.keyGrapple = false;
                 break;
             default:
                 //default action
@@ -186,8 +185,10 @@ GameEngine.prototype.draw = function () {
     this.ctx.save();	
 	if (this.background) this.background.draw();
     for (var i = 0; i < this.entities.length; i++) {
-        this.entities[i].draw(this.ctx);
+		var entity = this.entities[i];
+        if (entity != this.player) entity.draw(this.ctx);
     }
+	if (this.player) this.player.draw();
 	if (this.camera) this.camera.draw();
     this.ctx.restore();
 }

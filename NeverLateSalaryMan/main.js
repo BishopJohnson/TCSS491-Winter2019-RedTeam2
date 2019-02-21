@@ -197,11 +197,13 @@ ConWorkerPlatform.prototype.draw = function () {
 /**
 Defines the area that Yamada must reach to win the level.
 */
-function WinArea(game, x, y, width, height) {
+function WinArea(game, x, y, spritesheet) {
 	this.game = game;
 	this.ctx = game.ctx;
-    this.width = width;
-    this.height = height;
+	this.spritesheet = spritesheet;
+    this.width = 24;
+    this.height = 64;
+	this.animation = new Animation(this.spritesheet, "sign", 0, 0, 16, 32, 0, 1, 1, true, 2, DIR_RIGHT); 
     this.box = new BoundingBox(this.x, this.y, this.width, this.height, "win");
 	
 	Entity.call(this, game, x, y);
@@ -220,21 +222,22 @@ WinArea.prototype.update = function () {
 }
 
 WinArea.prototype.draw = function () {
-	this.ctx.strokeStyle = "yellow";
-    this.ctx.strokeRect(this.x - this.game.camera.x, this.y - this.game.camera.y, this.width, this.height);
+	this.animation.drawFrame(this.game.clockTick, this.ctx, this.x - this.game.camera.x, this.y - this.game.camera.y);
 }
 
 /**
 A checkpoint for Yamada to respawn at when he runs out of stamina.
 */
-function Checkpoint(game, x, y, pointID) {
+function Checkpoint(game, x, y, pointID, spritesheet) {
 	this.game = game;
 	this.ctx = game.ctx;
 	this.scene = game.sceneManager;
 	this.ID = pointID;
 	this.active = false;
+	this.spritesheet = spritesheet;
 	// Set animation to use inactive sprite
-    this.box = new BoundingBox(this.x, this.y, 32, 64, "checkpoint");
+	this.animation = new Animation(this.spritesheet, "off", 0, 0, 32, 32, 0, 1, 1, true, 2, DIR_RIGHT); 
+    this.box = new BoundingBox(this.x, this.y, 64, 64, "checkpoint");
 	
 	Entity.call(this, game, x, y);
 }
@@ -243,11 +246,11 @@ Checkpoint.prototype = new Entity();
 Checkpoint.prototype.constructor = Checkpoint;
 
 Checkpoint.prototype.update = function () {
-	this.box = new BoundingBox(this.x, this.y, 32, 64, "checkpoint");
+	this.box = new BoundingBox(this.x, this.y, 64, 64, "checkpoint");
 	var playerCheck = this.box.collide(this.game.player.box);
 	if(playerCheck.object == "player") {
 		this.active = true;
-		// In future set checkpoint to use active sprite
+		this.animation = new Animation(this.spritesheet, "on", 33, 0, 32, 32, 0, 1, 1, true, 2, DIR_RIGHT); 
 		if (!this.scene.activeCheckpoint || this.scene.activeCheckpoint.ID < this.ID)
 			this.game.sceneManager.activeCheckpoint = this;
 	}
@@ -255,9 +258,7 @@ Checkpoint.prototype.update = function () {
 }
 
 Checkpoint.prototype.draw = function () {
-	this.ctx.strokeStyle = "Blue";
-	if(this.active) this.ctx.strokeStyle = "Lime";
-    this.ctx.strokeRect(this.x - this.game.camera.x, this.y - this.game.camera.y, 32, 64);
+	this.animation.drawFrame(this.game.clockTick, this.ctx, this.x - this.game.camera.x, this.y - this.game.camera.y);
 }
 
 // Inheritance from Entity
@@ -381,6 +382,8 @@ AM.queueDownload("./NeverLateSalaryMan/img/Yamada.png");
 AM.queueDownload("./NeverLateSalaryMan/img/Bird.png");
 AM.queueDownload("./NeverLateSalaryMan/img/ConstrWorker.png");
 AM.queueDownload("./NeverLateSalaryMan/img/PrototypeLevel.png");
+AM.queueDownload("./NeverLateSalaryMan/img/Checkpoint.png");
+AM.queueDownload("./NeverLateSalaryMan/img/BusStop.png");
 
 AM.downloadAll(function () {
     var canvas = document.getElementById("gameWorld");
