@@ -1,0 +1,15 @@
+10x14
+                    
+                    
+                    
+                    
+                    
+                    
+0a0b0b0b0b0b0b0b0b0c
+1a                1a
+1b                1b
+1b                1b
+1b                1b
+1b      3s        1b
+1cpp  3s3s      gg1c
+0a0b0b0b0b0b0b0b0b0c
