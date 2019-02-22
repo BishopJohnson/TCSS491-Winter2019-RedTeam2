@@ -14,14 +14,15 @@ function SceneManager(game) {
 		{playLevel: false, nextLevel: 1, timeLimit: 0, camData: null, deathPlane: 0, playerData: null,
 		entities:[{msg: "A and D to move\nHold K to aim\nHold W while aiming to aim up\nPress A or D while aiming to aim straight left or right\nRelease K to fire hook\nPress L to detatch hook\n\nYou can stand on the worker's beam, but touching him\nwill damage you.\nVending machines are checkpoints.\n\nGet to the bus stop before time runs out!\n\nClick to start", transitionID: 1, x: 50, y: 100}], platforms: null, background: null}));
 	this.levelProps.push(JSON.stringify(
-		{playLevel: true, nextLevel: 2, timeLimit: 180, 
+		{playLevel: true, nextLevel: 2, timeLimit: 120, 
 		camData: {minX: 0, maxX: 1991, minY: 0, maxY: 1000}, deathPlane: 1000,
 		playerData: {x: 100, y: 255},
 		entities: [{tag: "ConWorker", x: 600, y: 237},
                    {tag: "Bird", x: 800, y: 100},
 				   {tag: "Checkpoint", x: 100, y: 257, ID: 0},
 				   {tag: "Checkpoint", x: 850, y: 162, ID: 1},
-				   {tag: "WinArea", x: 1900, y: 289}],
+				   {tag: "WinArea", x: 1900, y: 289},
+				   {tag: "SecurityGuard", x : 1800, y: 289}],
 		platforms: [{x: 0, y: 0, width: 1992, height: 34},
 					{x: 0, y: 34, width: 30, height: 287},
 					{x: 0, y: 322, width: 502, height: 30},
@@ -35,6 +36,7 @@ function SceneManager(game) {
 					{x: 1173, y: 258, width: 62, height: 95},
 					{x: 1488, y: 259, width: 126, height: 94}],
 		background: "./NeverLateSalaryMan/img/PrototypeLevel.png"}));
+	this.levelProps.push('{"timeLimit":180,"playLevel":true,"entities":[{"x":2016,"y":96,"tag":"Checkpoint","ID":4},{"x":1408,"y":160,"tag":"Checkpoint","ID":3},{"x":1280,"y":374,"tag":"ConWorker","ID":0},{"x":1184,"y":736,"tag":"Checkpoint","ID":2},{"x":2336,"y":736,"tag":"WinArea","ID":0},{"x":512,"y":768,"tag":"Checkpoint","ID":1},{"x":1088,"y":758,"tag":"ConWorker","ID":0},{"x":1344,"y":758,"tag":"ConWorker","ID":0},{"x":32,"y":864,"tag":"Checkpoint","ID":0},{"x":448,"y":886,"tag":"ConWorker","ID":0},{"x":576,"y":886,"tag":"ConWorker","ID":0},{"x":800,"y":886,"tag":"ConWorker","ID":0}],"camData":{"minY":0,"minX":0,"maxY":1360,"maxX":2368},"nextLevel":3,"ID":3,"deathPlane":992,"playerData":{"x":32,"y":896},"platforms":[{"x":2016,"width":192,"y":0,"ID":0,"height":32},{"x":1216,"width":32,"y":32,"ID":2,"height":576},{"x":1248,"width":128,"y":32,"ID":0,"height":32},{"x":2176,"width":32,"y":32,"ID":2,"height":576},{"x":1696,"width":32,"y":64,"ID":2,"height":32},{"x":1856,"width":32,"y":64,"ID":2,"height":32},{"x":1536,"width":32,"y":96,"ID":2,"height":32},{"x":1664,"width":96,"y":160,"ID":0,"height":32},{"x":1824,"width":96,"y":160,"ID":0,"height":32},{"x":2016,"width":64,"y":160,"ID":2,"height":640},{"x":1472,"width":32,"y":192,"ID":4,"height":32},{"x":1408,"width":160,"y":224,"ID":0,"height":32},{"x":1536,"width":32,"y":256,"ID":2,"height":320},{"x":1248,"width":32,"y":288,"ID":2,"height":32},{"x":1248,"width":160,"y":416,"ID":0,"height":32},{"x":832,"width":384,"y":544,"ID":0,"height":32},{"x":832,"width":32,"y":576,"ID":1,"height":32},{"x":1408,"width":160,"y":576,"ID":0,"height":32},{"x":0,"width":864,"y":608,"ID":0,"height":32},{"x":1408,"width":32,"y":608,"ID":2,"height":192},{"x":0,"width":32,"y":640,"ID":1,"height":288},{"x":704,"width":32,"y":640,"ID":1,"height":64},{"x":928,"width":32,"y":768,"ID":2,"height":32},{"x":1152,"width":32,"y":768,"ID":2,"height":32},{"x":672,"width":96,"y":800,"ID":0,"height":32},{"x":864,"width":576,"y":800,"ID":0,"height":32},{"x":2016,"width":352,"y":800,"ID":0,"height":32},{"x":512,"width":32,"y":832,"ID":2,"height":32},{"x":544,"width":32,"y":832,"ID":2,"height":32},{"x":864,"width":32,"y":832,"ID":1,"height":96},{"x":224,"width":32,"y":864,"ID":2,"height":32},{"x":320,"width":32,"y":864,"ID":2,"height":32},{"x":512,"width":32,"y":864,"ID":2,"height":32},{"x":192,"width":32,"y":896,"ID":2,"height":32},{"x":224,"width":32,"y":896,"ID":2,"height":32},{"x":320,"width":32,"y":896,"ID":2,"height":32},{"x":352,"width":32,"y":896,"ID":2,"height":32},{"x":512,"width":32,"y":896,"ID":2,"height":32},{"x":0,"width":896,"y":928,"ID":0,"height":32}]}');
 	this.levelProps.push(JSON.stringify(
 		{playLevel: false, nextLevel: 0, timeLimit: 0, camData: null, deathPlane: 0, playerData: null,
 		entities:[{msg: "You won!\nClick to return to splash screen", transitionID: 0, x: 100, y: 100}], platforms: null, background: null}));
@@ -72,7 +74,7 @@ SceneManager.prototype.update = function() {
 		
 		// Game ends if player runs out of time
 		if (this.timeLimit <= 0) {
-			this.loadLevel(3);
+			this.loadLevel(4);
 		}
 	}
 }
@@ -107,7 +109,14 @@ SceneManager.prototype.loadLevel = function(sceneID) {
 		var newCam = new Camera(this.game, properties.camData.minX, properties.camData.maxX, properties.camData.minY, properties.camData.maxY);
 		this.game.camera = newCam;
 		this.game.addEntity(newCam);
-		this.deathPlane = properties.deathPlane;
+		this.deathPlane = properties.deathPlane;	
+		
+		// Add all platforms for the level
+		for(i = 0; i < properties.platforms.length; i++) {
+			var newPlat = properties.platforms[i];
+			this.game.addEntity(new Platform(this.game, newPlat.x, newPlat.y, 
+				newPlat.width, newPlat.height));
+		}
 		
 		// Add all nonPlayer entities
 		for(i = 0; i < properties.entities.length; i++) {
@@ -121,19 +130,16 @@ SceneManager.prototype.loadLevel = function(sceneID) {
 				this.game.addEntity(new WinArea(this.game, newThing.x, newThing.y, AM.getAsset("./NeverLateSalaryMan/img/BusStop.png")));
 			else if (newThing.tag == "Checkpoint")
 				this.game.addEntity(new Checkpoint(this.game, newThing.x, newThing.y, newThing.ID, AM.getAsset("./NeverLateSalaryMan/img/Checkpoint.png")));
+			else if (newThing.tag == "SecurityGuard")
+				this.game.addEntity(new SecurityGuard(this.game, newThing.x, newThing.y, AM.getAsset("./NeverLateSalaryMan/img/PoliceOfficer.png")));
 			// else if (newThing.tag == something)
 		}
 		
-		// Add all platforms for the level
-		for(i = 0; i < properties.platforms.length; i++) {
-			var newPlat = properties.platforms[i];
-			this.game.addEntity(new Platform(this.game, newPlat.x, newPlat.y, 
-				newPlat.width, newPlat.height));
-		}
-		
 		// Add the background for the level
+		if (properties.background)
 		this.game.background = new Background(this.game, 
 								AM.getAsset(properties.background));
+		else this.game.background = null;
 		
 	} else { // Scene is not a gameplay level, get other assets
 		this.game.camera = null;

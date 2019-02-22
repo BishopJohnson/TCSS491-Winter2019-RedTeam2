@@ -172,8 +172,8 @@ ConWorkerPlatform.prototype.update = function () {
 
         if (entity !== this
             && entity !== this.owner
-            && (collide.object == TAG_PLAYER || collide.object == TAG_ENEMY || collide.object == TAG_HOOK)) { // Player, hook, or enemy is colliding with the platform
-            // Checks if entity is on top of platform
+            && (collide.object == TAG_PLAYER || collide.object == TAG_ENEMY || collide.object == TAG_HOOK)) { 
+			// Player, hook, or enemy is colliding with the platform
             if (collide.bottom || collide.left || collide.right) {
 				// Apply shift from construction worker to all colliding entities
                 entity.x += this.deltaX;
@@ -319,16 +319,20 @@ Hook.prototype.update = function () {
 
         if (collPoint && entity.box.tag == TAG_PLATFORM) { // Hook hit a platform
             intPoint = collPoint;
-        } else if (collPoint && entity.box.tag == TAG_ENEMY) { // Hook hit a enemy
-            /* TODO: Differentiate between the hook hitting an enemy and
-             * an enemy cutting the hook for stun.
-             */
+        } else if (collPoint && entity.box.tag == TAG_ENEMY) { 
+		// Hook or rope hit an enemy
 
-            if (true) // Checks if the hook was not cut by the enemy
+            if (this.box.collide(entity.box).engulf && entity.stunTimer == 0) {
+				// Checks if the hook itself hit the enemy
                 entity.stun();
-
-            this.player.cancelAction();
-            this.removeFromWorld = true;
+				this.player.cancelAction();
+				this.removeFromWorld = true;
+				
+			}
+			else if (entity.stunTimer == 0){	
+				this.player.cancelAction();
+				this.removeFromWorld = true;
+			}
         }
     }
 
@@ -445,6 +449,7 @@ AM.queueDownload("./NeverLateSalaryMan/img/ConstrWorker.png");
 AM.queueDownload("./NeverLateSalaryMan/img/PrototypeLevel.png");
 AM.queueDownload("./NeverLateSalaryMan/img/Checkpoint.png");
 AM.queueDownload("./NeverLateSalaryMan/img/BusStop.png");
+AM.queueDownload("./NeverLateSalaryMan/img/PoliceOfficer.png");
 
 AM.downloadAll(function () {
     var canvas = document.getElementById("gameWorld");

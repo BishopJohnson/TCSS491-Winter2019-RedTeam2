@@ -404,7 +404,9 @@ class Yamada extends ActorClass {
             this.hook = null;
             this.grappling = false;
             this.aimVector = new Vector(Math.sqrt(2) / 2, -Math.sqrt(2) / 2);
-        } else if (this.aiming && !this.game.keyGrapple && !this.hook) { // Fire in aimed direction
+			
+        } else if (this.aiming && !this.game.keyGrapple && !this.hook) { 
+		// Fire in aimed direction
             this.aimVector.multiply(40);
             this.hook = new Hook(this, this.aimVector);
             this.game.addEntity(this.hook);
@@ -449,7 +451,7 @@ class Yamada extends ActorClass {
             this.aimVector = new Vector(Math.sqrt(2) / 2, -Math.sqrt(2) / 2);
         }
 
-        if (this.grappling) { // Pulls Yamada towards grappling hook
+        if (this.grappling && this.hook) { // Pulls Yamada towards grappling hook
             // Create direction vector to hook point
             var dirVect = new Vector(this.hook.x - (this.x + this.animation.hotspotX), this.hook.y - (this.y + this.animation.hotspotY));
 
@@ -478,9 +480,9 @@ class Yamada extends ActorClass {
             if (this.velocityX != 0) { // Is moving
 
                 if (this.game.keyRight && !this.game.keyLeft) // Walking right
-                    animation = new Animation(this.spritesheet, "walk", 0, 64, 32, 32, 0, 0.10, 8, true, 2, DIR_RIGHT, 7, 0, 18, 32);
+                    animation = new Animation(this.spritesheet, "walk", 0, 64, 32, 32, 0, 0.10, 8, true, 2, DIR_RIGHT, 7, 0, 18, 32, 25, 16);
                 else if (this.game.keyLeft) // Walking left
-                    animation = new Animation(this.spritesheet, "walk", 0, 96, 32, 32, 0, 0.10, 8, true, 2, DIR_LEFT, 7, 0, 18, 32);
+                    animation = new Animation(this.spritesheet, "walk", 0, 96, 32, 32, 0, 0.10, 8, true, 2, DIR_LEFT, 7, 0, 18, 32, 7, 16);
 
             } else { // Is not moving
 
@@ -655,6 +657,7 @@ class Yamada extends ActorClass {
                 this.hook.removeFromWorld = true;
 
             this.hook = null;
+			this.animate();
         }
     }
 }
@@ -730,10 +733,7 @@ class Bird extends EnemyClass {
      * TODO: Overrides super method to kill the bird.
      */
     stun() {
-        super.stun(); // Call to super method (temporary)
-
-        /* TODO: Stun should kill the bird.
-         */
+        this.removeFromWorld = true;
     }
 }
 
@@ -777,7 +777,7 @@ class ConWorker extends EnemyClass {
             var tempBox = new BoundingBox(this.box.x, this.box.y + 1, this.box.width, this.box.height, this.tag);
             var collide = tempBox.collide(this.platform.box);
 
-            if (!collide.top) {
+            if (collide.top) {
                 if (this.box.x + (this.box.width / 2) < this.platform.x)
                     this.velocityX = this.speed;
                 else if (this.box.x + (this.box.width / 2) > this.platform.x + this.platform.width)
@@ -818,6 +818,100 @@ class ConWorker extends EnemyClass {
             animation = new Animation(this.spritesheet, "walk", 0, 0, 42, 42, 0, 0.10, 8, true, 2, DIR_RIGHT, 0, 7, 42, 35);
         } else if (this.velocityX < 0) { // Is walking left
             animation = new Animation(this.spritesheet, "walk", 0, 42, 42, 42, 0, 0.10, 8, true, 2, DIR_LEFT, 0, 7, 42, 35);
+        }
+        
+        super.animate(animation); // Call to super method
+    }
+}
+
+/**
+ * Class for the Security Guard enemy type.
+ */
+class SecurityGuard extends EnemyClass {
+	
+	/**
+     * The constructor for the Security Guard class.
+     * 
+     * @param {GameEngine} game The game engine.
+     * @param {number} x The x position to spawn the enemy at.
+     * @param {number} y The y position to spawn the enemy at.
+     * @param {string} spritesheet The file path of the spritesheet in the asset manager.
+     */
+    constructor(game, x, y, spritesheet) {
+        super(game, x, y, spritesheet, undefined/* default damage */, 2); // Call to super constructor
+
+        this.speed = 1.5;
+
+        this.velocityX = this.speed; // Initial speed
+        this.animation = new Animation(spritesheet, "walk", 0, 0, 32, 32, 0, 0.10, 8, true, 2, DIR_RIGHT, 0, 0, 32, 32); // Initial animation
+    }
+	
+	/**
+	* The update method for the Security Guard class.
+	*/
+	update() {
+        super.update(); // Call to super method
+
+        // Checks if still on platform
+        if (this.platform) {
+            // Check with temporary hitbox, as shunted out after last collision
+            var tempBox = new BoundingBox(this.box.x, this.box.y + 1, this.box.width, this.box.height, this.tag);
+            var collide = tempBox.collide(this.platform.box);
+
+            if (collide.top) {
+                if (this.box.x + (this.box.width / 2) < this.platform.x)
+                    this.velocityX = this.speed;
+                else if (this.box.x + (this.box.width / 2) > this.platform.x + this.platform.width)
+                    this.velocityX = -this.speed;
+            }
+			
+			// Check if player is on same plane and within visual radius
+			if (this.platform == this.game.player.platform && dist(this.x, this.y, this.game.player.x, this.game.player.y) < 175) {
+				// Pursue the player, at higher speed than patrolling speed
+				if (this.x > this.game.player.x + this.game.player.box.width)
+					this.velocityX = -this.speed - 1;
+				
+				else if (this.x < this.game.player.x - this.game.player.box.width)
+					this.velocityX = this.speed + 1;
+				
+			} else {
+				// Set patrolling speed in the current direction
+				if (this.velocityX < 0)
+					this.velocityX = -this.speed;
+				
+				else
+					this.velocityX = this.speed;
+			}
+        }
+
+        // Iterates over game entities to check for collision
+        for (var i = 0; i < this.game.entities.length; i++) {
+            // Check with temporary hitbox from before the super class update
+            var entity = this.game.entities[i];
+            var tempBox = new BoundingBox(this.box.x + this.velocityX, this.box.y, this.box.width, this.box.height, this.tag);
+            var collide = tempBox.collide(entity.box); // The collision results
+
+            if (entity !== this && collide.object == TAG_PLATFORM && this.collision) { // Checks if entity collided with a platform
+                if (collide.right && this.box.left >= entity.box.right) { // Ran into right side of a platform
+                    this.velocityX = this.speed;
+                }
+
+                if (collide.left && this.box.right <= entity.box.left) { // Ran into left side of a platform
+                    this.velocityX = -this.speed;
+                }
+            }
+        }
+
+        this.animate(); // Call to update animation
+    }
+	
+	animate() {
+        let animation = this.animation;
+
+        if (this.velocityX > 0) { // Is walking right
+			animation = new Animation(this.spritesheet, "walk", 0, 0, 32, 32, 0, 0.10, 8, true, 2, DIR_RIGHT, 0, 0, 32, 32);
+        } else if (this.velocityX < 0) { // Is walking left;
+			animation = new Animation(this.spritesheet, "walk", 0, 32, 32, 32, 0, 0.10, 8, true, 2, DIR_RIGHT, 0, 0, 32, 32);
         }
         
         super.animate(animation); // Call to super method

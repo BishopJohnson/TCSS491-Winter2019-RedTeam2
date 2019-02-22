@@ -333,7 +333,7 @@ function BoundingBox(x, y, width = 0, height = 0, tag = TAG_EMPTY) {
  * @returns { object: string, top: boolean, bottom: boolean, left: boolean, right: boolean }
  */
 BoundingBox.prototype.collide = function (other) {
-    var collide = { object: TAG_EMPTY, top: false, bottom: false, left: false, right: false }; // Collision data to return
+    var collide = { object: TAG_EMPTY, top: false, bottom: false, left: false, right: false, engulf: false }; // Collision data to return
 
     if (other == null) // Checks if other bounding box exists
         return collide;
@@ -346,6 +346,8 @@ BoundingBox.prototype.collide = function (other) {
         collide.left = true;
     if (this.left < other.right && this.right > other.right && !(this.top >= other.bottom) && !(this.bottom <= other.top)) // Collided with right side of other
         collide.right = true;
+	if (this.left > other.left && this.right < other.right && this.top > other.top && this.bottom < other.bottom) // Box is inside the other
+		collide.engulf = true;
 
     if (collide.top || collide.bottom || collide.left || collide.right) // Sets tag if collision occured
         collide.object = other.tag;
