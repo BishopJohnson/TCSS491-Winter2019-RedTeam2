@@ -450,6 +450,7 @@ AM.queueDownload("./NeverLateSalaryMan/img/PrototypeLevel.png");
 AM.queueDownload("./NeverLateSalaryMan/img/Checkpoint.png");
 AM.queueDownload("./NeverLateSalaryMan/img/BusStop.png");
 AM.queueDownload("./NeverLateSalaryMan/img/PoliceOfficer.png");
+AM.queueDownload("./NeverLateSalaryMan/img/SumoWrestler.png");
 
 AM.downloadAll(function () {
     var canvas = document.getElementById("gameWorld");

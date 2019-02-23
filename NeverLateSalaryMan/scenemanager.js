@@ -22,6 +22,7 @@ function SceneManager(game) {
 				   {tag: "Checkpoint", x: 100, y: 257, ID: 0},
 				   {tag: "Checkpoint", x: 850, y: 162, ID: 1},
 				   {tag: "WinArea", x: 1900, y: 289},
+				   // {tag: "SumoWrestler", x: 100, y: 100}, /* TODO: Sumo test */
 				   {tag: "SecurityGuard", x : 1800, y: 289}],
 		platforms: [{x: 0, y: 0, width: 1992, height: 34},
 					{x: 0, y: 34, width: 30, height: 287},
@@ -132,6 +133,8 @@ SceneManager.prototype.loadLevel = function(sceneID) {
 				this.game.addEntity(new Checkpoint(this.game, newThing.x, newThing.y, newThing.ID, AM.getAsset("./NeverLateSalaryMan/img/Checkpoint.png")));
 			else if (newThing.tag == "SecurityGuard")
 				this.game.addEntity(new SecurityGuard(this.game, newThing.x, newThing.y, AM.getAsset("./NeverLateSalaryMan/img/PoliceOfficer.png")));
+			else if (newThing.tag == "SumoWrestler")
+				this.game.addEntity(new SumoWrestler(this.game, newThing.x, newThing.y, AM.getAsset("./NeverLateSalaryMan/img/SumoWrestler.png")));
 			// else if (newThing.tag == something)
 		}
 		

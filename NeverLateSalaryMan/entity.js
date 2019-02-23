@@ -917,3 +917,87 @@ class SecurityGuard extends EnemyClass {
         super.animate(animation); // Call to super method
     }
 }
+
+class SumoWrestler extends EnemyClass {
+    /**
+     * The constructor for the Sumo Wrestler class.
+     * 
+     * @param {GameEngine} game The game engine.
+     * @param {number} x The x position to spawn the enemy at.
+     * @param {number} y The y position to spawn the enemy at.
+     * @param {string} spritesheet The file path of the spritesheet in the asset manager.
+     * @param {bool} bounce (Optional) Determines if the Sumo Wrestler bounces.
+     */
+    constructor(game, x, y, spritesheet, bounce = true) {
+        super(game, x, y, spritesheet, 0/* default damage */, 0, true, true); // Call to super constructor
+
+        this.speed = 3;
+
+        this.velocityX = this.speed; // Initial speed
+        this.animation = new Animation(spritesheet, "roll", 0, 0, 32, 32, 0, 0.07, 8, true, 2, DIR_RIGHT, 4, 2, 26, 26); // Initial animation
+                                                                                                         /* TODO: last 4 Xoffet, Yoffest, Width (bounding box), Height (bounding box) */
+    }
+
+    /**
+     * Updates the Sumo Wrestler.
+     * 
+     * @see EnemyClass.update
+     */
+    update() {
+        super.update(); // Call to super method
+
+        /* TODO: update
+         */
+
+        // Iterates over game entities to check for collision
+        for (var i = 0; i < this.game.entities.length; i++) {
+            // Check with temporary hitbox from before the super class update
+            var entity = this.game.entities[i];
+            var tempBox = new BoundingBox(this.box.x + this.velocityX, this.box.y, this.box.width, this.box.height, this.tag);
+            var collide = tempBox.collide(entity.box); // The collision results
+
+            if (entity !== this && collide.object == TAG_PLATFORM && this.collision) { // Checks if entity collided with a platform
+                if (collide.right && this.box.left >= entity.box.right) { // Ran into right side of a platform
+                    this.velocityX = this.speed;
+                }
+
+                if (collide.left && this.box.right <= entity.box.left) { // Ran into left side of a platform
+                    this.velocityX = -this.speed;
+                }
+            }
+        }
+
+        this.animate(); // Call to update animation
+    }
+
+    /**
+     * Updates the Sumo Wrestler's animation based on its current state.
+     */
+    animate() {
+        let animation = this.animation;
+
+        if (this.velocityX > 0) { // Is rolling right
+            animation = new Animation(this.spritesheet, "roll", 0, 0, 32, 32, 0, 0.07, 8, true, 2, DIR_RIGHT, 4, 2, 26, 26);
+        } else if (this.velocityX < 0) { // Is rolling left
+            animation = new Animation(this.spritesheet, "roll", 0, 32, 32, 32, 0, 0.07, 8, true, 2, DIR_LEFT, 2, 2, 26, 26);
+        }
+        
+        super.animate(animation); // Call to super method
+    }
+
+    /**
+     * Stuns the Sumo Wrestler.
+     */
+    stun() {
+        super.stun(); // Call to super method (temporary)
+
+        /* TODO: Stun should make the Sumo turn around.
+         */
+
+        if (this.velocityX > 0) { // Is rolling right
+            this.velocityX = -this.speed;
+        } else if (this.velocityX < 0) { // Is rolling left
+            this.velocityX = this.speed;
+        }
+    }
+}
