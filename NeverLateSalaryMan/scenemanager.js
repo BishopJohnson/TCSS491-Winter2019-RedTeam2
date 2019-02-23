@@ -24,20 +24,20 @@ function SceneManager(game) {
 				   {tag: "WinArea", x: 1900, y: 289},
 				   {tag: "SumoWrestler", x: 100, y: 100}, /* TODO: Sumo test */
 				   {tag: "SecurityGuard", x : 1800, y: 289}],
-		platforms: [{x: 0, y: 0, width: 1992, height: 34},
-					{x: 0, y: 34, width: 30, height: 287},
-					{x: 0, y: 322, width: 502, height: 30},
-					{x: 377, y: 222, width: 124, height: 99},
-					{x: 439, y: 353, width: 504, height: 30},
-					{x: 817, y: 228, width: 126, height: 125},
-					{x: 643, y: 34, width: 30, height: 151},
-					{x: 1315, y: 34, width: 30, height: 192},
-					{x: 1961, y: 34, width: 30, height: 319},
-					{x: 1173, y: 353, width: 818, height: 30},
-					{x: 1173, y: 258, width: 62, height: 95},
-					{x: 1488, y: 259, width: 126, height: 94}],
+		platforms: [{x: 0, y: 0, width: 1992, height: 34, id: -1},
+					{x: 0, y: 34, width: 30, height: 287, id: -1},
+					{x: 0, y: 322, width: 502, height: 30, id: -1},
+					{x: 377, y: 222, width: 124, height: 99, id: -1},
+					{x: 439, y: 353, width: 504, height: 30, id: -1},
+					{x: 817, y: 228, width: 126, height: 125, id: -1},
+					{x: 643, y: 34, width: 30, height: 151, id: -1},
+					{x: 1315, y: 34, width: 30, height: 192, id: -1},
+					{x: 1961, y: 34, width: 30, height: 319, id: -1},
+					{x: 1173, y: 353, width: 818, height: 30, id: -1},
+					{x: 1173, y: 258, width: 62, height: 95, id: -1},
+					{x: 1488, y: 259, width: 126, height: 94, id: -1}],
 		background: "./NeverLateSalaryMan/img/PrototypeLevel.png"}));
-	this.levelProps.push('{"timeLimit":180,"playLevel":true,"entities":[{"x":2016,"y":96,"tag":"Checkpoint","ID":4},{"x":1408,"y":160,"tag":"Checkpoint","ID":3},{"x":1280,"y":374,"tag":"ConWorker","ID":0},{"x":1184,"y":736,"tag":"Checkpoint","ID":2},{"x":2336,"y":736,"tag":"WinArea","ID":0},{"x":512,"y":768,"tag":"Checkpoint","ID":1},{"x":1088,"y":758,"tag":"ConWorker","ID":0},{"x":1344,"y":758,"tag":"ConWorker","ID":0},{"x":32,"y":864,"tag":"Checkpoint","ID":0},{"x":448,"y":886,"tag":"ConWorker","ID":0},{"x":576,"y":886,"tag":"ConWorker","ID":0},{"x":800,"y":886,"tag":"ConWorker","ID":0}],"camData":{"minY":0,"minX":0,"maxY":1360,"maxX":2368},"nextLevel":3,"ID":3,"deathPlane":992,"playerData":{"x":32,"y":896},"platforms":[{"x":2016,"width":192,"y":0,"ID":0,"height":32},{"x":1216,"width":32,"y":32,"ID":2,"height":576},{"x":1248,"width":128,"y":32,"ID":0,"height":32},{"x":2176,"width":32,"y":32,"ID":2,"height":576},{"x":1696,"width":32,"y":64,"ID":2,"height":32},{"x":1856,"width":32,"y":64,"ID":2,"height":32},{"x":1536,"width":32,"y":96,"ID":2,"height":32},{"x":1664,"width":96,"y":160,"ID":0,"height":32},{"x":1824,"width":96,"y":160,"ID":0,"height":32},{"x":2016,"width":64,"y":160,"ID":2,"height":640},{"x":1472,"width":32,"y":192,"ID":4,"height":32},{"x":1408,"width":160,"y":224,"ID":0,"height":32},{"x":1536,"width":32,"y":256,"ID":2,"height":320},{"x":1248,"width":32,"y":288,"ID":2,"height":32},{"x":1248,"width":160,"y":416,"ID":0,"height":32},{"x":832,"width":384,"y":544,"ID":0,"height":32},{"x":832,"width":32,"y":576,"ID":1,"height":32},{"x":1408,"width":160,"y":576,"ID":0,"height":32},{"x":0,"width":864,"y":608,"ID":0,"height":32},{"x":1408,"width":32,"y":608,"ID":2,"height":192},{"x":0,"width":32,"y":640,"ID":1,"height":288},{"x":704,"width":32,"y":640,"ID":1,"height":64},{"x":928,"width":32,"y":768,"ID":2,"height":32},{"x":1152,"width":32,"y":768,"ID":2,"height":32},{"x":672,"width":96,"y":800,"ID":0,"height":32},{"x":864,"width":576,"y":800,"ID":0,"height":32},{"x":2016,"width":352,"y":800,"ID":0,"height":32},{"x":512,"width":32,"y":832,"ID":2,"height":32},{"x":544,"width":32,"y":832,"ID":2,"height":32},{"x":864,"width":32,"y":832,"ID":1,"height":96},{"x":224,"width":32,"y":864,"ID":2,"height":32},{"x":320,"width":32,"y":864,"ID":2,"height":32},{"x":512,"width":32,"y":864,"ID":2,"height":32},{"x":192,"width":32,"y":896,"ID":2,"height":32},{"x":224,"width":32,"y":896,"ID":2,"height":32},{"x":320,"width":32,"y":896,"ID":2,"height":32},{"x":352,"width":32,"y":896,"ID":2,"height":32},{"x":512,"width":32,"y":896,"ID":2,"height":32},{"x":0,"width":896,"y":928,"ID":0,"height":32}]}');
+	this.levelProps.push(level1);
 	this.levelProps.push(JSON.stringify(
 		{playLevel: false, nextLevel: 0, timeLimit: 0, camData: null, deathPlane: 0, playerData: null,
 		entities:[{msg: "You won!\nClick to return to splash screen", transitionID: 0, x: 100, y: 100}], platforms: null, background: null}));
@@ -116,7 +116,7 @@ SceneManager.prototype.loadLevel = function(sceneID) {
 		for(i = 0; i < properties.platforms.length; i++) {
 			var newPlat = properties.platforms[i];
 			this.game.addEntity(new Platform(this.game, newPlat.x, newPlat.y, 
-				newPlat.width, newPlat.height));
+				newPlat.width, newPlat.height, properties.platforms[i].ID));
 		}
 		
 		// Add all nonPlayer entities

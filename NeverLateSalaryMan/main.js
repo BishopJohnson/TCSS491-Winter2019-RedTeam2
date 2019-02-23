@@ -91,13 +91,17 @@ Camera.prototype.draw = function() {
  * @param {number} y The y coordinate of the platform.
  * @param {number} width The width of the platform.
  * @param {number} height The height of the platform.
+ * @param {number} id The id of the platform.
  */
-function Platform(game, x, y, width, height) {
+function Platform(game, x, y, width, height, id) {
     this.ctx = game.ctx;
     this.width = width;
     this.height = height;
     this.box = new BoundingBox(this.x, this.y, this.width, this.height, TAG_PLATFORM);
-
+	this.id = id;
+	this.blocks = null;
+	//this.blocks = levelImages;
+	this.animation = new Animation(AM.getAsset("./NeverLateSalaryMan/img/tileset/Blocks.png"), "Block", 0, 0, 32, 32, 0, 1, 1, true, 1, "right");
     Entity.call(this, game, x, y);
 }
 
@@ -124,6 +128,42 @@ Platform.prototype.draw = function () {
         this.ctx.strokeRect(this.x - this.game.camera.x, this.y - this.game.camera.y, this.width, this.height);
     }
     
+	this.blocks = LoadLevelImages(this.id);
+	/**
+	for(let i = 0; i < this.width; i += 32) {
+		//this.animation.drawFrame(this.game.clockTick, this.ctx, (this.x + (i * 1)) - this.game.camera.x, this.y - this.game.camera.y);
+		for(let j = 0; j < this.height; j += 32) {
+			//this.animation.drawFrame(this.game.clockTick, this.ctx, this.x - this.game.camera.x, (this.y + (j * 1)) - this.game.camera.y);
+			this.animation.drawFrame(this.game.clockTick, this.ctx, (this.x + (i * 1)) - this.game.camera.x,
+				(this.y + (j * 1)) - this.game.camera.y);
+		}
+	}
+	*/
+	if(this.id > -1) {
+		for(let i = 0; i < this.width; i += 32) {
+			var drawBlock;
+			if(i == 0) {
+				drawBlock = this.blocks[0];
+			} else if(i + 32 == this.width) {
+				drawBlock = this.blocks[2];
+			} else {
+				drawBlock = this.blocks[1];
+			}
+			drawBlock.drawFrame(this.game.clockTick, this.ctx, (this.x + (i * 1)) - this.game.camera.x, this.y - this.game.camera.y);
+		}
+		for(let j = 0; j < this.height; j += 32) {
+			//this.animation.drawFrame(this.game.clockTick, this.ctx, this.x - this.game.camera.x, (this.y + (j * 1)) - this.game.camera.y);
+			var drawBlock;
+			if(i == 0) {
+				drawBlock = this.blocks[0];
+			} else if(i + 32 == this.height) {
+				drawBlock = this.blocks[2];
+			} else {
+				drawBlock = this.blocks[1];
+			}
+			drawBlock.drawFrame(this.game.clockTick, this.ctx, this.x - this.game.camera.x, (this.y + (j * 1)) - this.game.camera.y);
+		}
+	}
     Entity.prototype.draw.call(this);
 }
 
@@ -433,6 +473,34 @@ Hook.prototype.draw = function () {
 	this.ctx.fillRect(this.x - 1 - this.game.camera.x, this.y - 1 - this.game.camera.y, 3, 3);
 }
 
+function LoadLevelImages(id) {
+	var locationArray = [];
+	//Horizontal Grinder
+	if(id == 0) {
+		var path = "./NeverLateSalaryMan/img/tileset/Platforms.png";
+		locationArray.push(new Animation(AM.getAsset(path), "Block", 0, 0, 32, 32, 0, 1, 1, true, 1, "right"));
+		locationArray.push(new Animation(AM.getAsset(path), "Block", 32, 0, 32, 32, 0, 1, 1, true, 1, "right"));
+		locationArray.push(new Animation(AM.getAsset(path), "Block", 64, 0, 32, 32, 0, 1, 1, true, 1, "right"));
+	} else if(id == 1) {
+		//Vertical Grinder
+		var path = "./NeverLateSalaryMan/img/tileset/Columns.png";
+		locationArray.push(new Animation(AM.getAsset(path), "Block", 0, 0, 32, 32, 0, 1, 1, true, 1, "right"));
+		locationArray.push(new Animation(AM.getAsset(path), "Block", 0, 32, 32, 32, 0, 1, 1, true, 1, "right"));
+		locationArray.push(new Animation(AM.getAsset(path), "Block", 0, 64, 32, 32, 0, 1, 1, true, 1, "right"));
+	} else if(id == 2) {
+		var path = "./NeverLateSalaryMan/img/tileset/Blocks.png";
+		locationArray.push(new Animation(AM.getAsset(path), "Block", 0, 32, 32, 32, 0, 1, 1, true, 1, "right"));
+		locationArray.push(new Animation(AM.getAsset(path), "Block", 64, 32, 32, 32, 0, 1, 1, true, 1, "right"));
+		locationArray.push(new Animation(AM.getAsset(path), "Block", 64, 32, 32, 32, 0, 1, 1, true, 1, "right"));
+	} else {
+		var path = "./NeverLateSalaryMan/img/tileset/Blocks.png";
+		locationArray.push(new Animation(AM.getAsset(path), "Block", 0, 32, 32, 32, 0, 1, 1, true, 1, "right"));
+		locationArray.push(new Animation(AM.getAsset(path), "Block", 0, 32, 32, 32, 0, 1, 1, true, 1, "right"));
+		locationArray.push(new Animation(AM.getAsset(path), "Block", 0, 32, 32, 32, 0, 1, 1, true, 1, "right"));
+	}
+	
+	return locationArray;
+}
 
 // Main code begins here
 
@@ -446,6 +514,15 @@ AM.queueDownload("./NeverLateSalaryMan/img/Checkpoint.png");
 AM.queueDownload("./NeverLateSalaryMan/img/BusStop.png");
 AM.queueDownload("./NeverLateSalaryMan/img/PoliceOfficer.png");
 AM.queueDownload("./NeverLateSalaryMan/img/SumoWrestler.png");
+
+//Download all the background tile set.
+AM.queueDownload("./NeverLateSalaryMan/img/tileset/Blocks.png");
+AM.queueDownload("./NeverLateSalaryMan/img/tileset/Bricks.png");
+AM.queueDownload("./NeverLateSalaryMan/img/tileset/Columns.png");
+AM.queueDownload("./NeverLateSalaryMan/img/tileset/BricksWide.png");
+AM.queueDownload("./NeverLateSalaryMan/img/tileset/Platforms.png");
+
+var levelImages = LoadLevelImages();
 
 AM.downloadAll(function () {
     var canvas = document.getElementById("gameWorld");
