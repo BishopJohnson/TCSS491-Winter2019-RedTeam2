@@ -385,10 +385,13 @@ class Yamada extends ActorClass {
 
         /* TODO: Once stunned, Yamada may only be unstunned once he touches the ground.
          */
-
         if (this.damageTimer > 0) { // Updates damageTimer
             this.damageTimer = Math.max(0, this.damageTimer - this.game.clockTick);
-        }
+			this.invulnerable = true;
+        } else 
+			this.invulnerable = false;
+		
+		if (!this.hook) this.grappling = false; // Prevent player/hook update desync
 
         if (this.grappling) // Grappling overrides gravity
             this.gravity = false;
@@ -477,7 +480,7 @@ class Yamada extends ActorClass {
 
         if (this.platform && !this.falling && !this.grappling) { // Is standing on a surface
 
-            if (this.velocityX != 0) { // Is moving
+            if (this.velocityX != 0 && !this.aiming) { // Is moving and not aiming
 
                 if (this.game.keyRight && !this.game.keyLeft) // Walking right
                     animation = new Animation(this.spritesheet, "walk", 0, 64, 32, 32, 0, 0.10, 8, true, 2, DIR_RIGHT, 7, 0, 18, 32, 25, 16);
@@ -488,15 +491,15 @@ class Yamada extends ActorClass {
 
                 if (this.aiming) { // Is aiming
 
-                    if (this.game.keyUp && this.game.keyGrapple) { // Up
+					if (this.game.keyLeft  && this.game.keyGrapple) { // Left-Straight
+                        animation = new Animation(this.spritesheet, "g_aim_s", 224, 128, 32, 32, 0, 1, 1, true, 2, DIR_LEFT, 0, 0, 25, 32, 2, 11);
+                    } else if (this.game.keyRight && this.game.keyGrapple) { // Right-Straight
+                        animation = new Animation(this.spritesheet, "g_aim_s", 0, 128, 32, 32, 0, 1, 1, true, 2, DIR_RIGHT, 7, 0, 25, 32, 29, 11);
+					} else if (this.game.keyUp  && this.game.keyGrapple) { // Up
                         if (animation.direction == DIR_RIGHT)
                             animation = new Animation(this.spritesheet, "g_aim_u", 64, 128, 32, 32, 0, 1, 1, true, 2, DIR_RIGHT, 1, 0, 25, 32, 12, 2);
                         else
                             animation = new Animation(this.spritesheet, "g_aim_u", 160, 128, 32, 32, 0, 1, 1, true, 2, DIR_LEFT, 6, 0, 25, 32, 20, 2);
-                    } else if (this.game.keyRight && this.game.keyGrapple) { // Right-Straight
-                        animation = new Animation(this.spritesheet, "g_aim_s", 0, 128, 32, 32, 0, 1, 1, true, 2, DIR_RIGHT, 7, 0, 25, 32, 29, 11);
-                    } else if (this.game.keyLeft) { // Left-Straight
-                        animation = new Animation(this.spritesheet, "g_aim_s", 224, 128, 32, 32, 0, 1, 1, true, 2, DIR_LEFT, 0, 0, 25, 32, 2, 11);
                     } else if (this.game.keyGrapple) { // Diagonal
                         if (animation.direction == DIR_RIGHT)
                             animation = new Animation(this.spritesheet, "g_aim_d", 32, 128, 32, 32, 0, 1, 1, true, 2, DIR_RIGHT, 7, 0, 20, 32, 23, 3);
@@ -540,15 +543,15 @@ class Yamada extends ActorClass {
                 if (this.aiming) { // Is aiming
 					if (this.hook) { // Hook is out, keep same animation
 						animation = animation;
-					}else if (this.game.keyUp) { // Up
+					} else if (this.game.keyLeft  && this.game.keyGrapple) { // Left-Straight
+                        animation = new Animation(this.spritesheet, "f_aim_s", 224, 160, 32, 32, 0, 1, 1, true, 2, DIR_LEFT, 0, 0, 25, 32, 3, 11);
+					} else if (this.game.keyRight  && this.game.keyGrapple) { // Right-Straight
+                        animation = new Animation(this.spritesheet, "f_aim_s", 0, 160, 32, 32, 0, 1, 1, true, 2, DIR_RIGHT, 7, 0, 25, 32, 28, 11);
+                    } else if (this.game.keyUp  && this.game.keyGrapple) { // Up
                         if (animation.direction == DIR_RIGHT)
                             animation = new Animation(this.spritesheet, "f_aim_u", 96, 160, 32, 32, 0, 1, 1, true, 2, DIR_RIGHT, 2, 0, 19, 32, 12, 2);
                         else
                             animation = new Animation(this.spritesheet, "f_aim_u", 128, 160, 32, 32, 0, 1, 1, true, 2, DIR_LEFT, 11, 0, 19, 32, 20, 2);
-                    } else if (this.game.keyRight) { // Right-Straight
-                        animation = new Animation(this.spritesheet, "f_aim_s", 0, 160, 32, 32, 0, 1, 1, true, 2, DIR_RIGHT, 7, 0, 25, 32, 28, 11);
-                    } else if (this.game.keyLeft) { // Left-Straight
-                        animation = new Animation(this.spritesheet, "f_aim_s", 224, 160, 32, 32, 0, 1, 1, true, 2, DIR_LEFT, 0, 0, 25, 32, 3, 11);
                     } else { // Diagonal
                         if (animation.direction == DIR_RIGHT)
                             animation = new Animation(this.spritesheet, "f_aim_d", 32, 160, 32, 32, 0, 1, 1, true, 2, DIR_RIGHT, 7, 0, 22, 32, 26, 3);
@@ -582,6 +585,7 @@ class Yamada extends ActorClass {
      */
     damage(damage = 1, other) {
         if (this.damageTimer == 0/* && !this.stunned*/ && !this.invulnerable) { // Checks if Yamada may be damaged
+			this.cancelAction();
             this.damageTimer = this.damageTime;
             this.health -= damage;
 
@@ -649,16 +653,15 @@ class Yamada extends ActorClass {
      * Cancels Yamada's current action.
      */
     cancelAction() {
-        if (this.aiming || this.grappling) { // Cancels aiming and grappling
-            this.aiming = false;
-            this.grappling = false;
+        this.aiming = false;
+        this.grappling = false;
 
-            if (this.hook) // Checks if a hook exists
-                this.hook.removeFromWorld = true;
+        if (this.hook) // Checks if a hook exists
+        this.hook.removeFromWorld = true;
 
-            this.hook = null;
-			this.animate();
-        }
+        this.hook = null;
+		this.animate();
+    
     }
 }
 
@@ -791,7 +794,6 @@ class ConWorker extends EnemyClass {
             var entity = this.game.entities[i];
             var tempBox = new BoundingBox(this.box.x + this.velocityX, this.box.y, this.box.width, this.box.height, this.tag);
             var collide = tempBox.collide(entity.box); // The collision results
-
             if (entity !== this && collide.object == TAG_PLATFORM && this.collision) { // Checks if entity collided with a platform
                 if (collide.right && this.box.left >= entity.box.right) { // Ran into right side of a platform
                     this.velocityX = this.speed;
@@ -866,12 +868,14 @@ class SecurityGuard extends EnemyClass {
             }
 			
 			// Check if player is on same plane and within visual radius
-			if (this.platform == this.game.player.platform && dist(this.x, this.y, this.game.player.x, this.game.player.y) < 175) {
+			if (this.stunTimer == 0 && this.platform == this.game.player.platform && dist(this.x, this.y, this.game.player.x, this.game.player.y) < 175) {
 				// Pursue the player, at higher speed than patrolling speed
-				if (this.x > this.game.player.x + this.game.player.box.width)
+				if (this.x > this.game.player.x + this.game.player.box.width
+						&& !this.game.player.invulnerable)
 					this.velocityX = -this.speed - 1;
 				
-				else if (this.x < this.game.player.x - this.game.player.box.width)
+				else if (this.x < this.game.player.x - this.game.player.box.width
+						&& !this.game.player.invulnerable)
 					this.velocityX = this.speed + 1;
 				
 			} else {
@@ -917,6 +921,7 @@ class SecurityGuard extends EnemyClass {
         super.animate(animation); // Call to super method
     }
 }
+
 
 class SumoWrestler extends EnemyClass {
     /**
@@ -994,9 +999,9 @@ class SumoWrestler extends EnemyClass {
         /* TODO: Stun should make the Sumo turn around.
          */
 
-        if (this.velocityX > 0) { // Is rolling right
+        if (this.velocityX > 0 && this.animation.direction != this.game.player.animation.direction) { // Is rolling right, hit from right
             this.velocityX = -this.speed;
-        } else if (this.velocityX < 0) { // Is rolling left
+        } else if (this.velocityX < 0 && this.animation.direction != this.game.player.animation.direction) { // Is rolling left, hit from left
             this.velocityX = this.speed;
         }
     }

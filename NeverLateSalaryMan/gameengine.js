@@ -349,7 +349,7 @@ BoundingBox.prototype.collide = function (other) {
 	if (this.left > other.left && this.right < other.right && this.top > other.top && this.bottom < other.bottom) // Box is inside the other
 		collide.engulf = true;
 
-    if (collide.top || collide.bottom || collide.left || collide.right) // Sets tag if collision occured
+    if (collide.top || collide.bottom || collide.left || collide.right || collide.engulf) // Sets tag if collision occured
         collide.object = other.tag;
 
     return collide;

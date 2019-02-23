@@ -167,20 +167,18 @@ ConWorkerPlatform.prototype.update = function () {
     // Iterates over game entities to check for collision
     for (var i = 0; i < this.game.entities.length; i++) {
         var entity = this.game.entities[i];
-        var tempBox = new BoundingBox(this.box.x, this.box.y - 1, this.box.width, this.box.height + 2, this.box.tag);
+        var tempBox = new BoundingBox(this.box.x, this.box.y - 1, this.box.width, this.box.height, this.box.tag);
         var collide = tempBox.collide(entity.box);
 
         if (entity !== this
             && entity !== this.owner
             && (collide.object == TAG_PLAYER || collide.object == TAG_ENEMY || collide.object == TAG_HOOK)) { 
 			// Player, hook, or enemy is colliding with the platform
-            if (collide.bottom || collide.left || collide.right) {
-				// Apply shift from construction worker to all colliding entities
+			// Apply shift from construction worker to all colliding entities
                 entity.x += this.deltaX;
 				entity.y += this.deltaY;
             }
         }
-    }
     Entity.prototype.update.call(this);
 }
 
@@ -296,7 +294,7 @@ function Hook(player, dirVector) {
     this.x = player.x + player.animation.hotspotX;
     this.y = player.y + player.animation.hotspotY;
 	this.direction = dirVector;
-    this.box = new BoundingBox(this.x, this.y, 0, 0, TAG_HOOK);
+    this.box = new BoundingBox(this.x - 1, this.y - 1, 3, 3, TAG_HOOK);
     this.attached = false;
 }
 
@@ -311,7 +309,7 @@ Hook.prototype.update = function () {
     const originY = this.player.y + this.player.animation.hotspotY; // y position of the barrel
     var minDist = 900;
     var intPoint = null;
-	this.box = new BoundingBox(this.x, this.y, 0, 0, TAG_HOOK);
+	this.box = new BoundingBox(this.x - 1, this.y - 1, 3, 3, TAG_HOOK);
 
 	for (var i = 0; i < this.game.entities.length; i++) {
         var entity = this.game.entities[i];
@@ -321,17 +319,13 @@ Hook.prototype.update = function () {
             intPoint = collPoint;
         } else if (collPoint && entity.box.tag == TAG_ENEMY) { 
 		// Hook or rope hit an enemy
-
-            if (this.box.collide(entity.box).engulf && entity.stunTimer == 0) {
+            if (this.box.collide(entity.box).object == TAG_ENEMY && entity.stunTimer == 0) {
 				// Checks if the hook itself hit the enemy
                 entity.stun();
 				this.player.cancelAction();
-				this.removeFromWorld = true;
 				
-			}
-			else if (entity.stunTimer == 0){	
+			} else if (entity.stunTimer == 0){
 				this.player.cancelAction();
-				this.removeFromWorld = true;
 			}
         }
     }
@@ -339,7 +333,7 @@ Hook.prototype.update = function () {
 	if (intPoint && !this.attached) { // Collided with something, move hook to that point
 		this.x = intPoint.x;
 		this.y = intPoint.y;
-		this.box = new BoundingBox(this.x, this.y, 0, 0);
+		this.box = new BoundingBox(this.x, this.y, 0, 0, TAG_EMPTY); // Attached hook can't stun, so tag is omitted
 		this.attached = true;
 		this.player.aiming = false;
 		this.player.grappling = true;
@@ -352,7 +346,7 @@ Hook.prototype.update = function () {
             this.removeFromWorld = true;
 		}
 	}
-	
+	this.box = new BoundingBox(this.x - 1, this.y - 1, 3, 3, TAG_HOOK);
 	Entity.prototype.update.call(this);
 }
 
@@ -438,6 +432,7 @@ Hook.prototype.draw = function () {
 	this.ctx.fillStyle = "grey";
 	this.ctx.fillRect(this.x - 1 - this.game.camera.x, this.y - 1 - this.game.camera.y, 3, 3);
 }
+
 
 // Main code begins here
 
