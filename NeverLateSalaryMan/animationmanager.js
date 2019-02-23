@@ -1,7 +1,7 @@
 /**
  * An animation object used to draw entities on screen.
  * 
- * @param {any} spriteSheet The sprite sheet being used.
+ * @param {string} spriteSheet The sprite sheet being used.
  * @param {string} animName The name of the animation.
  * @param {number} frameX The starting x coordinate on the sprite sheet.
  * @param {number} frameY The starting y coordinate on the sprite sheet.
@@ -30,8 +30,8 @@ function Animation(spriteSheet, animName, frameX, frameY, frameWidth, frameHeigh
     this.frameSpacing = frameSpacing;
     this.frameDuration = frameDuration;
     this.frames = frames;
-    this.totalTime = frameDuration * frames; //the total time length of the animation
-    this.elapsedTime = 0;                    //the time since the animation started
+    this.totalTime = frameDuration * frames; // The total time length of the animation
+    this.elapsedTime = 0;                    // The time since the animation started
     this.loop = loop;
     this.scale = scale;
     this.direction = direction;
