@@ -225,7 +225,7 @@ public class LevelEditor {
 	private static void convertLevelToJSON() {
 		int height = myLevel.length;
 		int width = myLevel[0].length;
-		jsonLevel.setCamData(new CameraData(0, 0, width * 32, height * 32));
+		jsonLevel.setCamData(new CameraData(0, 0, width * 32, (height * 32) + 400));
 		jsonLevel.setMaxYLimit(height * 32);
 		jsonLevel.setPlayerData(myPlayer);
 		jsonLevel.setEntities(EntityListToArray(myEntities));

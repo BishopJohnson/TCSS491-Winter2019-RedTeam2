@@ -4,8 +4,8 @@
                                                                             2b                            2s        2s                  2b          
                                                                             2b                  2s                                      2b          
                                                                             2b                                                c4        2b          
-                                                                            2b                          0a0b0c    0a0b0c      2a        2b          
-                                                                            2b          c3  4s                                2b        2b          
+                                                                            2b          c3              0a0b0c    0a0b0c      2a        2b          
+                                                                            2b              4s                                2b        2b          
                                                                             2b          0a0b0b0b0c                            2b        2b          
                                                                             2b                  2a                            2b        2b          
                                                                             2b2s                2b                            2b        2b          
@@ -22,10 +22,10 @@
 1a                                          1a                                          2b                                    2b                    
 1b                                          1c                                          2b                                    2b                    
 1b                                                                                      2b                                    2b                    
-1b                                                                                      2b                                    2b                    
-1b                                                        2s          e02sc2          e02c                                    2c                  gg
-1b                              c1        0a0b0c      0a0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0c                                    0a0b0b0b0b0b0b0b0b0b0c
+1b                                                                        c2            2b                                    2b                  gg
+1b                              c1                        2s          e02s            e02c                                    2c                    
+1b                                        0a0b0c      0a0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0c                                    0a0b0b0b0b0b0b0b0b0b0c
 1b                              2s                    1a                                                                                            
-1b            2s    2s          2s                    1b                                                                                            
+1bc0          2s    2s          2s                    1b                                                                                            
 1cpp        2s2s    2s2s      e02se0                e01c                                                                                            
 0a0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0c                                                                                            
