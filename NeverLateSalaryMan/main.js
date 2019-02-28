@@ -300,8 +300,10 @@ Checkpoint.prototype.update = function () {
 		this.active = true;
         this.animation = new Animation(this.spritesheet, "on", 33, 0, 32, 32, 0, 1, 1, true, 2, DIR_RIGHT); 
 
-		if (!this.scene.activeCheckpoint || this.scene.activeCheckpoint.ID < this.ID)
-			this.game.sceneManager.activeCheckpoint = this;
+        if (!this.scene.activeCheckpoint || this.scene.activeCheckpoint.ID < this.ID) { // Sets player checkpoint to this checkpoint
+            this.game.sceneManager.activeCheckpoint = this;
+            this.game.player.health = this.game.player.maxhealth; // Restores Yamada's health
+        }
     }
 
 	Entity.prototype.update.call(this);
