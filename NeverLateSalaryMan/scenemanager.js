@@ -39,6 +39,7 @@ function SceneManager(game) {
 					{x: 1488, y: 259, width: 126, height: 94, id: -1}],
 		background: "./NeverLateSalaryMan/img/PrototypeLevel.png"}));
 	this.levelProps.push(level1);
+	this.levelProps.push(level2);
 	this.levelProps.push(JSON.stringify(
 		{playLevel: false, nextLevel: 0, timeLimit: 0, camData: null, deathPlane: 0, playerData: null,
 		entities:[{msg: "You won!\nClick to return to splash screen", transitionID: 0, x: 100, y: 100}], platforms: null, background: null}));
