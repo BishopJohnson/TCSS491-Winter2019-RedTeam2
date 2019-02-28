@@ -1,0 +1,31 @@
+74x30x180x3x3x./NeverLateSalaryMan/img/PrototypeLevel.png
+                                                                                                                              0a0b0b0b0b0c          
+                                                                            2a0a0b0b0c                    2s        2s                  2a          
+                                                                            2b                  2s                                      2b          
+                                                                            2b                                                c4        2b          
+                                                                            2b                                                          2b          
+                                                                            2b          c3              0a0b0c    0a0b0c      2a        2b          
+                                                                            2b              4s                                2b        2b          
+                                                                            2b          0a0b0b0b0c                            2b        2b          
+                                                                            2b                  2a                            2b        2b          
+                                                                            2b2s                2b                            2b        2b          
+                                                                            2b                  2b                            2b        2b          
+                                                                            2b                  2b                            2b        2b          
+                                                                            2b                  2b                            2b        2b          
+                                                                            2b0a0b0b0b0c        2b                            2b        2b          
+                                                                            2b                  2b                            2b        2b          
+                                                                            2b                  2b                            2b        2b          
+                                                                            2b                  2b                            2b        2b          
+                                                    0a0b0b0b0b0b0b0b0b0b0b0c2b                  2c                            2b        2b          
+                                                    1a                      2c          0a0b0b0b0c                            2b        2c          
+0a0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0c                                  2a                                    2b                    
+1a                                          1a                                          2b                                    2b                    
+1b                                          1c                                          2b                                    2b                    
+1b                                                                                      2b                                    2b                    
+1b                                                                        c2            2b                                    2b                gg  
+1b                              c1                        2s          e02s              2c                                    2c                    
+1b                                        0a0b0c      0a0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0c                                    0a0b0b0b0b0b0b0b0b0b0c
+1b                              2s2s                  1a                                                                                            
+1bc0          2s    2s          2s                    1b                                                                                            
+1cpp        2s2s    2s2s        2s                  e01c                                                                                            
+0a0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0c                                                                                            
