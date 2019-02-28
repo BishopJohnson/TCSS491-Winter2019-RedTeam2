@@ -357,8 +357,7 @@ Hook.prototype.update = function () {
 
         if (collPoint && entity.box.tag == TAG_PLATFORM) { // Hook hit a platform
             intPoint = collPoint;
-        } else if (collPoint && entity.box.tag == TAG_ENEMY) { 
-		// Hook or rope hit an enemy
+        } else if (collPoint && entity.box.tag == TAG_ENEMY) { // Hook or rope hit an enemy
             if (this.box.collide(entity.box).object == TAG_ENEMY && entity.stunTimer == 0) {
 				// Checks if the hook itself hit the enemy
                 entity.stun();
@@ -504,8 +503,10 @@ function LoadLevelImages(id) {
 
 // Main code begins here
 
-var AM = new AssetManager();
+var AM = new AssetManager();            // Initializes AssetManager
+var AUDIO_MANAGER = new AudioManager(); // Initializes AudioManager
 
+// Download all of the character spritesheets
 AM.queueDownload("./NeverLateSalaryMan/img/Yamada.png");
 AM.queueDownload("./NeverLateSalaryMan/img/Bird.png");
 AM.queueDownload("./NeverLateSalaryMan/img/ConstrWorker.png");
@@ -515,12 +516,15 @@ AM.queueDownload("./NeverLateSalaryMan/img/BusStop.png");
 AM.queueDownload("./NeverLateSalaryMan/img/PoliceOfficer.png");
 AM.queueDownload("./NeverLateSalaryMan/img/SumoWrestler.png");
 
-//Download all the background tile set.
+// Download all of the background tile set.
 AM.queueDownload("./NeverLateSalaryMan/img/tileset/Blocks.png");
 AM.queueDownload("./NeverLateSalaryMan/img/tileset/Bricks.png");
 AM.queueDownload("./NeverLateSalaryMan/img/tileset/Columns.png");
 AM.queueDownload("./NeverLateSalaryMan/img/tileset/BricksWide.png");
 AM.queueDownload("./NeverLateSalaryMan/img/tileset/Platforms.png");
+
+// Download all of the audio files
+//AM.queueDownload("./NeverLateSalaryMan/audio/DeathByGlamour.mp3");
 
 var levelImages = LoadLevelImages();
 

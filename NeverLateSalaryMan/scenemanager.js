@@ -101,7 +101,7 @@ SceneManager.prototype.loadLevel = function(sceneID) {
 	
 	if (properties.playLevel) {
 		// Create the player entity
-		var newPlayer = new Yamada(this.game,
+        var newPlayer = new Yamada(this.game,
 			properties.playerData.x, properties.playerData.y,			 
 			AM.getAsset("./NeverLateSalaryMan/img/Yamada.png"));
 		this.game.player = newPlayer;

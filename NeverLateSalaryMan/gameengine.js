@@ -108,6 +108,8 @@ GameEngine.prototype.startInput = function () {
 
     this.ctx.canvas.addEventListener("click", function (e) {
         that.click = getXandY(e);
+
+        AUDIO_MANAGER.start();
     }, false);
     /*
     this.ctx.canvas.addEventListener("wheel", function (e) {
@@ -377,8 +379,19 @@ Vector.prototype.multiply = function (coeff) {
 Returns the magnitude of the vector.
 @return {number} vector's magnitude
 */
-Vector.prototype.magnitude = function() {
+Vector.prototype.magnitude = function () {
 	return Math.sqrt(this.x * this.x + this.y * this.y);
+}
+
+/**
+ * Creates a normalized vector in the direction of this vector.
+ * 
+ * @return {Vector} The normalized vector.
+ */
+Vector.prototype.normalize = function () {
+    var m = this.magnitude();
+
+    return new Vector(this.x / m, this.y / m);
 }
 
 /**

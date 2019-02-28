@@ -370,7 +370,8 @@ class Yamada extends ActorClass {
         this.invulnerable = false;
         this.hook = null;
         this.aimVector = new Vector(0, 0);
-        this.hookSpeed = 0.02;
+        this.hookSpeed = 4;
+        this.keyCount = 0;
 
         this.animation = new Animation(spritesheet, "idle", 0, 0, 32, 32, 0, 0.10, 8, true, 2, DIR_RIGHT, 7, 0, 18, 32); // Initial animation
     }
@@ -409,7 +410,7 @@ class Yamada extends ActorClass {
             this.aimVector = new Vector(Math.sqrt(2) / 2, -Math.sqrt(2) / 2);
 			
         } else if (this.aiming && !this.game.keyGrapple && !this.hook) { 
-		// Fire in aimed direction
+		    // Fire in aimed direction
             this.aimVector.multiply(40);
             this.hook = new Hook(this, this.aimVector);
             this.game.addEntity(this.hook);
@@ -456,7 +457,7 @@ class Yamada extends ActorClass {
 
         if (this.grappling && this.hook) { // Pulls Yamada towards grappling hook
             // Create direction vector to hook point
-            var dirVect = new Vector(this.hook.x - (this.x + this.animation.hotspotX), this.hook.y - (this.y + this.animation.hotspotY));
+            var dirVect = new Vector(this.hook.x - (this.x + this.animation.hotspotX), this.hook.y - (this.y + this.animation.hotspotY)).normalize();
 
             // Multiply by hook speed coefficient to get movement vector
             dirVect.multiply(this.hookSpeed);
@@ -922,7 +923,9 @@ class SecurityGuard extends EnemyClass {
     }
 }
 
-
+/**
+ * 
+ */
 class SumoWrestler extends EnemyClass {
     /**
      * The constructor for the Sumo Wrestler class.
@@ -1003,6 +1006,40 @@ class SumoWrestler extends EnemyClass {
             this.velocityX = -this.speed;
         } else if (this.velocityX < 0 && this.animation.direction != this.game.player.animation.direction) { // Is rolling left, hit from left
             this.velocityX = this.speed;
+        }
+    }
+}
+
+/**
+ * 
+ */
+class KeyItem extends ActorClass {
+
+    /**
+     * 
+     * 
+     * @param {GameEngine} game
+     * @param {number} x
+     * @param {number} y
+     * @param {string} spritesheet
+     */
+    constructor(game, x, y, spritesheet) {
+        super(game, x, y, spritesheet, undefined /* default tag */, false /* no gravity */); // Call to super constructor
+
+        this.animation = null; // Initial animation
+    }
+
+    /**
+     * 
+     */
+    update() {
+        super.update(); // Call to super method
+
+        var collision = this.box.collide(this.game.player.box);
+
+        if (collision.tag == TAG_PLAYER) { // Collided with the player
+            this.game.player.keyCount++;
+            this.removeFromWorld = true;
         }
     }
 }
