@@ -327,7 +327,7 @@ class EnemyClass extends ActorClass {
                 var collide = this.box.collide(this.game.player.box); // The collision results with the player
 
                 if (collide.object == TAG_PLAYER && !this.dead) // Damages the player
-                    this.game.player.damage();
+                    this.game.player.damage(this.damage, this.box);
             }
         }
     }
@@ -370,7 +370,7 @@ class Yamada extends ActorClass {
         this.invulnerable = false;
         this.hook = null;
         this.aimVector = new Vector(0, 0);
-        this.hookSpeed = 4;
+        this.hookSpeed = 5;
         this.keyCount = 0;
 
         this.animation = new Animation(spritesheet, "idle", 0, 0, 32, 32, 0, 0.10, 8, true, 2, DIR_RIGHT, 7, 0, 18, 32); // Initial animation
@@ -382,15 +382,24 @@ class Yamada extends ActorClass {
      * @see ActorClass.update
      */
     update() {
+		
         super.update(); // Call to super method
-
-        /* TODO: Once stunned, Yamada may only be unstunned once he touches the ground.
-         */
+		
         if (this.damageTimer > 0) { // Updates damageTimer
-            this.damageTimer = Math.max(0, this.damageTimer - this.game.clockTick);
+			if (!this.stunned)
+				this.damageTimer = Math.max(0, this.damageTimer - this.game.clockTick);
 			this.invulnerable = true;
-        } else 
+        } else
 			this.invulnerable = false;
+		
+		if (this.stunned) {
+			if (this.platform) // Landed, end stun
+				this.stunned = false;
+			else { // No player control while stunned
+				this.animate();
+				return;
+			}
+		}
 		
 		if (!this.hook) this.grappling = false; // Prevent player/hook update desync
 
@@ -520,7 +529,14 @@ class Yamada extends ActorClass {
             
         } else { // Is not standing on a surface
 
-            if (this.grappling) { // Is grappling
+            if (this.stunned) { // Is in hitstun
+					if (this.velocityX == 0) animation = this.animation;
+					else if (this.velocityX < 0)
+						animation = new Animation(this.spritesheet, "hit_l", 192, 192, 32, 32, 0, 1, 1, true, 2, DIR_RIGHT, 4, 0, 18, 32, 0, 0);
+					else
+						animation = new Animation(this.spritesheet, "hit_r", 224, 192, 32, 32, 0, 1, 1, true, 2, DIR_LEFT, 7, 0, 18, 32, 0, 0);
+
+			} else if (this.grappling) { // Is grappling
 
                 if (animation.animName == "g_aim_u" || animation.animName == "f_aim_u") { // Up
                     if (animation.direction == DIR_RIGHT)
@@ -585,7 +601,7 @@ class Yamada extends ActorClass {
      * @param {BoundingBox} other (Optional) The bounding box that hit Yamada.
      */
     damage(damage = 1, other) {
-        if (this.damageTimer == 0/* && !this.stunned*/ && !this.invulnerable) { // Checks if Yamada may be damaged
+        if (this.damageTimer == 0 && !this.invulnerable) { // Checks if Yamada may be damaged
 			this.cancelAction();
             this.damageTimer = this.damageTime;
             this.health -= damage;
@@ -593,11 +609,9 @@ class Yamada extends ActorClass {
             if (this.health <= 0) { // Checks if player should be knocked out
                 this.knockout();
             } else {
-                /* TODO: Determine direction based on position of Yamada's bounding box versus other box.
-                 */
-
                 if (other) { // Determines direction of recoil
-                    this.recoil(/* direction */);
+					var dir = (this.box.x - other.x) > 0 ? DIR_RIGHT : DIR_LEFT;
+                    this.recoil(dir);
                 } else {
                     this.recoil();
                 }
@@ -619,11 +633,24 @@ class Yamada extends ActorClass {
 
             if (direction) { // Checks if a direction was passed
                 if (direction == DIR_RIGHT) {
-
+					this.velocityX = 2;
+					this.velocityY = -3;
                 } else {
+					this.velocityX = -2;
+					this.velocityY = -3;
+                }
+            } else {
+				if (this.animation.direction == DIR_RIGHT) {
+					this.velocityX = -2;
+					this.velocityY = -3;
+                } else {
+					this.velocityX = 2;
+					this.velocityY = -3;
 
                 }
-            }
+			}
+			
+			this.platform = null; // Update to recognize being hit off platform
         }
     }
 
@@ -656,6 +683,7 @@ class Yamada extends ActorClass {
     cancelAction() {
         this.aiming = false;
         this.grappling = false;
+		this.gravity = true;
 
         if (this.hook) // Checks if a hook exists
         this.hook.removeFromWorld = true;
