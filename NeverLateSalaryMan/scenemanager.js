@@ -13,31 +13,6 @@ function SceneManager(game) {
 	this.levelProps.push(JSON.stringify(
 		{playLevel: false, nextLevel: 1, timeLimit: 0, camData: null, deathPlane: 0, playerData: null,
 		entities:[{msg: "A and D to move\nHold K to aim\nHold W while aiming to aim up\nPress A or D while aiming to aim straight left or right\nRelease K to fire hook\nPress L to detatch hook\n\nYou can stand on the worker's beam, but touching him\nwill damage you.\nVending machines are checkpoints.\n\nGet to the bus stop before time runs out!\n\nClick to start", transitionID: 1, x: 50, y: 100}], platforms: null, background: null}));
-	this.levelProps.push(JSON.stringify(
-		{playLevel: true, nextLevel: 2, timeLimit: 120, 
-		camData: {minX: 0, maxX: 1991, minY: 0, maxY: 1000}, deathPlane: 1000,
-		playerData: {x: 100, y: 255},
-		entities: [{tag: "ConWorker", x: 600, y: 237},
-                   {tag: "Bird", x: 800, y: 100},
-				   {tag: "Checkpoint", x: 100, y: 257, ID: 0},
-				   {tag: "Checkpoint", x: 850, y: 162, ID: 1},
-				   {tag: "WinArea", x: 1900, y: 289},
-                   //{ tag: "SumoWrestler", x: 100, y: 100 }, // Sumo test
-                   { tag: "SumoWrestler", x: 1050, y: 100 },
-				   {tag: "SecurityGuard", x : 1800, y: 289}],
-		platforms: [{x: 0, y: 0, width: 1992, height: 34, id: -1},
-					{x: 0, y: 34, width: 30, height: 287, id: -1},
-					{x: 0, y: 322, width: 502, height: 30, id: -1},
-					{x: 377, y: 222, width: 124, height: 99, id: -1},
-					{x: 439, y: 353, width: 504, height: 30, id: -1},
-					{x: 817, y: 228, width: 126, height: 125, id: -1},
-					{x: 643, y: 34, width: 30, height: 151, id: -1},
-					{x: 1315, y: 34, width: 30, height: 192, id: -1},
-					{x: 1961, y: 34, width: 30, height: 319, id: -1},
-					{x: 1173, y: 353, width: 818, height: 30, id: -1},
-					{x: 1173, y: 258, width: 62, height: 95, id: -1},
-					{x: 1488, y: 259, width: 126, height: 94, id: -1}],
-		background: "./NeverLateSalaryMan/img/PrototypeLevel.png"}));
 	this.levelProps.push(level1);
 	this.levelProps.push(level2);
 	this.levelProps.push(JSON.stringify(

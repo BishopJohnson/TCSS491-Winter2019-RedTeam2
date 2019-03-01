@@ -1,15 +1,19 @@
 // No inheritance
 function Background(game, spritesheet) {
-    this.x = 0;
-    this.y = 0;
     this.spritesheet = spritesheet;
     this.game = game;
-    this.ctx = game.ctx;
+    this.ctx = game.ctx;	
+    this.x = 0;
+    this.y = this.game.camera.maxY - 2048;
     this.box = new BoundingBox(0, 0, 0, 0, "scene");
+	this.animation = new Animation(this.spritesheet, "bkgd", 0, 0, 512, 1024, 0, 1, 1, true, 2, DIR_RIGHT)
 };
 
 Background.prototype.draw = function () {
-    this.ctx.drawImage(this.spritesheet, this.x - this.game.camera.x, this.y - this.game.camera.y);
+	var repeats = this.game.camera.maxX / (this.animation.frameWidth * this.animation.scale);
+	for (var i = 0; i < repeats; i++) {
+		this.animation.drawFrame(this.game.clockTick, this.ctx, this.x + (i * this.animation.scale * this.animation.frameWidth) - this.game.camera.x, this.y - this.game.camera.y);
+	}
 };
 
 Background.prototype.update = function () {
@@ -121,7 +125,6 @@ Platform.prototype.update = function () {
  * 
  */
 Platform.prototype.draw = function () {
-    // No sprite to draw
 
     if (this.game.showOutlines) { // Draws collider border for debugging
         this.ctx.strokeStyle = "red";
@@ -524,6 +527,7 @@ AM.queueDownload("./NeverLateSalaryMan/img/tileset/Bricks.png");
 AM.queueDownload("./NeverLateSalaryMan/img/tileset/Columns.png");
 AM.queueDownload("./NeverLateSalaryMan/img/tileset/BricksWide.png");
 AM.queueDownload("./NeverLateSalaryMan/img/tileset/Platforms.png");
+AM.queueDownload("./NeverLateSalaryMan/img/tileset/BKG01.png");
 
 // Download all of the audio files
 //AM.queueDownload("./NeverLateSalaryMan/audio/DeathByGlamour.mp3");
