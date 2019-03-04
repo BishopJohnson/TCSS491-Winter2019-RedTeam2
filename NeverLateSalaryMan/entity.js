@@ -247,12 +247,15 @@ class ActorClass extends EntityClass {
 
     /**
      * Draws the actor's sprite.
+     * 
+     * @param {boolean} showSprite (Optional) Determines if the sprite is drawn. Default value is true.
      */
-    draw() {
+    draw(showSprite = true) {
         super.draw(); // Call to super method
 
         if (this.animation) { // Draws animation if one is assigned
-            this.animation.drawFrame(this.game.clockTick, this.ctx, this.x - this.game.camera.x, this.y - this.game.camera.y);
+            if (showSprite) // Checks if sprite will be drawn
+                this.animation.drawFrame(this.game.clockTick, this.ctx, this.x - this.game.camera.x, this.y - this.game.camera.y);
 
             if (this.game.showOutlines) { // Draws animation border for debugging
                 var animWidth = this.animation.frameWidth * this.animation.scale;
@@ -261,7 +264,7 @@ class ActorClass extends EntityClass {
                 this.ctx.strokeStyle = "green";
                 this.ctx.strokeRect(this.x - this.game.camera.x, this.y - this.game.camera.y, animWidth, animHeight);
             }
-        } /*else {} */
+        }
 
         if (this.game.showOutlines) { // Draws collider border for debugging
             var boxWidth = this.box.width;
@@ -398,7 +401,6 @@ class Yamada extends ActorClass {
      * @see ActorClass.update
      */
     update() {
-		
         super.update(); // Call to super method
 		
         if (this.damageTimer > 0) { // Updates damageTimer
@@ -621,26 +623,13 @@ class Yamada extends ActorClass {
 	 */
 	draw() {
 		if (Math.floor(this.damageTimer * 10) % 2 == 0) { // Draws animation every half second if stunned
-            this.animation.drawFrame(this.game.clockTick, this.ctx, this.x - this.game.camera.x, this.y - this.game.camera.y);
+            super.draw(); // Call to super method
         } else {
-			this.animation.elapsedTime += this.game.clockTick;
-		}
-        if (this.game.showOutlines) { // Draws animation border for debugging
-        var animWidth = this.animation.frameWidth * this.animation.scale;
-        var animHeight = this.animation.frameHeight * this.animation.scale;
+            this.animation.elapsedTime += this.game.clockTick;
+            super.draw(false); // Call to super method
+        }
+    }
 
-		this.ctx.strokeStyle = "green";
-        this.ctx.strokeRect(this.x - this.game.camera.x, this.y - this.game.camera.y, animWidth, animHeight);
-		
-		var boxWidth = this.box.width;
-        var boxHeight = this.box.height;
-
-        this.ctx.strokeStyle = "red";
-        this.ctx.strokeRect(this.box.x - this.game.camera.x, this.box.y - this.game.camera.y, boxWidth, boxHeight);
-		}
-	}
-		
-	
     /**
      * Applies damage to Yamada and knocks him out if his health falls to zero or below.
      * 
