@@ -52,17 +52,15 @@ Camera.prototype.constructor = Camera;
  * 
  */
 Camera.prototype.update = function() {
-	var oldX = this.x;
-	var oldY = this.y;
 	
 	this.x = this.player.x - this.ctx.canvas.width / 2;
 	// Verify camera is within defined level bounds
-	if (this.x + this.ctx.canvas.width > this.maxX) this.x = oldX;
+	if (this.x + this.ctx.canvas.width > this.maxX) this.x = this.maxX - this.ctx.canvas.width;
 	else if (this.x < this.minX) this.x = this.minX;
 	
 	this.y = this.player.y - this.ctx.canvas.height / 2;
 	// Verify camera is within defined level bounds
-	if (this.y + this.ctx.canvas.height > this.maxY) this.y = oldY;
+	if (this.y + this.ctx.canvas.height > this.maxY) this.y = this.maxY - this.ctx.canvas.height;
 	else if (this.y < this.minY) this.y = this.minY;
 	this.box = new BoundingBox(this.x, this.y,
 							   this.ctx.canvas.width, this.ctx.canvas.height, "camera");
@@ -77,10 +75,19 @@ Camera.prototype.draw = function() {
 	this.ctx.font = "30px serif";
 	this.ctx.fillStyle = "black";	
 	this.ctx.fillRect(29, 5, 118, 61);
+	this.ctx.fillRect(this.ctx.canvas.width - 147, 5, 118, 61);
 	this.ctx.fillStyle = "yellow";	
 	var time = Math.ceil(this.game.sceneManager.timeLimit);
 	this.ctx.fillText("Time:" + time, 30, 30);
-	this.ctx.fillText("HP: " + this.game.player.health, 30, 61);
+	this.ctx.fillText("HP: ", 30, 61);
+	this.ctx.fillText("Keys:" + this.game.player.keyCount, this.ctx.canvas.width - 146, 30)
+	this.ctx.font = "24px serif";
+	this.ctx.fillText("Hook:", this.ctx.canvas.width - 146, 61);
+	this.ctx.fillStyle = "lime";
+	for (var i = 1; i <= this.game.player.health; i++) {
+		this.ctx.fillRect(55 + (23 * i), 42, 20, 21);
+	}
+	this.ctx.fillRect(this.ctx.canvas.width - 84, 42, 52 * (1 - 2 * this.game.player.grappleCooldown), 21);
 	/**************************************************
 	Can be expanded to display energy, power up status
 	**************************************************/
@@ -104,6 +111,7 @@ function Platform(game, x, y, width, height, id) {
     this.box = new BoundingBox(this.x, this.y, this.width, this.height, TAG_PLATFORM);
 	this.id = id;
 	this.blocks = null;
+	this.zIndex = 0;
 	//this.blocks = levelImages;
 	this.animation = new Animation(AM.getAsset("./NeverLateSalaryMan/img/tileset/Blocks.png"), "Block", 0, 0, 32, 32, 0, 1, 1, true, 1, "right");
     Entity.call(this, game, x, y);
@@ -189,6 +197,7 @@ function ConWorkerPlatform(game, x, y, width, height, owner) {
 	this.y = y;
 	this.deltaX = 0;
 	this.deltaY = 0;
+	this.zIndex = 0;
     this.box = new BoundingBox(this.x, this.y, this.width, this.height, TAG_PLATFORM);
 
     Entity.call(this, game, x, y);
@@ -248,6 +257,7 @@ function WinArea(game, x, y, spritesheet) {
 	this.spritesheet = spritesheet;
     this.width = 24;
     this.height = 64;
+	this.zIndex = 0;
 	this.animation = new Animation(this.spritesheet, "sign", 0, 0, 16, 32, 0, 1, 1, true, 2, DIR_RIGHT); 
     this.box = new BoundingBox(this.x, this.y, this.width, this.height, "win");
 	
@@ -285,6 +295,7 @@ function Checkpoint(game, x, y, pointID, spritesheet) {
 	this.ID = pointID;
 	this.active = false;
 	this.spritesheet = spritesheet;
+	this.zIndex = 0;
 	// Set animation to use inactive sprite
 	this.animation = new Animation(this.spritesheet, "off", 0, 0, 32, 32, 0, 1, 1, true, 2, DIR_RIGHT); 
     this.box = new BoundingBox(this.x, this.y, 64, 64, "checkpoint");
@@ -340,6 +351,7 @@ function Hook(player, dirVector) {
     this.y = player.y + player.animation.hotspotY;
 	this.direction = dirVector;
     this.box = new BoundingBox(this.x - 1, this.y - 1, 3, 3, TAG_HOOK);
+	this.zIndex = 1;
     this.attached = false;
 }
 
@@ -520,6 +532,7 @@ AM.queueDownload("./NeverLateSalaryMan/img/Checkpoint.png");
 AM.queueDownload("./NeverLateSalaryMan/img/BusStop.png");
 AM.queueDownload("./NeverLateSalaryMan/img/PoliceOfficer.png");
 AM.queueDownload("./NeverLateSalaryMan/img/SumoWrestler.png");
+AM.queueDownload("./NeverLateSalaryMan/img/Rain.png");
 
 // Download all of the background tile set.
 AM.queueDownload("./NeverLateSalaryMan/img/tileset/Blocks.png");

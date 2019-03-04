@@ -291,6 +291,7 @@ class EnemyClass extends ActorClass {
         /* TODO: Remove call to awaken from constructor once dynamic awaken from the player
          * approaching enemies is incorporated into the game.
          */
+		this.zIndex = 0;
         this.awaken();
     }
 
@@ -366,12 +367,14 @@ class Yamada extends ActorClass {
         this.friction = 0.5;
         this.aiming = false;
         this.grappling = false;
+		this.grappleCooldown = 0;
         this.stunned = false;
         this.invulnerable = false;
         this.hook = null;
         this.aimVector = new Vector(0, 0);
         this.hookSpeed = 5;
         this.keyCount = 0;
+		this.zIndex = 1;
 
         this.animation = new Animation(spritesheet, "idle", 0, 0, 32, 32, 0, 0.10, 8, true, 2, DIR_RIGHT, 7, 0, 18, 32); // Initial animation
     }
@@ -391,6 +394,8 @@ class Yamada extends ActorClass {
 			this.invulnerable = true;
         } else
 			this.invulnerable = false;
+		
+		this.grappleCooldown = Math.max(0, this.grappleCooldown - this.game.clockTick);
 		
 		if (this.stunned) {
 			if (this.platform) // Landed, end stun
@@ -419,10 +424,14 @@ class Yamada extends ActorClass {
             this.aimVector = new Vector(Math.sqrt(2) / 2, -Math.sqrt(2) / 2);
 			
         } else if (this.aiming && !this.game.keyGrapple && !this.hook) { 
-		    // Fire in aimed direction
-            this.aimVector.multiply(40);
-            this.hook = new Hook(this, this.aimVector);
-            this.game.addEntity(this.hook);
+		    if (this.grappleCooldown == 0) {
+				// Fire in aimed direction
+				this.aimVector.multiply(40);
+				this.hook = new Hook(this, this.aimVector);
+				this.game.addEntity(this.hook);
+				this.grappleCooldown = .5;
+			} else 
+				this.cancelAction();
         }
 
         if (this.game.keyLeft) { // Left input
@@ -594,6 +603,31 @@ class Yamada extends ActorClass {
         super.animate(animation); // Call to super method
     }
 
+	/** 
+	 * Draws yamada on the game's canvas.
+	 */
+	draw() {
+		if (Math.floor(this.damageTimer * 10) % 2 == 0) { // Draws animation every half second if stunned
+            this.animation.drawFrame(this.game.clockTick, this.ctx, this.x - this.game.camera.x, this.y - this.game.camera.y);
+        } else {
+			this.animation.elapsedTime += this.game.clockTick;
+		}
+        if (this.game.showOutlines) { // Draws animation border for debugging
+        var animWidth = this.animation.frameWidth * this.animation.scale;
+        var animHeight = this.animation.frameHeight * this.animation.scale;
+
+		this.ctx.strokeStyle = "green";
+        this.ctx.strokeRect(this.x - this.game.camera.x, this.y - this.game.camera.y, animWidth, animHeight);
+		
+		var boxWidth = this.box.width;
+        var boxHeight = this.box.height;
+
+        this.ctx.strokeStyle = "red";
+        this.ctx.strokeRect(this.box.x - this.game.camera.x, this.box.y - this.game.camera.y, boxWidth, boxHeight);
+		}
+	}
+		
+	
     /**
      * Applies damage to Yamada and knocks him out if his health falls to zero or below.
      * 
@@ -1071,3 +1105,46 @@ class KeyItem extends ActorClass {
         }
     }
 }
+
+/**
+ *
+ */
+ class Weather {
+	 
+	constructor(game, x, y, width, height, dir, spritesheet) {
+		this.game = game;
+		this.x = x;
+		this.y = y;
+		this.width = 32 * width;
+		this.height = 32 * height;
+		this.direction = dir;
+		this.zIndex = 2;
+		this.box = new BoundingBox(this.x, this.y, this.width, this.height, "Weather");
+		if (dir == DIR_LEFT)
+			this.animation = new Animation(spritesheet, "weather", 0, 0, 32, 32, 0, .07, 4, true, 1, dir, 0, 0, width, height);
+		else
+			this.animation = new Animation(spritesheet, "weather", 0, 32, 32, 32, 0, .07, 4, true, 1, dir, 0, 0, width, height);
+	}
+	
+	update() {
+		if (this.box.collide(this.game.player.box).object == TAG_PLAYER) {
+			if (this.dir == DIR_LEFT)
+				this.game.player.x += .5;
+			else
+				this.game.player.x -= .5;
+		}
+	}
+	
+	draw() {
+		for (var i = 0; i < this.width / 32; i++) {
+			for(var j = 0; j < this.height / 32; j++) {
+				this.animation.drawFrame(this.game.clockTick, this.game.ctx, this.x + (32 * i) - this.game.camera.x, this.y + (32 * j) - this.game.camera.y);
+			}
+		}
+		if (this.game.showOutlines) { // Draws animation border for debugging
+
+		this.game.ctx.strokeStyle = "green";
+        this.game.ctx.strokeRect(this.x - this.game.camera.x, this.y - this.game.camera.y, this.width, this.height);
+		}
+	}
+ }
