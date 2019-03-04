@@ -186,11 +186,13 @@ GameEngine.prototype.draw = function () {
     this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
     this.ctx.save();	
 	if (this.background) this.background.draw();
-    for (var i = 0; i < this.entities.length; i++) {
-		var entity = this.entities[i];
-        if (entity != this.player) entity.draw(this.ctx);
-    }
-	if (this.player) this.player.draw();
+	for (var j = 0; j <= 2; j++) {
+		for (var i = 0; i < this.entities.length; i++) {
+			var entity = this.entities[i];
+			if (entity.zIndex == j)
+				entity.draw();
+		}
+	}
 	if (this.camera) this.camera.draw();
     this.ctx.restore();
 }

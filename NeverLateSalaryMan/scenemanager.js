@@ -112,7 +112,8 @@ SceneManager.prototype.loadLevel = function(sceneID) {
 				this.game.addEntity(new SecurityGuard(this.game, newThing.x, newThing.y, AM.getAsset("./NeverLateSalaryMan/img/PoliceOfficer.png")));
 			else if (newThing.tag == "SumoWrestler")
 				this.game.addEntity(new SumoWrestler(this.game, newThing.x, newThing.y, AM.getAsset("./NeverLateSalaryMan/img/SumoWrestler.png")));
-			// else if (newThing.tag == something)
+			else if (newThing.tag == "Monsoon")
+				this.game.addEntity(new Weather(this.game, newThing.x, newThing.y, newThing.width, newThing.height, newThing.dir, AM.getAsset("./NeverLateSalaryMan/img/Rain.png")));
 		}
 		
 		// Add the background for the level
@@ -145,7 +146,8 @@ function MenuDisplay(msg, levelID, x, y, game) {
 	this.x = x;
 	this.y = y;
 	this.game = game;
-	this.ctx = game.ctx;	
+	this.ctx = game.ctx;
+	this.zIndex = 0;
 }
 
 MenuDisplay.prototype.update = function() {
