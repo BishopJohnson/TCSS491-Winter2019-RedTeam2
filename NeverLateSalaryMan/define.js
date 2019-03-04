@@ -1,3 +1,7 @@
+// FILE TYPES
+const TYPE_AUDIO = "audio";
+const TYPE_IMAGE = "image";
+
 // BOUNDING BOX TAGS
 const TAG_EMPTY = "";            //
 const TAG_PLAYER = "player";     //

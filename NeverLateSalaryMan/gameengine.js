@@ -199,13 +199,16 @@ GameEngine.prototype.draw = function () {
  * 
  */
 GameEngine.prototype.update = function () {
-
+    // Iterates over all entities tracked by the game.
     for (var i = 0; i < this.entities.length; i++) {
         var entity = this.entities[i];
 
-        if (!entity.removeFromWorld) {
+        if (!entity.removeFromWorld) { // Checks if the entity is marked for removal
             entity.update();
-        }
+        }/* else {
+            this.entities.splice(i, 1);
+            i--;
+        }*/
     }
 
     for (var i = this.entities.length - 1; i >= 0; --i) {
@@ -337,7 +340,7 @@ function BoundingBox(x, y, width = 0, height = 0, tag = TAG_EMPTY) {
 BoundingBox.prototype.collide = function (other) {
     var collide = { object: TAG_EMPTY, top: false, bottom: false, left: false, right: false, engulf: false }; // Collision data to return
 
-    if (other == null) // Checks if other bounding box exists
+    if (other === undefined || other == null) // Checks if other bounding box exists
         return collide;
 
     if (this.bottom > other.top && this.top < other.top && !(this.left >= other.right) && !(this.right <= other.left)) // Collided with top side of other

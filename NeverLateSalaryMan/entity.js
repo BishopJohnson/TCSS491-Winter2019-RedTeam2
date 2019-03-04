@@ -19,17 +19,38 @@ class EntityClass {
         this.velocityX = 0;
         this.velocityY = 0;
         this.removeFromWorld = false;
+        this.awake = false;
+
+        /* TODO: Remove call to awaken from constructor once dynamic awaken from the player
+         * approaching enemies is incorporated into the game.
+         */
+        this.awaken();
+    }
+
+    /**
+     * Wakes the Entity up.
+     */
+    awaken() {
+        this.awake = true;
+    }
+
+    /**
+     * Puts the Entity to sleep.
+     */
+    sleep() {
+        this.awake = false;
     }
 
     /**
      * Resets the Entity's attributes.
      */
     reset() {
-        this.x = initialX;
-        this.y = initialY;
+        this.x = this.initialX;
+        this.y = this.initialY;
         this.velocityX = 0;
         this.velocityY = 0;
         this.removeFromWorld = false;
+        this.awake = false;
     }
 
     /**
@@ -149,7 +170,7 @@ class ActorClass extends EntityClass {
             this.falling = true;
 
             if (this.gravity)
-                this.velocityY += 9.8 * 0.012; // Applies gravity
+                this.velocityY += 9.8 * 0.03; //0.025; // Applies gravity
 
         }
 
@@ -282,23 +303,10 @@ class EnemyClass extends ActorClass {
     constructor(game, x, y, spritesheet, damage = 1, stunTime = 2, gravity = true, collision = true) {
         super(game, x, y, spritesheet, TAG_ENEMY, gravity, collision); // Call to super constructor
 
-        this.awake = false;
         this.damage = damage;
         this.stunTime = stunTime;
         this.stunTimer = 0;
         this.dead = false;
-
-        /* TODO: Remove call to awaken from constructor once dynamic awaken from the player
-         * approaching enemies is incorporated into the game.
-         */
-        this.awaken();
-    }
-
-    /**
-     * Wakes the Enemy up so that they may start updating.
-     */
-    awaken() {
-        this.awake = true;
     }
 
     /**
@@ -307,7 +315,6 @@ class EnemyClass extends ActorClass {
     reset() {
         super.reset(); // Call to super method
 
-        this.awake = false;
         this.stunTimer = 0;
         this.dead = false;
     }
@@ -370,10 +377,12 @@ class Yamada extends ActorClass {
         this.invulnerable = false;
         this.hook = null;
         this.aimVector = new Vector(0, 0);
-        this.hookSpeed = 5;
+        this.hookSpeed = 7; //5;
         this.keyCount = 0;
 
         this.animation = new Animation(spritesheet, "idle", 0, 0, 32, 32, 0, 0.10, 8, true, 2, DIR_RIGHT, 7, 0, 18, 32); // Initial animation
+
+        this.awaken(); // Wakes Yamada by default
     }
 
     /**
@@ -1069,5 +1078,87 @@ class KeyItem extends ActorClass {
             this.game.player.keyCount++;
             this.removeFromWorld = true;
         }
+    }
+}
+
+/**
+ * 
+ */
+class EnemySpawner extends EntityClass {
+
+    /**
+     * 
+     * 
+     * @param {GameEngine} game
+     * @param {number} x
+     * @param {number} y
+     * @param {any} enemy
+     * @param {number} max The maximum number of enemies the spawner may have in play at any given time.
+     * @param {number} cooldown (Optional) The amount of time between each enemy spawn. Default is 5 seconds.
+     * @param {string} direction (Optional) The direction the spawner spawns enemies towards. Default is left.
+     */
+    constructor(game, x, y, enemy, max, cooldown = 5, direction = DIR_LEFT) {
+        super(game, x, y); // Call to super constructor
+
+        this.enemy = enemy;
+        this.enemies = []; // The list of the spawner's children
+        this.max = max;
+        this.direction = direction;
+        this.cooldown = cooldown;
+        this.timer = 0;
+    }
+
+    /**
+     * 
+     */
+    update() {
+        if (this.awake) { // Checks if the spawner is enabled
+            if (this.timer > 0) { // Checks if the timer is counting down
+                this.timer = Math.max(0, this.timer - this.game.clockTick); // Decrement the timer
+            } else {
+                super.update(); // Call to super method
+
+                this.spawn(); // Spawns a new enemy
+                this.timer = this.cooldown;
+            }
+        }
+
+        /* Checks if any enemies were removed from the game and removes them from the spawner's list too.
+         * 
+         * Loop is ran even if the spawner is asleep.
+         */
+        for (var i = 0; i < this.enemies.length; i++) {
+            if (this.enemies[i].removeFromWorld) { // Checks if the enemy is set for removal
+                this.enemies = this.enemies.splice(i, 1);
+            }
+        }
+    }
+
+    /**
+     * 
+     */
+    reset() {
+        super.reset(); // Call to super method
+
+        this.enemies = [];
+        this.timer = 0;
+    }
+
+    /**
+     * Spawns another Enemy if the total number of children of the spawner is below
+     * its maximum capacity.
+     * 
+     * @returns {boolean} Returns true if an enemy was spawned and false otherwise.
+     */
+    spawn() {
+        if (this.enemies.length < this.max) { // Checks if enemies list has space available
+            /*
+            var enemy = this.game.addEntity();
+            this.enemies.length.push(enemy);
+            */
+            return true;
+        }
+
+        return false;
     }
 }

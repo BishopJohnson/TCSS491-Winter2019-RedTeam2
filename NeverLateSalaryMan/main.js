@@ -530,7 +530,7 @@ AM.queueDownload("./NeverLateSalaryMan/img/tileset/Platforms.png");
 AM.queueDownload("./NeverLateSalaryMan/img/tileset/BKG01.png");
 
 // Download all of the audio files
-//AM.queueDownload("./NeverLateSalaryMan/audio/DeathByGlamour.mp3");
+AM.queueDownload("./NeverLateSalaryMan/audio/DeathByGlamour.mp3");
 
 var levelImages = LoadLevelImages();
 

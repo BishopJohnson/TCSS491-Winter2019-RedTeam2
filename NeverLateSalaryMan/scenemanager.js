@@ -120,7 +120,12 @@ SceneManager.prototype.loadLevel = function(sceneID) {
 		this.game.background = new Background(this.game, 
 								AM.getAsset(properties.background));
 		else this.game.background = null;
-		
+
+        /* Enemy Spawner Test Code */
+        //var spawner = new EnemySpawner(this.game, this.game.player.x + 200, this.game.player.y, undefined, 5);
+        //this.game.addEntity(spawner);
+        /***************************/
+
 	} else { // Scene is not a gameplay level, get other assets
 		this.game.camera = null;
 		this.game.player = null;
@@ -131,7 +136,7 @@ SceneManager.prototype.loadLevel = function(sceneID) {
 	}
 		
 	// Re-add this manager to the game to keep timer running
-	this.game.addEntity(this);
+    this.game.addEntity(this);
 }
 
 function MenuDisplay(msg, levelID, x, y, game) {
