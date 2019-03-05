@@ -551,6 +551,7 @@ AM.downloadAll(function () {
     var canvas = document.getElementById("gameWorld");
     var ctx = canvas.getContext("2d");
     const debug = document.getElementById("debug_btn");
+    const nextLevel = document.getElementById("level_btn");
 	ctx.imageSmoothingEnabled = false; // Disables pixel smoothing
 
     var gameEngine = new GameEngine();
@@ -561,8 +562,12 @@ AM.downloadAll(function () {
 	// Display basic splash screen
 	gameEngine.SceneManager.loadLevel(0);
 
-    debug.addEventListener('click', function (event) {
+    debug.addEventListener('click', function (event) { // Activates Debug Mode on click
         gameEngine.debugMode();
+    });
+
+    nextLevel.addEventListener('click', function (event) { // Transitions to next level on click
+        gameEngine.SceneManager.loadLevel(gameEngine.sceneManager.nextLevel);
     });
 
     console.log("All Done!");
