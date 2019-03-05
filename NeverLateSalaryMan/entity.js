@@ -1075,7 +1075,7 @@ class SumoWrestler extends EnemyClass {
 }
 
 /**
- * 
+ * Class for the Key object.
  */
 class KeyItem extends ActorClass {
 
@@ -1105,18 +1105,77 @@ class KeyItem extends ActorClass {
             this.game.player.keyCount++;
             this.removeFromWorld = true;
         }
+
+        this.animate(); // Call to update animation
     }
 }
 
 /**
- * 
+ * Class for the Door object.
+ */
+class Door extends ActorClass {
+
+    /**
+     * The constructor for the Door class.
+     * 
+     * @param {GameEngine} game The game engine.
+     * @param {number} x The x position of the door.
+     * @param {number} y The y position of the door.
+     * @param {string} spritesheet The spritesheet of the door.
+     * @param {number} keys (Optional) The number of keys needed to open the door. Defualt value is 1.
+     */
+    constructor(game, x, y, spritesheet, keys = 1) {
+        super(game, x, y, spritesheet, TAG_PLATFORM, false, false); // Call to super constructor
+
+        this.animation = null; // Initial animation
+        this.open = false;
+        this.keys = keys;
+        this.trigger = new BoundingBox(this.box.x - 1, this.box.y - 1, this.box.width + 2, this.box.height + 2, TAG_EMPTY); // Trigger box
+    }
+
+    /**
+     * The update method for the Door class.
+     */
+    update() {
+        if (!this.open) { // Checks if door is already open
+            super.update(); // Call to super method
+
+            this.trigger = new BoundingBox(this.box.x - 1, this.box.y - 1, this.box.width + 2, this.box.height + 2, TAG_EMPTY); // Updates trigger box
+            var collision = this.trigger.collide(this.game.player.box);
+
+            if (collision.tag == TAG_PLAYER && this.game.player.keyCount >= this.keys) { // Checks if player is within trigger and has enough keys
+                this.open = true;
+            }
+        }
+
+        this.animate(); // Call to update animation
+    }
+
+    /**
+     * The animate method for the Door class.
+     */
+    animate() {
+        let animation = this.animation;
+
+        if (this.open) { // If the door is open
+            // Open animation
+        } else { // If the door is not open
+            // Closed animation
+        }
+
+        super.animate(animation); // Call to super method
+    }
+}
+
+/**
+ * Class for an enemy spawner object.
  */
 class EnemySpawner extends EntityClass {
 
     /**
      * 
      * 
-     * @param {GameEngine} game
+     * @param {GameEngine} game The game engine.
      * @param {number} x
      * @param {number} y
      * @param {any} enemy
