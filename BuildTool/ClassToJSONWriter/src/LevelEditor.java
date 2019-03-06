@@ -11,6 +11,8 @@ public class LevelEditor {
 	private static String[] enemies = {"ConWorker", "Bird", "SecurityGuard"};
 	private static String CHECKPOINT = "Checkpoint";
 	private static String WIN_AREA = "WinArea";
+	private static String DOOR = "Door";
+	private static String KEY = "Key";
 	private static String FILENAME = "level2.txt";
 	private static String JSONNAME = "level2.json";
 	private static String[][] myLevel;
@@ -128,6 +130,14 @@ public class LevelEditor {
 					} else if(level[row][column].toCharArray()[0] == 'c') {
 						myEntities.add(new Entity(CHECKPOINT, column * 32, row * 32,
 								Integer.valueOf("" + level[row][column].toCharArray()[1])));
+						level[row][column] = null;
+					} else if(level[row][column].toCharArray()[0] == 'd') {
+						myEntities.add(new Entity(DOOR, column * 32, row * 32,
+							Integer.valueOf("" + level[row][column].toCharArray()[1])));
+						level[row][column] = null;
+					} else if(level[row][column].toCharArray()[0] == 'k') {
+						myEntities.add(new Entity(KEY, column * 32, row * 32,
+							Integer.valueOf("" + level[row][column].toCharArray()[1])));
 						level[row][column] = null;
 					}
 				}

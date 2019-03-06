@@ -23,6 +23,10 @@ e2 - Security Guard
 Checkpoints - 'c', Integer. Represents the checkpoints. The integer represents the checkpoint's id. Used to note the furthest checkpoint.
 There must be a c0 above where the player should start.
 
+Doors - 'd', Integer. Represents the door. The integer is the number of keys necessary to open the door.
+
+Keys - 'k', Integer. Represents the key. The integer is the id of the key.
+
 Player - pp. Where the player starts.
 
 Goal - gg. Where the player wins.

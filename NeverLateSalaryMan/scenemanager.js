@@ -114,6 +114,8 @@ SceneManager.prototype.loadLevel = function(sceneID) {
 				this.game.addEntity(new SumoWrestler(this.game, newThing.x, newThing.y, AM.getAsset("./NeverLateSalaryMan/img/SumoWrestler.png")));
 			else if (newThing.tag == "Monsoon")
 				this.game.addEntity(new Weather(this.game, newThing.x, newThing.y, newThing.width, newThing.height, newThing.dir, AM.getAsset("./NeverLateSalaryMan/img/Rain.png")));
+			//else if (newThing.tag == "Door")
+				//this.game.addEntity(new Door(this.game, newThing.x, newThing.y, AM.getAsset("ADD_DOOR"), newThing.id));
 		}
 		
 		// Add the background for the level
