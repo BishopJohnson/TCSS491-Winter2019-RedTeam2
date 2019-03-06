@@ -97,8 +97,9 @@ SceneManager.prototype.loadLevel = function(sceneID) {
 		}
 		
 		// Add all nonPlayer entities
-		for(i = 0; i < properties.entities.length; i++) {
-			var newThing = properties.entities[i];
+		for (i = 0; i < properties.entities.length; i++) {
+            var newThing = properties.entities[i];
+
 			// Determine which type of entity is needed by entity tags
 			if (newThing.tag == "Bird")
                 this.game.addEntity(new Bird(this.game, newThing.x, newThing.y, AM.getAsset("./NeverLateSalaryMan/img/Bird.png")));
@@ -113,16 +114,18 @@ SceneManager.prototype.loadLevel = function(sceneID) {
 			else if (newThing.tag == "SumoWrestler")
 				this.game.addEntity(new SumoWrestler(this.game, newThing.x, newThing.y, AM.getAsset("./NeverLateSalaryMan/img/SumoWrestler.png")));
 			else if (newThing.tag == "Monsoon")
-				this.game.addEntity(new Weather(this.game, newThing.x, newThing.y, newThing.width, newThing.height, newThing.dir, AM.getAsset("./NeverLateSalaryMan/img/Rain.png")));
-			//else if (newThing.tag == "Door")
-				//this.game.addEntity(new Door(this.game, newThing.x, newThing.y, AM.getAsset("ADD_DOOR"), newThing.id));
+                this.game.addEntity(new Weather(this.game, newThing.x, newThing.y, newThing.width, newThing.height, newThing.dir, AM.getAsset("./NeverLateSalaryMan/img/Rain.png")));
+            else if (newThing.tag == "Key")
+                this.game.addEntity(new KeyItem(this.game, newThing.x, newThing.y, AM.getAsset("./NeverLateSalaryMan/img/KeyItems.png")));
+			else if (newThing.tag == "Door")
+                this.game.addEntity(new Door(this.game, newThing.x, newThing.y, AM.getAsset("./NeverLateSalaryMan/img/KeyItems.png")/*, newThing.id*/));
 		}
 		
 		// Add the background for the level
 		if (properties.background)
-		this.game.background = new Background(this.game, 
-								AM.getAsset(properties.background));
-		else this.game.background = null;
+            this.game.background = new Background(this.game, AM.getAsset(properties.background));
+        else
+            this.game.background = null;
 
         /* Enemy Spawner Test Code */
         //var spawner = new EnemySpawner(this.game, this.game.player.x + 200, this.game.player.y, undefined, 5);

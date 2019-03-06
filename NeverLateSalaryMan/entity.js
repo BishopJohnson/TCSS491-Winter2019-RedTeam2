@@ -1082,15 +1082,16 @@ class KeyItem extends ActorClass {
     /**
      * 
      * 
-     * @param {GameEngine} game
-     * @param {number} x
-     * @param {number} y
-     * @param {string} spritesheet
+     * @param {GameEngine} game The game engine.
+     * @param {number} x The x position of the key.
+     * @param {number} y The y position of the key.
+     * @param {string} spritesheet The spritesheet of the key.
      */
     constructor(game, x, y, spritesheet) {
         super(game, x, y, spritesheet, undefined /* default tag */, false /* no gravity */); // Call to super constructor
 
-        this.animation = null; // Initial animation
+        this.animation = new Animation(spritesheet, "idle", 0, 0, 32, 32, 0, 0.10, 8, true, 2, DIR_RIGHT, 11, 8, 11, 15); // Initial animation
+        this.zIndex = 0;
     }
 
     /**
@@ -1101,12 +1102,10 @@ class KeyItem extends ActorClass {
 
         var collision = this.box.collide(this.game.player.box);
 
-        if (collision.tag == TAG_PLAYER) { // Collided with the player
+        if (collision.object == TAG_PLAYER) { // Collided with the player
             this.game.player.keyCount++;
             this.removeFromWorld = true;
         }
-
-        this.animate(); // Call to update animation
     }
 }
 
@@ -1127,28 +1126,49 @@ class Door extends ActorClass {
     constructor(game, x, y, spritesheet, keys = 1) {
         super(game, x, y, spritesheet, TAG_PLATFORM, false, false); // Call to super constructor
 
-        this.animation = null; // Initial animation
+        this.animation = new Animation(spritesheet, "closed", 32, 32, 32, 32, 0, 0.10, 1, true, 2, DIR_RIGHT, 8, 0, 16, 32); // Initial animation
         this.open = false;
         this.keys = keys;
         this.trigger = new BoundingBox(this.box.x - 1, this.box.y - 1, this.box.width + 2, this.box.height + 2, TAG_EMPTY); // Trigger box
+        this.zIndex = 0;
     }
 
     /**
      * The update method for the Door class.
      */
     update() {
-        if (!this.open) { // Checks if door is already open
+        if (!this.open && this.awake) { // Checks if door is closed
             super.update(); // Call to super method
 
             this.trigger = new BoundingBox(this.box.x - 1, this.box.y - 1, this.box.width + 2, this.box.height + 2, TAG_EMPTY); // Updates trigger box
             var collision = this.trigger.collide(this.game.player.box);
 
-            if (collision.tag == TAG_PLAYER && this.game.player.keyCount >= this.keys) { // Checks if player is within trigger and has enough keys
+            if (collision.object == TAG_PLAYER && this.game.player.keyCount >= this.keys) { // Checks if player is within trigger and has enough keys
                 this.open = true;
             }
+        } else if (this.open && this.awake) {
+            this.awake = false
+            this.box.tag = TAG_EMPTY;
+
+            if (this == this.game.player.platform) // Checks if player is standing on door when it opens
+                this.game.player.platform = null;
+
+            this.game.player.keyCount -= this.keys;
         }
 
         this.animate(); // Call to update animation
+    }
+
+    /**
+     * The draw method for the Door class.
+     */
+    draw() {
+        super.draw(); // Call to super method
+
+        if (this.game.showOutlines) { // Draws debug outlines for the trigger box
+            this.ctx.strokeStyle = "blue";
+            this.ctx.strokeRect(this.trigger.x - this.game.camera.x, this.trigger.y - this.game.camera.y, this.trigger.width, this.trigger.height);
+        }
     }
 
     /**
@@ -1158,9 +1178,9 @@ class Door extends ActorClass {
         let animation = this.animation;
 
         if (this.open) { // If the door is open
-            // Open animation
+            animation = new Animation(this.spritesheet, "open", 64, 32, 32, 32, 0, 0.10, 6, false, 2, DIR_RIGHT, 8, 0, 16, 32);
         } else { // If the door is not open
-            // Closed animation
+            animation = new Animation(this.spritesheet, "closed", 32, 32, 32, 32, 0, 0.10, 1, true, 2, DIR_RIGHT, 8, 0, 16, 32);
         }
 
         super.animate(animation); // Call to super method

@@ -57,6 +57,8 @@ Animation.prototype.drawFrame = function (tick, ctx, x, y) {
     if (this.isDone()) { // Checks if animation cycle is done
         if (this.loop)
             this.elapsedTime = 0;
+        else
+            this.elapsedTime -= tick; // Keeps animation on last frame
     }
 
     var frame = this.currentFrame();
