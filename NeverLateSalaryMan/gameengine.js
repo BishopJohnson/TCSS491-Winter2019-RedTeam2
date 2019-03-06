@@ -42,6 +42,7 @@ function GameEngine() {
     this.showOutlines = false;
     this.ctx = null;
     this.player = null;
+    this.isPaused = true; // Paused by default
     this.click = null;
     this.mouse = null;
     this.wheel = null;
@@ -101,6 +102,16 @@ GameEngine.prototype.startInput = function () {
 
         return { x: x, y: y };
     }
+
+    this.ctx.canvas.addEventListener("focusin", function (e) {
+        that.isPaused = false;
+        AUDIO_MANAGER.unpauseLevelTrack();
+    }, false);
+
+    this.ctx.canvas.addEventListener("focusout", function (e) {
+        that.isPaused = true;
+        AUDIO_MANAGER.pauseLevelTrack();
+    }, false);
 
     this.ctx.canvas.addEventListener("mousemove", function (e) {
         that.mouse = getXandY(e);
@@ -201,22 +212,24 @@ GameEngine.prototype.draw = function () {
  * 
  */
 GameEngine.prototype.update = function () {
-    // Iterates over all entities tracked by the game.
-    for (var i = 0; i < this.entities.length; i++) {
-        var entity = this.entities[i];
+    if (!this.isPaused) { // Checks if the game is not paused
+        // Iterates over all entities tracked by the game.
+        for (var i = 0; i < this.entities.length; i++) {
+            var entity = this.entities[i];
 
-        if (!entity.removeFromWorld) { // Checks if the entity is marked for removal
-            entity.update();
-        }/* else {
+            if (!entity.removeFromWorld) { // Checks if the entity is marked for removal
+                entity.update();
+            }/* else {
             this.entities.splice(i, 1);
             i--;
         }*/
-    }
+        }
 
-    for (var i = this.entities.length - 1; i >= 0; --i) {
-        if (this.entities[i].removeFromWorld) {
-            this.entities.splice(i, 1);
-            //console.log('removed entity');
+        for (var i = this.entities.length - 1; i >= 0; --i) {
+            if (this.entities[i].removeFromWorld) {
+                this.entities.splice(i, 1);
+                //console.log('removed entity');
+            }
         }
     }
 }

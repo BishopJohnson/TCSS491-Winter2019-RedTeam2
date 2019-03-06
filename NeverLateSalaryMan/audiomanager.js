@@ -35,7 +35,9 @@ class AudioManager {
         if (this.active) { // Checks if Audio Manager is active
             var sound = AM.getAsset(path).cloneNode(); // Clones audio to allow concurrent playback
 
-            sound.play();
+            sound.play().catch(function (error) {
+                console.log("Promise Rejected: " + error);
+            });
         }
     }
 
@@ -58,8 +60,18 @@ class AudioManager {
                 this.levelTrack = AM.getAsset(path).cloneNode(); // Clones audio from Asset Manager
 
                 this.levelTrack.loop = loop;
-                this.levelTrack.play();
+                this.unpauseLevelTrack();
             }
         }
+    }
+
+    pauseLevelTrack() {
+        this.levelTrack.pause();
+    }
+
+    unpauseLevelTrack() {
+        this.levelTrack.play().catch(function (error) {
+            console.log("Promise Rejected: " + error);
+        });
     }
 }
