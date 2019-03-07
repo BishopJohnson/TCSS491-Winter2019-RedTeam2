@@ -140,16 +140,6 @@ Platform.prototype.draw = function () {
     }
     
 	this.blocks = LoadLevelImages(this.id);
-	/**
-	for(let i = 0; i < this.width; i += 32) {
-		//this.animation.drawFrame(this.game.clockTick, this.ctx, (this.x + (i * 1)) - this.game.camera.x, this.y - this.game.camera.y);
-		for(let j = 0; j < this.height; j += 32) {
-			//this.animation.drawFrame(this.game.clockTick, this.ctx, this.x - this.game.camera.x, (this.y + (j * 1)) - this.game.camera.y);
-			this.animation.drawFrame(this.game.clockTick, this.ctx, (this.x + (i * 1)) - this.game.camera.x,
-				(this.y + (j * 1)) - this.game.camera.y);
-		}
-	}
-	*/
 	if(this.id > -1) {
 		for(let i = 0; i < this.width; i += 32) {
 			var drawBlock;
@@ -165,9 +155,9 @@ Platform.prototype.draw = function () {
 		for(let j = 0; j < this.height; j += 32) {
 			//this.animation.drawFrame(this.game.clockTick, this.ctx, this.x - this.game.camera.x, (this.y + (j * 1)) - this.game.camera.y);
 			var drawBlock;
-			if(i == 0) {
+			if(j == 0) {
 				drawBlock = this.blocks[0];
-			} else if(i + 32 == this.height) {
+			} else if(j + 32 == this.height) {
 				drawBlock = this.blocks[2];
 			} else {
 				drawBlock = this.blocks[1];

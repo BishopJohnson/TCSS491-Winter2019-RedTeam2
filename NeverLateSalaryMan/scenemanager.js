@@ -15,6 +15,7 @@ function SceneManager(game) {
 		entities:[{msg: "A and D to move\nHold K to aim\nHold W while aiming to aim up\nPress A or D while aiming to aim straight left or right\nRelease K to fire hook\nPress L to detatch hook\n\nYou can stand on the worker's beam, but touching him\nwill damage you.\nVending machines are checkpoints.\n\nGet to the bus stop before time runs out!\n\nClick to start", transitionID: 1, x: 50, y: 100}], platforms: null, background: null}));
 	this.levelProps.push(level1);
 	this.levelProps.push(level2);
+	this.levelProps.push(level3);
 	this.levelProps.push(JSON.stringify(
 		{playLevel: false, nextLevel: 0, timeLimit: 0, camData: null, deathPlane: 0, playerData: null,
 		entities:[{msg: "You won!\nClick to return to splash screen", transitionID: 0, x: 100, y: 100}], platforms: null, background: null}));
@@ -118,7 +119,7 @@ SceneManager.prototype.loadLevel = function(sceneID) {
             else if (newThing.tag == "Key")
                 this.game.addEntity(new KeyItem(this.game, newThing.x, newThing.y, AM.getAsset("./NeverLateSalaryMan/img/KeyItems.png")));
 			else if (newThing.tag == "Door")
-                this.game.addEntity(new Door(this.game, newThing.x, newThing.y, AM.getAsset("./NeverLateSalaryMan/img/KeyItems.png")/*, newThing.id*/));
+                this.game.addEntity(new Door(this.game, newThing.x, newThing.y, AM.getAsset("./NeverLateSalaryMan/img/KeyItems.png"), newThing.id));
 		}
 		
 		// Add the background for the level
