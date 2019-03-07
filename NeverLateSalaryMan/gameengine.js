@@ -105,12 +105,12 @@ GameEngine.prototype.startInput = function () {
 
     this.ctx.canvas.addEventListener("focusin", function (e) {
         that.isPaused = false;
-        AUDIO_MANAGER.unpauseLevelTrack();
+        AUDIO_MANAGER.unpauseSound();
     }, false);
 
     this.ctx.canvas.addEventListener("focusout", function (e) {
         that.isPaused = true;
-        AUDIO_MANAGER.pauseLevelTrack();
+        AUDIO_MANAGER.pauseSound();
     }, false);
 
     this.ctx.canvas.addEventListener("mousemove", function (e) {

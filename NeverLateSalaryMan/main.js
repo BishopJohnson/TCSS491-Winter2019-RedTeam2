@@ -551,6 +551,7 @@ var levelImages = LoadLevelImages();
 AM.downloadAll(function () {
     var canvas = document.getElementById("gameWorld");
     var ctx = canvas.getContext("2d");
+    const mute = document.getElementById("mute_btn");
     const debug = document.getElementById("debug_btn");
     const nextLevel = document.getElementById("level_btn");
 	ctx.imageSmoothingEnabled = false; // Disables pixel smoothing
@@ -562,6 +563,10 @@ AM.downloadAll(function () {
 
 	// Display basic splash screen
 	gameEngine.SceneManager.loadLevel(0);
+
+    mute.addEventListener('click', function (event) { // Toggles mute on all audio
+        AUDIO_MANAGER.toggleSound();
+    });
 
     debug.addEventListener('click', function (event) { // Activates Debug Mode on click
         gameEngine.debugMode();
