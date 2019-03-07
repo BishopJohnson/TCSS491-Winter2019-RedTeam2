@@ -44,7 +44,7 @@ function GameEngine() {
     this.player = null;
     this.isPaused = true; // Paused by default
     this.click = null;
-    this.mouse = null;
+    this.mouse = new Vector(0, 0);
     this.wheel = null;
     this.keyUp = false;
     this.keyLeft = false;
@@ -95,12 +95,13 @@ GameEngine.prototype.startInput = function () {
      * 
      * 
      * @param {any} e
+     * @return {Vector}
      */
     var getXandY = function (e) {
         var x = e.clientX - that.ctx.canvas.getBoundingClientRect().left;
         var y = e.clientY - that.ctx.canvas.getBoundingClientRect().top;
 
-        return { x: x, y: y };
+        return new Vector(x, y);
     }
 
     this.ctx.canvas.addEventListener("focusin", function (e) {
@@ -410,6 +411,15 @@ Vector.prototype.normalize = function () {
     var m = this.magnitude();
 
     return new Vector(this.x / m, this.y / m);
+}
+
+/**
+ * Returns the angle of the vector in radians.
+ * 
+ * @returns {number} The angle in radians.
+ */
+Vector.prototype.angle = function () {
+    return Math.atan(this.x / this.y);
 }
 
 /**

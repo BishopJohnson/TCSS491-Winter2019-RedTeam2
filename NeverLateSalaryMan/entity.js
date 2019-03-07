@@ -449,34 +449,41 @@ class Yamada extends ActorClass {
 				this.cancelAction();
         }
 
+        if (this.aiming && !this.hook) { // Aiming
+            this.aimVector = new Vector((this.game.mouse.x - this.game.camera.x) - this.animation.hotspotX,  // x
+                                        (this.game.mouse.y - this.game.camera.y) - this.animation.hotspotY); // y
+
+            this.aimVector = this.aimVector.normalize(); // Normalizes vector
+        }
+
         if (this.game.keyLeft) { // Left input
 
-            if (this.aiming && !this.hook)
+            /*if (this.aiming && !this.hook)
                 this.aimVector = new Vector(-1, 0);
-            else if (!this.grappling && !this.hook)
+            else */if (!this.grappling && !this.hook)
                 this.velocityX = Math.max(-this.MAX_SPEED, this.velocityX - this.speed); // Accelerates the player
 
         } else if (this.game.keyRight) { // Right input
 
-            if (this.aiming && !this.hook)
+            /*if (this.aiming && !this.hook)
                 this.aimVector = new Vector(1, 0);
-            else if (!this.grappling && !this.hook)
+            else */if (!this.grappling && !this.hook)
                 this.velocityX = Math.min(this.MAX_SPEED, this.velocityX + this.speed); // Accelerates the player
 
         } else if (this.game.keyUp) { // Up input
-
+            /*
             if (this.aiming && !this.hook)
-                this.aimVector = new Vector(0, -1);
-
+                this.aimVector = new Vector(0, -1);*/
+                
         } else { // No input
-
+            /*
             if (this.aiming && !this.hook) { // Default aiming direction to 45 degrees
                 if (this.animation.direction == DIR_RIGHT)
                     this.aimVector = new Vector(Math.sqrt(2) / 2, -Math.sqrt(2) / 2);
                 else
                     this.aimVector = new Vector(-Math.sqrt(2) / 2, -Math.sqrt(2) / 2);
             }
-
+            */
         }
 
         if (this.game.keySever && this.grappling) { // Sever grappling hook
@@ -485,7 +492,7 @@ class Yamada extends ActorClass {
 
             this.hook = null;
             this.grappling = false;
-            this.aimVector = new Vector(Math.sqrt(2) / 2, -Math.sqrt(2) / 2);
+            //this.aimVector = new Vector(Math.sqrt(2) / 2, -Math.sqrt(2) / 2);
         }
 
         if (this.grappling && this.hook) { // Pulls Yamada towards grappling hook
@@ -511,6 +518,8 @@ class Yamada extends ActorClass {
      */
     animate() {
         let animation = this.animation;
+        var angle = this.aimVector.angle(); // Gets the angle of the aiming vector
+        //console.log(angle * (180 / Math.PI));
 
         if (this.platform && !this.falling && !this.grappling) { // Is standing on a surface
 
@@ -524,7 +533,22 @@ class Yamada extends ActorClass {
             } else { // Is not moving
 
                 if (this.aiming) { // Is aiming
-
+                    if (this.game.keyLeft && this.game.keyGrapple) { // Left-Straight
+                        animation = new Animation(this.spritesheet, "g_aim_s", 224, 128, 32, 32, 0, 1, 1, true, 2, DIR_LEFT, 0, 0, 25, 32, 2, 11);
+                    } else if (this.game.keyRight && this.game.keyGrapple) { // Right-Straight
+                        animation = new Animation(this.spritesheet, "g_aim_s", 0, 128, 32, 32, 0, 1, 1, true, 2, DIR_RIGHT, 7, 0, 25, 32, 29, 11);
+                    } else if (this.game.keyUp && this.game.keyGrapple) { // Up
+                        if (animation.direction == DIR_RIGHT)
+                            animation = new Animation(this.spritesheet, "g_aim_u", 64, 128, 32, 32, 0, 1, 1, true, 2, DIR_RIGHT, 1, 0, 25, 32, 12, 2);
+                        else
+                            animation = new Animation(this.spritesheet, "g_aim_u", 160, 128, 32, 32, 0, 1, 1, true, 2, DIR_LEFT, 6, 0, 25, 32, 20, 2);
+                    } else if (this.game.keyGrapple) { // Diagonal
+                        if (animation.direction == DIR_RIGHT)
+                            animation = new Animation(this.spritesheet, "g_aim_d", 32, 128, 32, 32, 0, 1, 1, true, 2, DIR_RIGHT, 7, 0, 20, 32, 23, 3);
+                        else
+                            animation = new Animation(this.spritesheet, "g_aim_d", 192, 128, 32, 32, 0, 1, 1, true, 2, DIR_LEFT, 5, 0, 20, 32, 8, 3);
+                    }
+                    /*
 					if (this.game.keyLeft  && this.game.keyGrapple) { // Left-Straight
                         animation = new Animation(this.spritesheet, "g_aim_s", 224, 128, 32, 32, 0, 1, 1, true, 2, DIR_LEFT, 0, 0, 25, 32, 2, 11);
                     } else if (this.game.keyRight && this.game.keyGrapple) { // Right-Straight
@@ -540,7 +564,7 @@ class Yamada extends ActorClass {
                         else
                             animation = new Animation(this.spritesheet, "g_aim_d", 192, 128, 32, 32, 0, 1, 1, true, 2, DIR_LEFT, 5, 0, 20, 32, 8, 3);
                     }
-
+                    */
                 } else { // Is not aiming
 
                     if (animation.direction == DIR_RIGHT)
