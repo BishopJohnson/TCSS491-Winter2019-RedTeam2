@@ -39,9 +39,10 @@ function Camera(game, minX, maxX, minY, maxY) {
 	this.game = game;
 	this.ctx = this.game.ctx;
 	this.player = this.game.player;
-	// Box not used for interaction but can help with debugging
-	this.box = new BoundingBox(this.x, this.y, this.ctx.canvas.width, this.ctx.canvas.height, "camera");
-	
+    this.box = new BoundingBox(this.x, this.y, this.ctx.canvas.width, this.ctx.canvas.height, TAG_CAMERA); // Box not used for interaction but can help with debugging
+    this.renderBox = new BoundingBox(this.x - 60, this.y - 60, this.ctx.canvas.width + 120, this.ctx.canvas.height + 120, TAG_RENDER); // Box used to determine which objects to draw
+    //this.renderBox = new BoundingBox(this.x, this.y, 200, 200, TAG_RENDER); // TEST CODE
+
 	Entity.call(this, game, this.x, this.y);
 }
 
@@ -52,19 +53,25 @@ Camera.prototype.constructor = Camera;
  * 
  */
 Camera.prototype.update = function() {
+    this.x = this.player.x - this.ctx.canvas.width / 2;
+
+    if (this.x + this.ctx.canvas.width > this.maxX) // Verify camera is within defined level bounds
+        this.x = this.maxX - this.ctx.canvas.width;
+    else if (this.x < this.minX)
+        this.x = this.minX;
 	
-	this.x = this.player.x - this.ctx.canvas.width / 2;
-	// Verify camera is within defined level bounds
-	if (this.x + this.ctx.canvas.width > this.maxX) this.x = this.maxX - this.ctx.canvas.width;
-	else if (this.x < this.minX) this.x = this.minX;
-	
-	this.y = this.player.y - this.ctx.canvas.height / 2;
-	// Verify camera is within defined level bounds
-	if (this.y + this.ctx.canvas.height > this.maxY) this.y = this.maxY - this.ctx.canvas.height;
-	else if (this.y < this.minY) this.y = this.minY;
-	this.box = new BoundingBox(this.x, this.y,
-							   this.ctx.canvas.width, this.ctx.canvas.height, "camera");
-							   
+    this.y = this.player.y - this.ctx.canvas.height / 2;
+
+    if (this.y + this.ctx.canvas.height > this.maxY) // Verify camera is within defined level bounds
+        this.y = this.maxY - this.ctx.canvas.height;
+    else if (this.y < this.minY)
+        this.y = this.minY;
+
+    this.box = new BoundingBox(this.x, this.y, this.ctx.canvas.width, this.ctx.canvas.height, TAG_CAMERA); // Updates bounding box
+
+    this.renderBox = new BoundingBox(this.x - 60, this.y - 60, this.ctx.canvas.width + 120, this.ctx.canvas.height + 120, TAG_RENDER); // Updates render box
+    //this.renderBox = new BoundingBox(this.x, this.y, 200, 200, TAG_RENDER); // TEST CODE
+
 	Entity.prototype.update.call(this);
 }
 
@@ -113,7 +120,9 @@ function Platform(game, x, y, width, height, id) {
 	this.blocks = null;
 	this.zIndex = 0;
 	//this.blocks = levelImages;
-	this.animation = new Animation(AM.getAsset("./NeverLateSalaryMan/img/tileset/Blocks.png"), "Block", 0, 0, 32, 32, 0, 1, 1, true, 1, "right");
+    this.animation = new Animation(AM.getAsset("./NeverLateSalaryMan/img/tileset/Blocks.png"), "Block", 0, 0, 32, 32, 0, 1, 1, true, 1, "right");
+    this.isRendered = false;
+
     Entity.call(this, game, x, y);
 }
 
@@ -138,33 +147,48 @@ Platform.prototype.draw = function () {
         this.ctx.strokeStyle = "red";
         this.ctx.strokeRect(this.x - this.game.camera.x, this.y - this.game.camera.y, this.width, this.height);
     }
-    
-	this.blocks = LoadLevelImages(this.id);
-	if(this.id > -1) {
-		for(let i = 0; i < this.width; i += 32) {
-			var drawBlock;
-			if(i == 0) {
-				drawBlock = this.blocks[0];
-			} else if(i + 32 == this.width) {
-				drawBlock = this.blocks[2];
-			} else {
-				drawBlock = this.blocks[1];
-			}
-			drawBlock.drawFrame(this.game.clockTick, this.ctx, (this.x + (i * 1)) - this.game.camera.x, this.y - this.game.camera.y);
-		}
-		for(let j = 0; j < this.height; j += 32) {
-			//this.animation.drawFrame(this.game.clockTick, this.ctx, this.x - this.game.camera.x, (this.y + (j * 1)) - this.game.camera.y);
-			var drawBlock;
-			if(j == 0) {
-				drawBlock = this.blocks[0];
-			} else if(j + 32 == this.height) {
-				drawBlock = this.blocks[2];
-			} else {
-				drawBlock = this.blocks[1];
-			}
-			drawBlock.drawFrame(this.game.clockTick, this.ctx, this.x - this.game.camera.x, (this.y + (j * 1)) - this.game.camera.y);
-		}
-	}
+
+    var tempBox = new BoundingBox(this.x, this.y, this.width, this.height); // Box of the animation
+    var render = tempBox.collide(this.game.camera.renderBox); // Result of collision between render box and animation box
+
+    if (render.object == TAG_RENDER) // Checks if animation is within the render box
+        this.isRendered = true;
+    else
+        this.isRendered = false;
+
+    if (this.isRendered) {  // Checks if animation will be drawn
+        this.blocks = LoadLevelImages(this.id);
+
+        if (this.id > -1) {
+            for (let i = 0; i < this.width; i += 32) {
+                var drawBlock;
+
+                if (i == 0)
+                    drawBlock = this.blocks[0];
+                else if (i + 32 == this.width)
+                    drawBlock = this.blocks[2];
+                else
+                    drawBlock = this.blocks[1];
+
+                drawBlock.drawFrame(this.game.clockTick, this.ctx, (this.x + (i * 1)) - this.game.camera.x, this.y - this.game.camera.y);
+            }
+
+            for (let j = 0; j < this.height; j += 32) {
+                //this.animation.drawFrame(this.game.clockTick, this.ctx, this.x - this.game.camera.x, (this.y + (j * 1)) - this.game.camera.y);
+                var drawBlock;
+
+                if (j == 0)
+                    drawBlock = this.blocks[0];
+                else if (j + 32 == this.height)
+                    drawBlock = this.blocks[2];
+                else
+                    drawBlock = this.blocks[1];
+
+                drawBlock.drawFrame(this.game.clockTick, this.ctx, this.x - this.game.camera.x, (this.y + (j * 1)) - this.game.camera.y);
+            }
+        }
+    }
+
     Entity.prototype.draw.call(this);
 }
 
@@ -241,10 +265,10 @@ ConWorkerPlatform.prototype.draw = function () {
 /**
 Defines the area that Yamada must reach to win the level.
 */
-function WinArea(game, x, y, spritesheet) {
+function WinArea(game, x, y) {
 	this.game = game;
 	this.ctx = game.ctx;
-	this.spritesheet = spritesheet;
+    this.spritesheet = AM.getAsset("./NeverLateSalaryMan/img/BusStop.png");
     this.width = 24;
     this.height = 64;
 	this.zIndex = 0;
@@ -278,13 +302,13 @@ WinArea.prototype.draw = function () {
 /**
 A checkpoint for Yamada to respawn at when he runs out of stamina.
 */
-function Checkpoint(game, x, y, pointID, spritesheet) {
+function Checkpoint(game, x, y, pointID) {
 	this.game = game;
 	this.ctx = game.ctx;
 	this.scene = game.sceneManager;
 	this.ID = pointID;
 	this.active = false;
-	this.spritesheet = spritesheet;
+    this.spritesheet = AM.getAsset("./NeverLateSalaryMan/img/Checkpoint.png");
 	this.zIndex = 0;
 	// Set animation to use inactive sprite
 	this.animation = new Animation(this.spritesheet, "off", 0, 0, 32, 32, 0, 1, 1, true, 2, DIR_RIGHT); 

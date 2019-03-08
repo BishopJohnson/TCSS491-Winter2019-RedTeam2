@@ -131,6 +131,7 @@ class ActorClass extends EntityClass {
         this.box = null;
         this.falling = false;
         this.platform = null;
+        this.isRendered = false;
 
         this.updateBox(); // Initializes a bounding box
     }
@@ -254,13 +255,22 @@ class ActorClass extends EntityClass {
         super.draw(); // Call to super method
 
         if (this.animation) { // Draws animation if one is assigned
-            if (showSprite) // Checks if sprite will be drawn
+            // Gets the width and height of the animation
+            var animWidth = this.animation.frameWidth * this.animation.scale;
+            var animHeight = this.animation.frameHeight * this.animation.scale;
+
+            var tempBox = new BoundingBox(this.x, this.y, animWidth, animHeight); // Box of the animation
+            var render = tempBox.collide(this.game.camera.renderBox); // Result of collision between render box and animation box
+
+            if (render.object == TAG_RENDER) // Checks if animation is within the render box
+                this.isRendered = true;
+            else
+                this.isRendered = false;
+
+            if (this.isRendered && showSprite) // Checks if animation will be drawn
                 this.animation.drawFrame(this.game.clockTick, this.ctx, this.x - this.game.camera.x, this.y - this.game.camera.y);
 
             if (this.game.showOutlines) { // Draws animation border for debugging
-                var animWidth = this.animation.frameWidth * this.animation.scale;
-                var animHeight = this.animation.frameHeight * this.animation.scale;
-
                 this.ctx.strokeStyle = "green";
                 this.ctx.strokeRect(this.x - this.game.camera.x, this.y - this.game.camera.y, animWidth, animHeight);
             }
@@ -367,10 +377,9 @@ class Yamada extends ActorClass {
      * @param {GameEngine} game The game engine.
      * @param {number} x The x position to spawn the entity at.
      * @param {number} y The y position to spawn the entity at.
-     * @param {string} spritesheet The file path of the spritesheet in the asset manager.
      */
-    constructor(game, x, y, spritesheet) {
-        super(game, x, y, spritesheet, TAG_PLAYER); // Call to super constructor
+    constructor(game, x, y) {
+        super(game, x, y, AM.getAsset("./NeverLateSalaryMan/img/Yamada.png"), TAG_PLAYER); // Call to super constructor
 
         this.maxhealth = 3;
         this.health = this.maxhealth;
@@ -390,7 +399,7 @@ class Yamada extends ActorClass {
         this.keyCount = 0;
 		this.zIndex = 1;
 
-        this.animation = new Animation(spritesheet, "idle", 0, 0, 32, 32, 0, 0.10, 8, true, 2, DIR_RIGHT, 7, 0, 18, 32); // Initial animation
+        this.animation = new Animation(this.spritesheet, "idle", 0, 0, 32, 32, 0, 0.10, 8, true, 2, DIR_RIGHT, 7, 0, 18, 32); // Initial animation
 
         this.awaken(); // Wakes Yamada by default
     }
@@ -763,16 +772,15 @@ class Bird extends EnemyClass {
      * @param {GameEngine} game The game engine.
      * @param {number} x The x position to spawn the enemy at.
      * @param {number} y The y position to spawn the enemy at.
-     * @param {string} spritesheet The file path of the spritesheet in the asset manager.
      * @param {boolean} collision (Optional) Determines if the bird collides with platforms.
      */
-    constructor(game, x, y, spritesheet, collision = false) {
-        super(game, x, y, spritesheet, undefined/* default damage */, undefined/* default stunTimer */, false, collision); // Call to super constructor
+    constructor(game, x, y, collision = false) {
+        super(game, x, y, AM.getAsset("./NeverLateSalaryMan/img/Bird.png"), undefined/* default damage */, undefined/* default stunTimer */, false/* no gravity */, collision); // Call to super constructor
 
         this.speed = 2;
 
         this.velocityX = -this.speed; // Initial speed
-        this.animation = new Animation(spritesheet, "fly", 0, 0, 32, 32, 0, 0.10, 2, true, 2, DIR_RIGHT, 5, 11, 21, 9); // Initial animation
+        this.animation = new Animation(this.spritesheet, "fly", 0, 0, 32, 32, 0, 0.10, 2, true, 2, DIR_RIGHT, 5, 11, 21, 9); // Initial animation
     }
 
     /**
@@ -838,15 +846,14 @@ class ConWorker extends EnemyClass {
      * @param {GameEngine} game The game engine.
      * @param {number} x The x position to spawn the enemy at.
      * @param {number} y The y position to spawn the enemy at.
-     * @param {string} spritesheet The file path of the spritesheet in the asset manager.
      */
-    constructor(game, x, y, spritesheet) {
-        super(game, x, y, spritesheet, undefined/* default damage */, 0); // Call to super constructor
+    constructor(game, x, y) {
+        super(game, x, y, AM.getAsset("./NeverLateSalaryMan/img/ConstrWorker.png"), undefined/* default damage */, 0); // Call to super constructor
 
         this.speed = 1.9;
 
         this.velocityX = this.speed; // Initial speed
-        this.animation = new Animation(spritesheet, "walk", 0, 0, 42, 42, 0, 0.10, 8, true, 2, DIR_RIGHT, 0, 7, 42, 35); // Initial animation
+        this.animation = new Animation(this.spritesheet, "walk", 0, 0, 42, 42, 0, 0.10, 8, true, 2, DIR_RIGHT, 0, 7, 42, 35); // Initial animation
 
         // Creates a platform that follows the construction worker
         this.movingPlatform = new ConWorkerPlatform(game, this.x, this.y, this.box.width, this.box.y - this.y, this);
@@ -924,15 +931,14 @@ class SecurityGuard extends EnemyClass {
      * @param {GameEngine} game The game engine.
      * @param {number} x The x position to spawn the enemy at.
      * @param {number} y The y position to spawn the enemy at.
-     * @param {string} spritesheet The file path of the spritesheet in the asset manager.
      */
-    constructor(game, x, y, spritesheet) {
-        super(game, x, y, spritesheet, undefined/* default damage */, 2); // Call to super constructor
+    constructor(game, x, y) {
+        super(game, x, y, AM.getAsset("./NeverLateSalaryMan/img/PoliceOfficer.png"), undefined/* default damage */, 2); // Call to super constructor
 
         this.speed = 1.5;
 
         this.velocityX = this.speed; // Initial speed
-        this.animation = new Animation(spritesheet, "walk", 0, 0, 32, 32, 0, 0.10, 8, true, 2, DIR_RIGHT, 0, 0, 32, 32); // Initial animation
+        this.animation = new Animation(this.spritesheet, "walk", 0, 0, 32, 32, 0, 0.10, 8, true, 2, DIR_RIGHT, 0, 0, 32, 32); // Initial animation
     }
 	
 	/**
@@ -1019,16 +1025,15 @@ class SumoWrestler extends EnemyClass {
      * @param {GameEngine} game The game engine.
      * @param {number} x The x position to spawn the enemy at.
      * @param {number} y The y position to spawn the enemy at.
-     * @param {string} spritesheet The file path of the spritesheet in the asset manager.
      * @param {bool} bounce (Optional) Determines if the Sumo Wrestler bounces.
      */
-    constructor(game, x, y, spritesheet, bounce = true) {
-        super(game, x, y, spritesheet, 0/* default damage */, 0, true, true); // Call to super constructor
+    constructor(game, x, y, bounce = true) {
+        super(game, x, y, AM.getAsset("./NeverLateSalaryMan/img/SumoWrestler.png"), 0/* default damage */, 0, true, true); // Call to super constructor
 
         this.speed = 3;
 
         this.velocityX = this.speed; // Initial speed
-        this.animation = new Animation(spritesheet, "roll", 0, 0, 32, 32, 0, 0.07, 8, true, 2, DIR_RIGHT, 4, 2, 26, 26); // Initial animation
+        this.animation = new Animation(this.spritesheet, "roll", 0, 0, 32, 32, 0, 0.07, 8, true, 2, DIR_RIGHT, 4, 2, 26, 26); // Initial animation
                                                                                                          /* TODO: last 4 Xoffet, Yoffest, Width (bounding box), Height (bounding box) */
     }
 
@@ -1107,12 +1112,11 @@ class KeyItem extends ActorClass {
      * @param {GameEngine} game The game engine.
      * @param {number} x The x position of the key.
      * @param {number} y The y position of the key.
-     * @param {string} spritesheet The spritesheet of the key.
      */
-    constructor(game, x, y, spritesheet) {
-        super(game, x, y, spritesheet, undefined /* default tag */, false /* no gravity */); // Call to super constructor
+    constructor(game, x, y) {
+        super(game, x, y, AM.getAsset("./NeverLateSalaryMan/img/KeyItems.png"), undefined/* default tag */, false/* no gravity */); // Call to super constructor
 
-        this.animation = new Animation(spritesheet, "idle", 0, 0, 32, 32, 0, 0.10, 8, true, 2, DIR_RIGHT, 11, 8, 11, 15); // Initial animation
+        this.animation = new Animation(this.spritesheet, "idle", 0, 0, 32, 32, 0, 0.10, 8, true, 2, DIR_RIGHT, 11, 8, 11, 15); // Initial animation
         this.zIndex = 0;
     }
 
@@ -1142,13 +1146,12 @@ class Door extends ActorClass {
      * @param {GameEngine} game The game engine.
      * @param {number} x The x position of the door.
      * @param {number} y The y position of the door.
-     * @param {string} spritesheet The spritesheet of the door.
      * @param {number} keys (Optional) The number of keys needed to open the door. Defualt value is 1.
      */
-    constructor(game, x, y, spritesheet, keys = 1) {
-        super(game, x, y, spritesheet, TAG_PLATFORM, false, false); // Call to super constructor
+    constructor(game, x, y, keys = 1) {
+        super(game, x, y, AM.getAsset("./NeverLateSalaryMan/img/KeyItems.png"), TAG_PLATFORM, false/* no gravity */, false/* no platform collision */); // Call to super constructor
 
-        this.animation = new Animation(spritesheet, "closed", 32, 32, 32, 32, 0, 0.10, 1, true, 2, DIR_RIGHT, 8, 0, 16, 32); // Initial animation
+        this.animation = new Animation(this.spritesheet, "closed", 32, 32, 32, 32, 0, 0.10, 1, true, 2, DIR_RIGHT, 8, 0, 16, 32); // Initial animation
         this.open = false;
         this.keys = keys;
         this.trigger = new BoundingBox(this.box.x - 1, this.box.y - 1, this.box.width + 2, this.box.height + 2, TAG_EMPTY); // Trigger box
@@ -1291,24 +1294,26 @@ class EnemySpawner extends EntityClass {
     }
 }
 
-/*
- *
+/**
+ * 
  */
  class Weather {
 	 
-	constructor(game, x, y, width, height, dir, spritesheet) {
-		this.game = game;
-		this.x = x;
-		this.y = y;
-		this.width = 32 * width;
-		this.height = 32 * height;
-		this.direction = dir;
-		this.zIndex = 2;
-		this.box = new BoundingBox(this.x, this.y, this.width, this.height, "Weather");
-		if (dir == DIR_LEFT)
-			this.animation = new Animation(spritesheet, "weather", 0, 0, 32, 32, 0, .07, 4, true, 1, dir, 0, 0, width, height);
-		else
-			this.animation = new Animation(spritesheet, "weather", 0, 32, 32, 32, 0, .07, 4, true, 1, dir, 0, 0, width, height);
+     constructor(game, x, y, width, height, dir) {
+         this.game = game;
+		 this.x = x;
+         this.y = y;
+         this.spritesheet = AM.getAsset("./NeverLateSalaryMan/img/Rain.png");
+		 this.width = 32 * width;
+		 this.height = 32 * height;
+		 this.direction = dir;
+		 this.zIndex = 2;
+         this.box = new BoundingBox(this.x, this.y, this.width, this.height, "Weather");
+
+		 if (dir == DIR_LEFT)
+             this.animation = new Animation(this.spritesheet, "weather", 0, 0, 32, 32, 0, .07, 4, true, 1, dir, 0, 0, width, height);
+		 else
+             this.animation = new Animation(this.spritesheet, "weather", 0, 32, 32, 32, 0, .07, 4, true, 1, dir, 0, 0, width, height);
 	}
 	
 	update() {

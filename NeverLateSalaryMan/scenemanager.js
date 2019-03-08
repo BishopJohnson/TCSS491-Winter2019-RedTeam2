@@ -82,9 +82,7 @@ SceneManager.prototype.loadLevel = function(levelID, sceneID) {
 	
 	if (properties.playLevel) {
 		// Create the player entity
-        var newPlayer = new Yamada(this.game,
-			properties.playerData.x, properties.playerData.y,			 
-			AM.getAsset("./NeverLateSalaryMan/img/Yamada.png"));
+        var newPlayer = new Yamada(this.game, properties.playerData.x, properties.playerData.y);
 		this.game.player = newPlayer;
 		this.game.addEntity(newPlayer);
 		
@@ -107,23 +105,23 @@ SceneManager.prototype.loadLevel = function(levelID, sceneID) {
 
 			// Determine which type of entity is needed by entity tags
 			if (newThing.tag == "Bird")
-                this.game.addEntity(new Bird(this.game, newThing.x, newThing.y, AM.getAsset("./NeverLateSalaryMan/img/Bird.png")));
+                this.game.addEntity(new Bird(this.game, newThing.x, newThing.y));
             else if (newThing.tag == "ConWorker")
-                this.game.addEntity(new ConWorker(this.game, newThing.x, newThing.y, AM.getAsset("./NeverLateSalaryMan/img/ConstrWorker.png")));
+                this.game.addEntity(new ConWorker(this.game, newThing.x, newThing.y));
 			else if (newThing.tag == "WinArea")
-				this.game.addEntity(new WinArea(this.game, newThing.x, newThing.y, AM.getAsset("./NeverLateSalaryMan/img/BusStop.png")));
+				this.game.addEntity(new WinArea(this.game, newThing.x, newThing.y));
 			else if (newThing.tag == "Checkpoint")
-				this.game.addEntity(new Checkpoint(this.game, newThing.x, newThing.y, newThing.ID, AM.getAsset("./NeverLateSalaryMan/img/Checkpoint.png")));
+				this.game.addEntity(new Checkpoint(this.game, newThing.x, newThing.y, newThing.ID));
 			else if (newThing.tag == "SecurityGuard")
-				this.game.addEntity(new SecurityGuard(this.game, newThing.x, newThing.y, AM.getAsset("./NeverLateSalaryMan/img/PoliceOfficer.png")));
+				this.game.addEntity(new SecurityGuard(this.game, newThing.x, newThing.y));
 			else if (newThing.tag == "SumoWrestler")
-				this.game.addEntity(new SumoWrestler(this.game, newThing.x, newThing.y, AM.getAsset("./NeverLateSalaryMan/img/SumoWrestler.png")));
+				this.game.addEntity(new SumoWrestler(this.game, newThing.x, newThing.y));
 			else if (newThing.tag == "Monsoon")
-                this.game.addEntity(new Weather(this.game, newThing.x, newThing.y, newThing.width, newThing.height, newThing.dir, AM.getAsset("./NeverLateSalaryMan/img/Rain.png")));
+                this.game.addEntity(new Weather(this.game, newThing.x, newThing.y, newThing.width, newThing.height, newThing.dir));
             else if (newThing.tag == "Key")
-                this.game.addEntity(new KeyItem(this.game, newThing.x, newThing.y, AM.getAsset("./NeverLateSalaryMan/img/KeyItems.png")));
+                this.game.addEntity(new KeyItem(this.game, newThing.x, newThing.y));
 			else if (newThing.tag == "Door")
-                this.game.addEntity(new Door(this.game, newThing.x, newThing.y, AM.getAsset("./NeverLateSalaryMan/img/KeyItems.png"), newThing.id));
+                this.game.addEntity(new Door(this.game, newThing.x, newThing.y, newThing.id));
 		}
 		
 		// Add the background for the level

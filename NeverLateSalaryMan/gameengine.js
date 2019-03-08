@@ -42,6 +42,7 @@ function GameEngine() {
     this.showOutlines = false;
     this.ctx = null;
     this.player = null;
+    this.camera = null;
     this.isPaused = true; // Paused by default
     this.click = null;
     this.mouse = null;
