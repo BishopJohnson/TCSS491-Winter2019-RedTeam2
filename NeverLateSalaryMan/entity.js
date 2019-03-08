@@ -853,7 +853,7 @@ class ConWorker extends EnemyClass {
         this.speed = 1.9;
 
         this.velocityX = this.speed; // Initial speed
-        this.animation = new Animation(this.spritesheet, "walk", 0, 0, 42, 42, 0, 0.10, 8, true, 2, DIR_RIGHT, 0, 7, 42, 35); // Initial animation
+        this.animation = new Animation(this.spritesheet, "walk", 0, 0, 42, 42, 0, 0.10, 8, true, 2, DIR_RIGHT, 0/*8*/, 7, 42/*20*/, 35); // Initial animation
 
         // Creates a platform that follows the construction worker
         this.movingPlatform = new ConWorkerPlatform(game, this.x, this.y, this.box.width, this.box.y - this.y, this);
@@ -911,9 +911,9 @@ class ConWorker extends EnemyClass {
         let animation = this.animation;
 
         if (this.velocityX > 0) { // Is walking right
-            animation = new Animation(this.spritesheet, "walk", 0, 0, 42, 42, 0, 0.10, 8, true, 2, DIR_RIGHT, 0, 7, 42, 35);
+            animation = new Animation(this.spritesheet, "walk", 0, 0, 42, 42, 0, 0.10, 8, true, 2, DIR_RIGHT, 0/*8*/, 7, 42/*20*/, 35);
         } else if (this.velocityX < 0) { // Is walking left
-            animation = new Animation(this.spritesheet, "walk", 0, 42, 42, 42, 0, 0.10, 8, true, 2, DIR_LEFT, 0, 7, 42, 35);
+            animation = new Animation(this.spritesheet, "walk", 0, 42, 42, 42, 0, 0.10, 8, true, 2, DIR_LEFT, 0/*13*/, 7, 42/*20*/, 35);
         }
         
         super.animate(animation); // Call to super method
@@ -938,7 +938,7 @@ class SecurityGuard extends EnemyClass {
         this.speed = 1.5;
 
         this.velocityX = this.speed; // Initial speed
-        this.animation = new Animation(this.spritesheet, "walk", 0, 0, 32, 32, 0, 0.10, 8, true, 2, DIR_RIGHT, 0, 0, 32, 32); // Initial animation
+        this.animation = new Animation(this.spritesheet, "walk", 0, 0, 32, 32, 0, 0.10, 8, true, 2, DIR_RIGHT, 8, 2, 14, 30); // Initial animation
     }
 	
 	/**
@@ -1006,9 +1006,9 @@ class SecurityGuard extends EnemyClass {
         let animation = this.animation;
 
         if (this.velocityX > 0) { // Is walking right
-			animation = new Animation(this.spritesheet, "walk", 0, 0, 32, 32, 0, 0.10, 8, true, 2, DIR_RIGHT, 0, 0, 32, 32);
-        } else if (this.velocityX < 0) { // Is walking left;
-			animation = new Animation(this.spritesheet, "walk", 0, 32, 32, 32, 0, 0.10, 8, true, 2, DIR_RIGHT, 0, 0, 32, 32);
+            animation = new Animation(this.spritesheet, "walk", 0, 0, 32, 32, 0, 0.10, 8, true, 2, DIR_RIGHT, 8, 2, 14, 30);
+        } else if (this.velocityX < 0) { // Is walking left
+            animation = new Animation(this.spritesheet, "walk", 0, 32, 32, 32, 0, 0.10, 8, true, 2, DIR_LEFT, 10, 2, 14, 30);
         }
         
         super.animate(animation); // Call to super method
@@ -1107,7 +1107,7 @@ class SumoWrestler extends EnemyClass {
 class KeyItem extends ActorClass {
 
     /**
-     * 
+     * The constructor for the KeyItem class.
      * 
      * @param {GameEngine} game The game engine.
      * @param {number} x The x position of the key.
@@ -1121,7 +1121,7 @@ class KeyItem extends ActorClass {
     }
 
     /**
-     * 
+     * The update method for the Door class.
      */
     update() {
         super.update(); // Call to super method
