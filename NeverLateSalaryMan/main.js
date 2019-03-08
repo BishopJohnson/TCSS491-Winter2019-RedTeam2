@@ -261,7 +261,7 @@ WinArea.prototype.update = function () {
 	this.box = new BoundingBox(this.x, this.y, this.width, this.height, "win");
 	var wincon = this.box.collide(this.game.player.box);
     if (wincon.object == TAG_PLAYER)
-		this.game.sceneManager.loadLevel(this.game.sceneManager.nextLevel);
+		this.game.sceneManager.loadLevel(this.game.sceneManager.levelID, this.game.sceneManager.nextScene);
 	
 	Entity.prototype.update.call(this);
 }
@@ -552,7 +552,7 @@ AM.downloadAll(function () {
     gameEngine.start();
 
 	// Display basic splash screen
-	gameEngine.SceneManager.loadLevel(0);
+	gameEngine.SceneManager.loadLevel(0,0);
 
     mute.addEventListener('click', function (event) { // Toggles mute on all audio
         AUDIO_MANAGER.toggleSound();
@@ -563,7 +563,7 @@ AM.downloadAll(function () {
     });
 
     nextLevel.addEventListener('click', function (event) { // Transitions to next level on click
-        gameEngine.SceneManager.loadLevel(gameEngine.sceneManager.nextLevel);
+        gameEngine.SceneManager.loadLevel(gameEngine.sceneManager.levelID, gameEngine.sceneManager.nextScene);
     });
 
     console.log("All Done!");

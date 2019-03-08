@@ -1,7 +1,8 @@
 function SceneManager(game) {
 	this.game = game;
 	this.game.sceneManager = this; // Reference so entities can call for scenes
-	this.nextLevel = 0;
+	this.levelID = 0;
+	this.nextScene = 0;
 	this.timeLimit = 0;
 	this.playLevel = false;
 	this.activeCheckpoint = null;
@@ -9,19 +10,21 @@ function SceneManager(game) {
 	this.box = new BoundingBox("manager", 0, 0, 0, 0);
 	// Hardcode each level's time and other properties as JSON objects
 	this.levelProps = [];
+	for (var i = 0; i < 2 /* Number of levels */; i++)
+		this.levelProps.push([]);
 	// Push each JSON object into the level properties according to indexing rule
-	this.levelProps.push(JSON.stringify(
+	this.levelProps[0].push(JSON.stringify(
 		{playLevel: false, nextLevel: 1, timeLimit: 0, camData: null, deathPlane: 0, playerData: null,
-		entities:[{msg: "A and D to move\nHold K to aim\nHold W while aiming to aim up\nPress A or D while aiming to aim straight left or right\nRelease K to fire hook\nPress L to detatch hook\n\nYou can stand on the worker's beam, but touching him\nwill damage you.\nVending machines are checkpoints.\n\nGet to the bus stop before time runs out!\n\nClick to start", transitionID: 1, x: 50, y: 100}], platforms: null, background: null}));
-	this.levelProps.push(level1);
-	this.levelProps.push(level2);
-	this.levelProps.push(level3);
-	this.levelProps.push(JSON.stringify(
+		entities:[{msg: "A and D to move\nHold K to aim\nHold W while aiming to aim up\nPress A or D while aiming to aim straight left or right\nRelease K to fire hook\nPress L to detatch hook\n\nYou can stand on the worker's beam, but touching him\nwill damage you.\nVending machines are checkpoints.\n\nGet to the bus stop before time runs out!\n\nClick to start", levelID: 1, transitionID: 0, x: 50, y: 100}], platforms: null, background: null}));
+	this.levelProps[1].push(level1);
+	this.levelProps[1].push(level2);
+	this.levelProps[1].push(level3);
+	this.levelProps[0].push(JSON.stringify(
 		{playLevel: false, nextLevel: 0, timeLimit: 0, camData: null, deathPlane: 0, playerData: null,
-		entities:[{msg: "You won!\nClick to return to splash screen", transitionID: 0, x: 100, y: 100}], platforms: null, background: null}));
-	this.levelProps.push(JSON.stringify(
+		entities:[{msg: "You won!\nClick to return to splash screen", levelID: 0, transitionID: 0, x: 100, y: 100}], platforms: null, background: null}));
+	this.levelProps[0].push(JSON.stringify(
 		{playLevel: false, nextLevel: 0, timeLimit: 0, camData: null, deathPlane: 0, playerData: null,
-		entities:[{msg: "You lost!\nClick to return to splash screen", transitionID: 0, x: 100, y: 100}], platforms: null, background: null}));
+		entities:[{msg: "You lost!\nClick to return to splash screen", levelID:0, transitionID: 0, x: 100, y: 100}], platforms: null, background: null}));
 }
 
 /*
@@ -53,7 +56,7 @@ SceneManager.prototype.update = function() {
 		
 		// Game ends if player runs out of time
 		if (this.timeLimit <= 0) {
-			this.loadLevel(4);
+			this.loadLevel(0,2);
 		}
 	}
 }
@@ -68,10 +71,11 @@ SceneManager.prototype.draw = function() {
 Unloads the current level and loads the next scene as needed.
 @param ID number of the level to transition to.
 */
-SceneManager.prototype.loadLevel = function(sceneID) {
-	var properties = JSON.parse(this.levelProps[sceneID]);
+SceneManager.prototype.loadLevel = function(levelID, sceneID) {
+	var properties = JSON.parse(this.levelProps[levelID][sceneID]);
 	this.playLevel = properties.playLevel;
-	this.nextLevel = properties.nextLevel;
+	this.levelID = properties.thisLevel;
+	this.nextScene = properties.nextLevel;
 	this.timeLimit = properties.timeLimit;
 	this.activeCheckpoint = null;
 	this.game.entities = []; // Remove all objects from current level
@@ -138,17 +142,17 @@ SceneManager.prototype.loadLevel = function(sceneID) {
 		this.game.player = null;
 		this.game.background = null;
 		var menuData = properties.entities[0];
-		this.game.addEntity(new MenuDisplay(menuData.msg, menuData.transitionID,
-							menuData.x, menuData.y, this.game));
+		this.game.addEntity(new MenuDisplay(menuData.msg, menuData.levelID, menuData.transitionID, menuData.x, menuData.y, this.game));
 	}
 		
 	// Re-add this manager to the game to keep timer running
     this.game.addEntity(this);
 }
 
-function MenuDisplay(msg, levelID, x, y, game) {
+function MenuDisplay(msg, levelID, transitionID, x, y, game) {
 	this.string = msg.split("\n");
-	this.transitionID = levelID;
+	this.levelID = levelID;
+	this.transitionID = transitionID;
 	this.x = x;
 	this.y = y;
 	this.game = game;
@@ -160,7 +164,7 @@ MenuDisplay.prototype.update = function() {
 	// When clicked, change game ID
 	if (this.game.click)
 		// Shift to appropriate scene
-		this.game.sceneManager.loadLevel(this.transitionID);
+		this.game.sceneManager.loadLevel(this.levelID, this.transitionID);
 }
 
 MenuDisplay.prototype.draw = function() {
