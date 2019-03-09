@@ -1116,7 +1116,7 @@ class KeyItem extends ActorClass {
     constructor(game, x, y) {
         super(game, x, y, AM.getAsset("./NeverLateSalaryMan/img/KeyItems.png"), undefined/* default tag */, false/* no gravity */); // Call to super constructor
 
-        this.animation = new Animation(this.spritesheet, "idle", 0, 0, 32, 32, 0, 0.10, 8, true, 2, DIR_RIGHT, 11, 8, 11, 15); // Initial animation
+        this.animation = new Animation(this.spritesheet, "idle", 0, 0, 32, 32, 0, 0.10, 8, true, 2, DIR_RIGHT, 3, 0, 11, 15); // Initial animation
         this.zIndex = 0;
     }
 
@@ -1151,7 +1151,7 @@ class Door extends ActorClass {
     constructor(game, x, y, keys = 1) {
         super(game, x, y, AM.getAsset("./NeverLateSalaryMan/img/KeyItems.png"), TAG_PLATFORM, false/* no gravity */, false/* no platform collision */); // Call to super constructor
 
-        this.animation = new Animation(this.spritesheet, "closed", 32, 32, 32, 32, 0, 0.10, 1, true, 2, DIR_RIGHT, 8, 0, 16, 32); // Initial animation
+        this.animation = new Animation(this.spritesheet, "closed", 0, 32, 32, 32, 0, 0.10, 1, true, 2, DIR_RIGHT, 0, 0, 16, 32); // Initial animation
         this.open = false;
         this.keys = keys;
         this.trigger = new BoundingBox(this.box.x - 1, this.box.y - 1, this.box.width + 2, this.box.height + 2, TAG_EMPTY); // Trigger box
@@ -1203,9 +1203,9 @@ class Door extends ActorClass {
         let animation = this.animation;
 
         if (this.open) { // If the door is open
-            animation = new Animation(this.spritesheet, "open", 64, 32, 32, 32, 0, 0.10, 6, false, 2, DIR_RIGHT, 8, 0, 16, 32);
+            animation = new Animation(this.spritesheet, "open", 32, 32, 32, 32, 0, 0.10, 6, false, 2, DIR_RIGHT, 0, 0, 16, 32);
         } else { // If the door is not open
-            animation = new Animation(this.spritesheet, "closed", 32, 32, 32, 32, 0, 0.10, 1, true, 2, DIR_RIGHT, 8, 0, 16, 32);
+            animation = new Animation(this.spritesheet, "closed", 0, 32, 32, 32, 0, 0.10, 1, true, 2, DIR_RIGHT, 0, 0, 16, 32);
         }
 
         super.animate(animation); // Call to super method
