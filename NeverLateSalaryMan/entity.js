@@ -146,6 +146,7 @@ class ActorClass extends EntityClass {
         this.collision = initialCollision;
         this.falling = false;
         this.platform = null;
+        this.isRendered = false;
 
         this.updateBox();
     }
@@ -171,7 +172,7 @@ class ActorClass extends EntityClass {
             this.falling = true;
 
             if (this.gravity)
-                this.velocityY += 9.8 * 0.03; //0.025; // Applies gravity
+                this.velocityY += 9.8 * 0.03; // Applies gravity
 
         }
 
@@ -321,10 +322,7 @@ class EnemyClass extends ActorClass {
         this.stunTimer = 0;
         this.dead = false;
 
-        /* TODO: Remove call to awaken from constructor once dynamic awaken from the player
-         * approaching enemies is incorporated into the game.
-         */
-		this.zIndex = 0;
+        this.zIndex = 0;
     }
 
     /**
@@ -395,13 +393,35 @@ class Yamada extends ActorClass {
         this.invulnerable = false;
         this.hook = null;
         this.aimVector = new Vector(0, 0);
-        this.hookSpeed = 7; //5;
+        this.hookSpeed = 7;
         this.keyCount = 0;
 		this.zIndex = 1;
 
         this.animation = new Animation(this.spritesheet, "idle", 0, 0, 32, 32, 0, 0.10, 8, true, 2, DIR_RIGHT, 7, 0, 18, 32); // Initial animation
 
-        this.awaken(); // Wakes Yamada by default
+        this.awaken(); // Always wakes Yamada on construction
+    }
+
+    /**
+     * Resets the Yamada's attributes.
+     * 
+     * @see ActorClass.reset
+     */
+    reset() {
+        super.reset(); // Call to super method
+
+        this.health = this.maxhealth;
+        this.damageTimer = 0;
+        this.aiming = false;
+        this.grappling = false;
+        this.grappleCooldown = 0;
+        this.stunned = false;
+        this.keyCount = 0;
+
+        if (this.hook) { // Checks if a hook currently exists.
+            this.hook.removeFromWorld = true;
+            this.hook = null;
+        }
     }
 
     /**
@@ -651,6 +671,8 @@ class Yamada extends ActorClass {
 
 	/** 
 	 * Draws yamada on the game's canvas.
+     * 
+     * @see ActorClass.draw
 	 */
 	draw() {
 		if (Math.floor(this.damageTimer * 10) % 2 == 0) { // Draws animation every half second if stunned
@@ -791,21 +813,25 @@ class Bird extends EnemyClass {
     update() {
         super.update(); // Call to super method
 
-        // Iterates over game entities to check for collision
-        for (var i = 0; i < this.game.entities.length; i++) {
-            // Check with temporary hitbox from before the super class update
-            var entity = this.game.entities[i];
-            var tempBox = new BoundingBox(this.box.x + this.velocityX, this.box.y, this.box.width, this.box.height, this.tag);
-            var collide = tempBox.collide(entity.box); // The collision results
+        if (!this.dead) { // Checks if the Bird is alive
+            // Iterates over game entities to check for collision
+            for (var i = 0; i < this.game.entities.length; i++) {
+                // Check with temporary hitbox from before the super class update
+                var entity = this.game.entities[i];
+                var tempBox = new BoundingBox(this.box.x + this.velocityX, this.box.y, this.box.width, this.box.height, this.tag);
+                var collide = tempBox.collide(entity.box); // The collision results
 
-            if (entity !== this && collide.object == TAG_PLATFORM && this.collision) { // Checks if entity collided with a platform
-                if (collide.right && this.box.left >= entity.box.right) { // Ran into right side of a platform
-                    this.velocityX = this.speed;
-                }
+                if (entity !== this && collide.object == TAG_PLATFORM && this.collision) { // Checks if entity collided with a platform
+                    if (collide.right && this.box.left >= entity.box.right) { // Ran into right side of a platform
+                        this.velocityX = this.speed;
+                    }
 
-                if (collide.left && this.box.right <= entity.box.left) { // Ran into left side of a platform
-                    this.velocityX = -this.speed;
-                }
+                    if (collide.left && this.box.right <= entity.box.left) { // Ran into left side of a platform
+                        this.velocityX = -this.speed;
+                    }
+                }/* else if (entity !== this && collide.object == TAG_PLAYER) { // Checks if entity collided with the player
+                    this.stun();
+                }*/
             }
         }
 
@@ -818,20 +844,29 @@ class Bird extends EnemyClass {
     animate() {
         let animation = this.animation;
 
-        if (this.velocityX > 0) { // Is walking right
-            animation = new Animation(this.spritesheet, "fly", 0, 0, 32, 32, 0, 0.10, 2, true, 2, DIR_RIGHT, 5, 11, 21, 9);
-        } else if (this.velocityX < 0) { // Is walking left
-            animation = new Animation(this.spritesheet, "fly", 0, 32, 32, 32, 0, 0.10, 2, true, 2, DIR_LEFT, 5, 11, 21, 9);
+        if (this.dead) { // Is dead
+            if (animation.direction == DIR_RIGHT) // Was facing right
+                animation = new Animation(this.spritesheet, "dead", 64, 64, 32, 32, 0, 0.10, 1, true, 2, DIR_RIGHT);
+            else // Was facing left
+                animation = new Animation(this.spritesheet, "dead", 0, 64, 32, 32, 0, 0.10, 1, true, 2, DIR_LEFT);
+        } else { // Is not dead
+            if (this.velocityX > 0) { // Is walking right
+                animation = new Animation(this.spritesheet, "fly", 0, 0, 32, 32, 0, 0.10, 2, true, 2, DIR_RIGHT, 5, 11, 21, 9);
+            } else if (this.velocityX < 0) { // Is walking left
+                animation = new Animation(this.spritesheet, "fly", 0, 32, 32, 32, 0, 0.10, 2, true, 2, DIR_LEFT, 5, 11, 21, 9);
+            }
         }
 
         super.animate(animation); // Call to super method
     }
 
     /**
-     * TODO: Overrides super method to kill the bird.
+     * Kills the Bird.
      */
     stun() {
-        this.removeFromWorld = true;
+        this.dead = true;
+        this.collision = false;
+        this.gravity = true;
     }
 }
 
@@ -933,12 +968,13 @@ class SecurityGuard extends EnemyClass {
      * @param {number} y The y position to spawn the enemy at.
      */
     constructor(game, x, y) {
-        super(game, x, y, AM.getAsset("./NeverLateSalaryMan/img/PoliceOfficer.png"), undefined/* default damage */, 2); // Call to super constructor
+        super(game, x, y, AM.getAsset("./NeverLateSalaryMan/img/PoliceOfficer.png"), undefined/* default damage */, 5); // Call to super constructor
 
         this.speed = 1.5;
 
         this.velocityX = this.speed; // Initial speed
-        this.animation = new Animation(this.spritesheet, "walk", 0, 0, 32, 32, 0, 0.10, 8, true, 2, DIR_RIGHT, 8, 2, 14, 30); // Initial animation
+        this.animation = new Animation(this.spritesheet, "walk", 0, 0, 32, 32, 0, 0.10, 8, true, 2, DIR_RIGHT, 8, 2, 14, 30, 16, -5); // Initial animation
+        this.stars = new Animation(this.spritesheet, "stars", 128, 64, 32, 32, 0, 0.20, 4, true, 2, DIR_RIGHT); // Effect when guard is stunned
     }
 	
 	/**
@@ -1001,14 +1037,35 @@ class SecurityGuard extends EnemyClass {
 
         this.animate(); // Call to update animation
     }
-	
+
+    /**
+     * 
+     */
+    draw() {
+        super.draw(); // Call to super method
+
+        if (this.stunTimer > 0) { // Checks if guard is stunned
+            this.stars.drawFrame(this.game.clockTick, this.ctx, this.x - this.game.camera.x, this.y - this.game.camera.y + this.animation.hotspotY);
+        }
+    }
+
+    /**
+     * Updates the Security Guard's animation based on its current state.
+     */
 	animate() {
         let animation = this.animation;
 
-        if (this.velocityX > 0) { // Is walking right
-            animation = new Animation(this.spritesheet, "walk", 0, 0, 32, 32, 0, 0.10, 8, true, 2, DIR_RIGHT, 8, 2, 14, 30);
-        } else if (this.velocityX < 0) { // Is walking left
-            animation = new Animation(this.spritesheet, "walk", 0, 32, 32, 32, 0, 0.10, 8, true, 2, DIR_LEFT, 10, 2, 14, 30);
+        if (this.stunTimer > 0) { // Is stunned
+            if (animation.direction == DIR_RIGHT) // Was facing right
+                animation = new Animation(this.spritesheet, "stunned", 0, 64, 32, 32, 0, 0.50, 2, true, 2, DIR_RIGHT, 8, 2, 14, 30, 16, -5);
+            else // Was facing left
+                animation = new Animation(this.spritesheet, "stunned", 64, 64, 32, 32, 0, 0.50, 2, true, 2, DIR_LEFT, 10, 2, 14, 30, 16, -5);
+        } else { // Is not stunned
+            if (this.velocityX > 0) { // Is walking right
+                animation = new Animation(this.spritesheet, "walk", 0, 0, 32, 32, 0, 0.10, 8, true, 2, DIR_RIGHT, 8, 2, 14, 30);
+            } else if (this.velocityX < 0) { // Is walking left
+                animation = new Animation(this.spritesheet, "walk", 0, 32, 32, 32, 0, 0.10, 8, true, 2, DIR_LEFT, 10, 2, 14, 30);
+            }
         }
         
         super.animate(animation); // Call to super method
