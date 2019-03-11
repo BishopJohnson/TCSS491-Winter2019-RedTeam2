@@ -24,7 +24,7 @@ class EntityClass {
         /* TODO: Remove call to awaken from constructor once dynamic awaken from the player
          * approaching enemies is incorporated into the game.
          */
-        this.awaken();
+         this.awaken();
     }
 
     /**
@@ -1337,4 +1337,57 @@ class EnemySpawner extends EntityClass {
         this.game.ctx.strokeRect(this.x - this.game.camera.x, this.y - this.game.camera.y, this.width, this.height);
 		}
 	}
+ }
+ 
+ class Generator {
+	 
+	 constructor(game, x, y) {
+		 this.game = game;
+		 this.x = x;
+		 this.y = y;
+		 this.spritesheet = AM.getAsset("./NeverLateSalaryMan/img/Hazards.png");
+		 this.width = 32;
+		 this.height = 32;
+		 this.zIndex = 2;
+         this.box = new BoundingBox(this.x, this.y, this.width, this.height, "Generator");
+		 this.animation = new Animation(this.spritesheet, "generator", 0, 0, 32, 32, 0, .07, 4, true, 2, "center");
+	 }
+	 
+	 update() {
+		var collide = this.box.collide(this.game.player.box); // The collision results with the player
+		
+		if (collide.object == TAG_PLAYER && !this.dead) // Damages the player
+			this.game.player.damage(this.damage, this.box);
+	 }
+	 
+	 draw() {
+		this.animation.drawFrame(this.game.clockTick, this.game.ctx, this.x - this.game.camera.x, this.y - this.game.camera.y); 
+	 }
+ }
+ 
+ class Hazard {
+	 
+	 constructor(game, x, y, damage = 1) {
+		 this.game = game;
+		 this.x = x;
+		 this.y = y;
+		 this.damage = damage;
+		 this.spritesheet = AM.getAsset("./NeverLateSalaryMan/img/Hazards.png");
+		 this.width = 32;
+		 this.height = 32;
+		 this.zIndex = 2;
+         this.box = new BoundingBox(this.x, this.y, this.width, this.height, "Hazard");
+		 this.animation = new Animation(this.spritesheet, "hazard", 128, 0, 32, 32, 0, .07, 4, true, 2, "center");
+	 }
+	 
+	update() {
+		var collide = this.box.collide(this.game.player.box); // The collision results with the player
+		
+		if (collide.object == TAG_PLAYER && !this.dead) // Damages the player
+			this.game.player.damage(this.damage, this.box);
+	 }
+	 
+	 draw() {
+		this.animation.drawFrame(this.game.clockTick, this.game.ctx, this.x - this.game.camera.x, this.y - this.game.camera.y); 
+	 }
  }

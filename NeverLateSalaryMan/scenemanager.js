@@ -71,7 +71,7 @@ SceneManager.prototype.draw = function() {
 Unloads the current level and loads the next scene as needed.
 @param ID number of the level to transition to.
 */
-SceneManager.prototype.loadLevel = function(levelID, sceneID) {
+SceneManager.prototype.loadLevel = function(levelID=0, sceneID) {
 	var properties = JSON.parse(this.levelProps[levelID][sceneID]);
 	this.playLevel = properties.playLevel;
 	this.levelID = properties.thisLevel;
@@ -122,6 +122,10 @@ SceneManager.prototype.loadLevel = function(levelID, sceneID) {
                 this.game.addEntity(new KeyItem(this.game, newThing.x, newThing.y));
 			else if (newThing.tag == "Door")
                 this.game.addEntity(new Door(this.game, newThing.x, newThing.y, newThing.ID));
+			else if (newThing.tag == "Generator")
+				this.game.addEntity(new Generator(this.game, newThing.x, newThing.y));
+			else if (newThing.tag == "Hazard")
+				this.game.addEntity(new Hazard(this.game, newThing.x, newThing.y));
 		}
 		
 		// Add the background for the level
