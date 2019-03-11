@@ -548,6 +548,7 @@ AM.queueDownload("./NeverLateSalaryMan/img/PoliceOfficer.png");
 AM.queueDownload("./NeverLateSalaryMan/img/SumoWrestler.png");
 AM.queueDownload("./NeverLateSalaryMan/img/Rain.png");
 AM.queueDownload("./NeverLateSalaryMan/img/KeyItems.png");
+AM.queueDownload("./NeverLateSalaryMan/img/Hazards.png");
 
 // Download all of the background tile set.
 AM.queueDownload("./NeverLateSalaryMan/img/tileset/Blocks.png");
