@@ -139,6 +139,14 @@ public class LevelEditor {
 						myEntities.add(new Entity(KEY, column * 32, row * 32,
 							Integer.valueOf("" + level[row][column].toCharArray()[1])));
 						level[row][column] = null;
+					} else if(level[row][column].toCharArray()[0] == 'h') {
+						if(level[row][column].toCharArray()[0] == '0') {
+							myEntities.add(new Entity("Generator", column * 32, row * 32));
+							level[row][column] = null;
+						} else {
+							myEntities.add(new Entity("Hazard", column * 32, row * 32));
+							level[row][column] = null;
+						}
 					}
 				}
 			}
