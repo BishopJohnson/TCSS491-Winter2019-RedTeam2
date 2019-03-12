@@ -1085,7 +1085,7 @@ class SumoWrestler extends EnemyClass {
      * @param {bool} bounce (Optional) Determines if the Sumo Wrestler bounces.
      */
     constructor(game, x, y, bounce = true) {
-        super(game, x, y, AM.getAsset("./NeverLateSalaryMan/img/SumoWrestler.png"), 0/* default damage */, 0, true, true); // Call to super constructor
+        super(game, x, y, AM.getAsset("./NeverLateSalaryMan/img/SumoWrestler.png"), undefined/* default damage */, 0, true, true); // Call to super constructor
 
         this.speed = 3;
 
