@@ -105,7 +105,7 @@ SceneManager.prototype.loadLevel = function(levelID=0, sceneID) {
 
 			// Determine which type of entity is needed by entity tags
 			if (newThing.tag == "Bird")
-                this.game.addEntity(new Bird(this.game, newThing.x, newThing.y));
+                this.game.addEntity(new Bird(this.game, newThing.x, newThing.y, true));
             else if (newThing.tag == "ConWorker")
                 this.game.addEntity(new ConWorker(this.game, newThing.x, newThing.y));
 			else if (newThing.tag == "WinArea")
