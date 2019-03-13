@@ -126,6 +126,8 @@ SceneManager.prototype.loadLevel = function(levelID=0, sceneID) {
 				this.game.addEntity(new Generator(this.game, newThing.x, newThing.y));
 			else if (newThing.tag == "Hazard")
 				this.game.addEntity(new Hazard(this.game, newThing.x, newThing.y));
+			else if (newThing.tag == "Gem")
+				this.game.addEntity(new Gem(this.game, newThing.x, newThing.y));
 		}
 		
 		// Add the background for the level

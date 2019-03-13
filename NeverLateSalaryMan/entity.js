@@ -396,6 +396,7 @@ class Yamada extends ActorClass {
         this.hookSpeed = 7;
         this.keyCount = 0;
 		this.zIndex = 1;
+		//this.score = 0;
 
         this.animation = new Animation(this.spritesheet, "idle", 0, 0, 32, 32, 0, 0.10, 8, true, 2, DIR_RIGHT, 7, 0, 18, 32); // Initial animation
 
@@ -1446,5 +1447,29 @@ class EnemySpawner extends EntityClass {
 	 
 	 draw() {
 		this.animation.drawFrame(this.game.clockTick, this.game.ctx, this.x - this.game.camera.x, this.y - this.game.camera.y); 
+	 }
+ }
+
+ class Gem extends ActorClass {
+	 
+	 constructor(game, x, y, score = 1000) {
+		 super(game, x, y, AM.getAsset("./NeverLateSalaryMan/img/tileset/Gems.png"), "Gem", false, true);
+		 this.score = score;
+		 this.width = 32;
+		 this.height = 32;
+		 this.zIndex = 2;
+		 this.animation = new Animation(this.spritesheet, "gem", 64, 0, 32, 32, 0, 0.1, 1, true, 2, "center", 0, 0, 32, 32);
+	 }
+	 
+	 update() {
+		super.update();
+		
+		var collision = this.box.collide(this.game.player.box);
+		
+		if(collision.object == TAG_PLAYER) {
+			//this.game.player.score += this.score;
+			//console.log(this.game.player.score);
+			this.game.sceneManager.timeLimit += 15;
+		}
 	 }
  }
