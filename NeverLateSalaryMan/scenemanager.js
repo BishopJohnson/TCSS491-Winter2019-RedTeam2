@@ -19,6 +19,7 @@ function SceneManager(game) {
 	this.levelProps[1].push(level1);
 	this.levelProps[1].push(level2);
 	this.levelProps[1].push(level3);
+	this.levelProps[1].push(level4);
 	this.levelProps[0].push(JSON.stringify(
 		{playLevel: false, nextLevel: 0, timeLimit: 0, camData: null, deathPlane: 0, playerData: null,
 		entities:[{msg: "You won!\nClick to return to splash screen", levelID: 0, transitionID: 0, x: 100, y: 100}], platforms: null, background: null}));
