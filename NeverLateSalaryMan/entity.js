@@ -1458,7 +1458,7 @@ class EnemySpawner extends EntityClass {
 		 this.width = 32;
 		 this.height = 32;
 		 this.zIndex = 2;
-		 this.animation = new Animation(this.spritesheet, "gem", 64, 0, 32, 32, 0, 0.1, 1, true, 2, "center", 0, 0, 32, 32);
+		 this.animation = new Animation(this.spritesheet, "gem", 64, 0, 32, 32, 0, 0.1, 1, true, 1, "center", 0, 0, 32, 32);
 	 }
 	 
 	 update() {
@@ -1470,6 +1470,7 @@ class EnemySpawner extends EntityClass {
 			//this.game.player.score += this.score;
 			//console.log(this.game.player.score);
 			this.game.sceneManager.timeLimit += 15;
+			this.removeFromWorld = true;
 		}
 	 }
  }
