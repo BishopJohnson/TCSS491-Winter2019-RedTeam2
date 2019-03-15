@@ -763,6 +763,8 @@ class Yamada extends ActorClass {
             this.hook.removeFromWorld = true;
             this.hook = null;
         }
+		// 15 second penalty for dying
+		this.game.sceneManager.timeLimit -= 15;
 
         this.updateBox();
     }

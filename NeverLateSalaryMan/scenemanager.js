@@ -15,17 +15,17 @@ function SceneManager(game) {
 	// Push each JSON object into the level properties according to indexing rule
 	this.levelProps[0].push(JSON.stringify(
 		{playLevel: false, nextLevel: 1, timeLimit: 0, camData: null, deathPlane: 0, playerData: null,
-		entities:[{msg: "A and D to move\nHold K to aim\nHold W while aiming to aim up\nPress A or D while aiming to aim straight left or right\nRelease K to fire hook\nPress L to detatch hook\n\nYou can stand on the worker's beam, but touching him\nwill damage you.\nVending machines are checkpoints.\n\nGet to the bus stop before time runs out!\n\nClick to start", levelID: 1, transitionID: 0, x: 50, y: 100}], platforms: null, background: null}));
+		entities:[{img:"./NeverLateSalaryMan/img/NeverLateSalaryManTitleScreen.png", levelID: 1, transitionID: 0}], platforms: null, background: null}));
 	this.levelProps[1].push(level1);
 	this.levelProps[1].push(level2);
 	this.levelProps[1].push(level3);
 	this.levelProps[1].push(level4);
 	this.levelProps[0].push(JSON.stringify(
 		{playLevel: false, nextLevel: 0, timeLimit: 0, camData: null, deathPlane: 0, playerData: null,
-		entities:[{msg: "You won!\nClick to return to splash screen", levelID: 0, transitionID: 0, x: 100, y: 100}], platforms: null, background: null}));
+		entities:[{img:"./NeverLateSalaryMan/img/NeverLateSalaryManWinScreen.png", levelID: 0, transitionID: 0}], platforms: null, background: null}));
 	this.levelProps[0].push(JSON.stringify(
 		{playLevel: false, nextLevel: 0, timeLimit: 0, camData: null, deathPlane: 0, playerData: null,
-		entities:[{msg: "You lost!\nClick to return to splash screen", levelID:0, transitionID: 0, x: 100, y: 100}], platforms: null, background: null}));
+		entities:[{img:"./NeverLateSalaryMan/img/NeverLateSalaryManLoseScreen.png", levelID:0, transitionID: 0}], platforms: null, background: null}));
 }
 
 /*
@@ -147,19 +147,18 @@ SceneManager.prototype.loadLevel = function(levelID=0, sceneID) {
 		this.game.player = null;
 		this.game.background = null;
 		var menuData = properties.entities[0];
-		this.game.addEntity(new MenuDisplay(menuData.msg, menuData.levelID, menuData.transitionID, menuData.x, menuData.y, this.game));
+		this.game.addEntity(new MenuDisplay(menuData.img, menuData.levelID, menuData.transitionID, this.game));
 	}
 		
 	// Re-add this manager to the game to keep timer running
     this.game.addEntity(this);
 }
 
-function MenuDisplay(msg, levelID, transitionID, x, y, game) {
-	this.string = msg.split("\n");
+function MenuDisplay(img, levelID, transitionID, game) {
+	this.spritesheet = img;
+	this.animation = new Animation(AM.getAsset(this.spritesheet), "Display", 0, 0, 400, 350, 1, 1, 1, true, 2, "right");
 	this.levelID = levelID;
 	this.transitionID = transitionID;
-	this.x = x;
-	this.y = y;
 	this.game = game;
 	this.ctx = game.ctx;
 	this.zIndex = 0;
@@ -173,8 +172,5 @@ MenuDisplay.prototype.update = function() {
 }
 
 MenuDisplay.prototype.draw = function() {
-	this.ctx.font = "30px serif";
-	for (var i = 0; i < this.string.length; i++) {
-		this.ctx.fillText(this.string[i], this.x, this.y + i * 30);
-	}
+	this.animation.drawFrame(this.game.clockTick, this.ctx, 0, 0);
 }

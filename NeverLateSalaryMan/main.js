@@ -416,7 +416,7 @@ Hook.prototype.update = function () {
             this.removeFromWorld = true;
 		}
 	}
-	this.box = new BoundingBox(this.x - 1, this.y - 1, 3, 3, TAG_HOOK);
+	this.box = new BoundingBox(this.x - 4, this.y - 4, 8, 8, TAG_HOOK);
 	Entity.prototype.update.call(this);
 }
 
@@ -550,6 +550,12 @@ AM.queueDownload("./NeverLateSalaryMan/img/Rain.png");
 AM.queueDownload("./NeverLateSalaryMan/img/KeyItems.png");
 AM.queueDownload("./NeverLateSalaryMan/img/Hazards.png");
 AM.queueDownload("./NeverLateSalaryMan/img/tileset/Gems.png");
+
+// Download level transition screens
+AM.queueDownload("./NeverLateSalaryMan/img/NeverLateSalaryManTitleScreen.png");
+AM.queueDownload("./NeverLateSalaryMan/img/NeverLateSalaryManWinScreen.png");
+AM.queueDownload("./NeverLateSalaryMan/img/NeverLateSalaryManLoseScreen.png");
+
 
 // Download all of the background tile set.
 AM.queueDownload("./NeverLateSalaryMan/img/tileset/Blocks.png");
