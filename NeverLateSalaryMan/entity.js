@@ -566,7 +566,7 @@ class Yamada extends ActorClass {
 							animation = new Animation(this.spritesheet, "g_aim_s", 224, 128, 32, 32, 0, 1, 1, true, 2, DIR_LEFT, 0, 0, 25, 32, 2, 11);
                     } else if (this.game.keyRight && this.game.keyGrapple) {
 						if (this.game.keyUp)
-						// Up-Right
+						    // Up-Right
 							animation = new Animation(this.spritesheet, "g_aim_d", 32, 128, 32, 32, 0, 1, 1, true, 2, DIR_RIGHT, 7, 0, 20, 32, 23, 3);
 						else
 							// Right-Straight
@@ -778,7 +778,7 @@ class Yamada extends ActorClass {
 		this.gravity = true;
 
         if (this.hook) // Checks if a hook exists
-        this.hook.removeFromWorld = true;
+            this.hook.removeFromWorld = true;
 
         this.hook = null;
 		this.animate();
